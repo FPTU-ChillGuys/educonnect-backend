@@ -1,0 +1,17 @@
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\bin\Debug\net8.0\EduConnect.Infrastructure.deps.json
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\bin\Debug\net8.0\EduConnect.Infrastructure.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\bin\Debug\net8.0\EduConnect.Infrastructure.pdb
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\bin\Debug\net8.0\EduConnect.Application.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\bin\Debug\net8.0\EduConnect.Domain.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\bin\Debug\net8.0\EduConnect.Application.pdb
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\bin\Debug\net8.0\EduConnect.Domain.pdb
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConnect.Infrastructure.csproj.AssemblyReference.cache
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConnect.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConnect.Infrastructure.AssemblyInfoInputs.cache
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConnect.Infrastructure.AssemblyInfo.cs
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConnect.Infrastructure.csproj.CoreCompileInputs.cache
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConne.777AE65F.Up2Date
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConnect.Infrastructure.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\refint\EduConnect.Infrastructure.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\EduConnect.Infrastructure.pdb
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Infrastructure\obj\Debug\net8.0\ref\EduConnect.Infrastructure.dll

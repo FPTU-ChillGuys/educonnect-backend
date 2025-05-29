@@ -1,0 +1,15 @@
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\bin\Debug\net8.0\EduConnect.Application.deps.json
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\bin\Debug\net8.0\EduConnect.Application.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\bin\Debug\net8.0\EduConnect.Application.pdb
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\bin\Debug\net8.0\EduConnect.Domain.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\bin\Debug\net8.0\EduConnect.Domain.pdb
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConnect.Application.csproj.AssemblyReference.cache
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConnect.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConnect.Application.AssemblyInfoInputs.cache
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConnect.Application.AssemblyInfo.cs
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConnect.Application.csproj.CoreCompileInputs.cache
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConne.C17027AE.Up2Date
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConnect.Application.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\refint\EduConnect.Application.dll
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\EduConnect.Application.pdb
+D:\EduMaterial\SWD392\EduConnect\EduConnect.Application\obj\Debug\net8.0\ref\EduConnect.Application.dll
