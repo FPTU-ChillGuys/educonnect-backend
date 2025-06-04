@@ -19,64 +19,51 @@ namespace EduConnect.API.Middlewares
 			try
 			{
 				await _next(context);
-
 				await HandleCommonStatusCodesAsync(context);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Unhandled exception");
 
-				var (statusCode, title, message) = ex switch
+				var (statusCode, message) = ex switch
 				{
-					TaskCanceledException or TimeoutException => (StatusCodes.Status408RequestTimeout, "Request Timeout", "The request has timed out. Please try again later."),
-					_ => (StatusCodes.Status500InternalServerError, "Internal Server Error", "Sorry, an internal server error occurred. Kindly try again.")
+					TaskCanceledException or TimeoutException =>
+						(StatusCodes.Status408RequestTimeout, "The request has timed out. Please try again later."),
+
+					_ => (StatusCodes.Status500InternalServerError, "Sorry, an internal server error occurred. Kindly try again.")
 				};
 
 				_logger.LogWarning("Request resulted in status code {StatusCode}: {Message}", statusCode, message);
-
-				var response = BaseResponse<string>.Fail(message);
-				var json = JsonSerializer.Serialize(response);
-				context.Response.StatusCode = statusCode;
-				if (!context.Response.HasStarted)
-				{
-					context.Response.ContentType = "application/json";
-					await context.Response.WriteAsync(json);
-				}
+				await WriteJsonResponseAsync(context, statusCode, BaseResponse<string>.Fail(message));
 			}
 		}
 
 		private async Task HandleCommonStatusCodesAsync(HttpContext context)
 		{
-			string title = string.Empty;
-			string message = string.Empty;
-			int statusCode = context.Response.StatusCode;
+			if (context.Response.HasStarted) return;
 
-			switch (statusCode)
+			var statusCode = context.Response.StatusCode;
+			string? message = statusCode switch
 			{
-				case StatusCodes.Status401Unauthorized:
-					title = "Unauthorized";
-					message = "You are not authorized to access this resource.";
-					break;
+				StatusCodes.Status401Unauthorized => "You are not authorized to access this resource.",
+				StatusCodes.Status403Forbidden => "You do not have permission to access this resource.",
+				StatusCodes.Status429TooManyRequests => "Too many requests. Please try again later.",
+				_ => null
+			};
 
-				case StatusCodes.Status403Forbidden:
-					title = "Forbidden";
-					message = "You do not have permission to access this resource.";
-					break;
-
-				case StatusCodes.Status429TooManyRequests:
-					title = "Too Many Requests";
-					message = "You have made too many requests in a short period. Please try again later.";
-					break;
-
-				default:
-					return; // skip non-handled status codes
+			if (message != null)
+			{
+				await WriteJsonResponseAsync(context, statusCode, BaseResponse<string>.Fail(message));
 			}
+		}
 
-			var response = BaseResponse<string>.Fail(message);
-			var json = JsonSerializer.Serialize(response);
+		private static async Task WriteJsonResponseAsync(HttpContext context, int statusCode, BaseResponse<string> response)
+		{
 			if (!context.Response.HasStarted)
 			{
+				context.Response.StatusCode = statusCode;
 				context.Response.ContentType = "application/json";
+				var json = JsonSerializer.Serialize(response);
 				await context.Response.WriteAsync(json);
 			}
 		}
