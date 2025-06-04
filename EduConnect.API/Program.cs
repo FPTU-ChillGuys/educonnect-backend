@@ -17,8 +17,8 @@ builder.Configuration
 	.AddEnvironmentVariables();
 
 // Add services to the container.
-builder.Services.AddJWTAuthenticationScheme(builder.Configuration);
 builder.Services.AddInfrastructureService(builder.Configuration);
+builder.Services.AddJWTAuthenticationScheme(builder.Configuration);
 builder.Services.AddApplicationServices();
 
 // Force all routes to be lowercase

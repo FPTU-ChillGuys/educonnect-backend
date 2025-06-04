@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 
 namespace EduConnect.API.Configurations
@@ -14,13 +15,14 @@ namespace EduConnect.API.Configurations
 
 			services.AddAuthentication(options =>
 			{
+				options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 			})
 				.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 				{
 					options.RequireHttpsMetadata = false;
 					options.SaveToken = true;
-				
 					options.TokenValidationParameters = new TokenValidationParameters
 					{
 						ValidateIssuerSigningKey = true,
@@ -31,7 +33,7 @@ namespace EduConnect.API.Configurations
 						ValidIssuer = config["Authentication:Issuer"],
 						ValidAudience = config["Authentication:Audience"],
 						ValidateLifetime = true,
-						ClockSkew = TimeSpan.Zero,
+						ClockSkew = TimeSpan.Zero
 					};
 				});
 

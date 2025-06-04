@@ -3,7 +3,6 @@ using EduConnect.Application.DTOs.Requests;
 using EduConnect.Application.DTOs.Responses;
 using EduConnect.Application.DTOs.Users;
 using EduConnect.Application.Interfaces.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,8 +50,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPost("refresh-token")]
-		[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-		//[Authorize]
+		[Authorize]
 		public async Task<ActionResult<BaseResponse<TokenResponse>>> RefreshToken([FromBody] RefreshTokenRequest request)
 		{
 			var result = await _authService.RefreshTokenAsync(request);
