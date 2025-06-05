@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EduConnect.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class RefactorEntities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -59,12 +59,13 @@ namespace EduConnect.Persistence.Migrations
                 name: "Subjects",
                 columns: table => new
                 {
-                    SubjectID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SubjectName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    SubjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubjectName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Subjects", x => x.SubjectID);
+                    table.PrimaryKey("PK_Subjects", x => x.SubjectId);
                 });
 
             migrationBuilder.CreateTable(
@@ -177,17 +178,17 @@ namespace EduConnect.Persistence.Migrations
                 name: "Classrooms",
                 columns: table => new
                 {
-                    ClassID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClassroomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClassName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    HomeroomTeacherID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    AcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HomeroomTeacherId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Classrooms", x => x.ClassID);
+                    table.PrimaryKey("PK_Classrooms", x => x.ClassroomId);
                     table.ForeignKey(
-                        name: "FK_Classrooms_AspNetUsers_HomeroomTeacherID",
-                        column: x => x.HomeroomTeacherID,
+                        name: "FK_Classrooms_AspNetUsers_HomeroomTeacherId",
+                        column: x => x.HomeroomTeacherId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -197,27 +198,104 @@ namespace EduConnect.Persistence.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    MessageID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FromUserID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ToUserID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SentTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsFromAI = table.Column<bool>(type: "bit", nullable: false)
+                    AIResponse = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Messages", x => x.MessageID);
+                    table.PrimaryKey("PK_Messages", x => x.MessageId);
                     table.ForeignKey(
-                        name: "FK_Messages_AspNetUsers_FromUserID",
-                        column: x => x.FromUserID,
+                        name: "FK_Messages_AspNetUsers_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ClassPeriods",
+                columns: table => new
+                {
+                    ClassPeriodId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PeriodNumber = table.Column<int>(type: "int", nullable: false),
+                    ClassroomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TeacherId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClassPeriods", x => x.ClassPeriodId);
+                    table.ForeignKey(
+                        name: "FK_ClassPeriods_AspNetUsers_TeacherId",
+                        column: x => x.TeacherId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Messages_AspNetUsers_ToUserID",
-                        column: x => x.ToUserID,
+                        name: "FK_ClassPeriods_Classrooms_ClassroomId",
+                        column: x => x.ClassroomId,
+                        principalTable: "Classrooms",
+                        principalColumn: "ClassroomId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ClassPeriods_Subjects_SubjectId",
+                        column: x => x.SubjectId,
+                        principalTable: "Subjects",
+                        principalColumn: "SubjectId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ClassReports",
+                columns: table => new
+                {
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClassroomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GeneratedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    SummaryContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    GeneratedByAI = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClassReports", x => x.ReportId);
+                    table.ForeignKey(
+                        name: "FK_ClassReports_Classrooms_ClassroomId",
+                        column: x => x.ClassroomId,
+                        principalTable: "Classrooms",
+                        principalColumn: "ClassroomId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Students",
+                columns: table => new
+                {
+                    StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClassroomId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Students", x => x.StudentId);
+                    table.ForeignKey(
+                        name: "FK_Students_AspNetUsers_ParentId",
+                        column: x => x.ParentId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Students_Classrooms_ClassroomId",
+                        column: x => x.ClassroomId,
+                        principalTable: "Classrooms",
+                        principalColumn: "ClassroomId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -225,204 +303,127 @@ namespace EduConnect.Persistence.Migrations
                 name: "ClassNotebooks",
                 columns: table => new
                 {
-                    NotebookID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClassID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    SummaryNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    NotebookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClassPeriodId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LessonContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalAbsentStudents = table.Column<int>(type: "int", nullable: false),
+                    GeneralBehaviorNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ClassNotebooks", x => x.NotebookID);
+                    table.PrimaryKey("PK_ClassNotebooks", x => x.NotebookId);
                     table.ForeignKey(
-                        name: "FK_ClassNotebooks_AspNetUsers_CreatedBy",
-                        column: x => x.CreatedBy,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ClassNotebooks_Classrooms_ClassID",
-                        column: x => x.ClassID,
-                        principalTable: "Classrooms",
-                        principalColumn: "ClassID",
+                        name: "FK_ClassNotebooks_ClassPeriods_ClassPeriodId",
+                        column: x => x.ClassPeriodId,
+                        principalTable: "ClassPeriods",
+                        principalColumn: "ClassPeriodId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Reminders",
+                name: "StudentReports",
                 columns: table => new
                 {
-                    ReminderID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClassID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GeneratedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    SummaryContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    GeneratedByAI = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Reminders", x => x.ReminderID);
+                    table.PrimaryKey("PK_StudentReports", x => x.ReportId);
                     table.ForeignKey(
-                        name: "FK_Reminders_AspNetUsers_CreatedBy",
-                        column: x => x.CreatedBy,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
+                        name: "FK_StudentReports_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "StudentId",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Reminders_Classrooms_ClassID",
-                        column: x => x.ClassID,
-                        principalTable: "Classrooms",
-                        principalColumn: "ClassID",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Schedules",
+                name: "ClassBehaviorLogs",
                 columns: table => new
                 {
-                    ScheduleID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClassID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SubjectID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TeacherID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Period = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    LogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NotebookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BehaviorType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Schedules", x => x.ScheduleID);
+                    table.PrimaryKey("PK_ClassBehaviorLogs", x => x.LogId);
                     table.ForeignKey(
-                        name: "FK_Schedules_AspNetUsers_TeacherID",
-                        column: x => x.TeacherID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Schedules_Classrooms_ClassID",
-                        column: x => x.ClassID,
-                        principalTable: "Classrooms",
-                        principalColumn: "ClassID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Schedules_Subjects_SubjectID",
-                        column: x => x.SubjectID,
-                        principalTable: "Subjects",
-                        principalColumn: "SubjectID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Students",
-                columns: table => new
-                {
-                    StudentID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DOB = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ClassID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParentID = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Students", x => x.StudentID);
-                    table.ForeignKey(
-                        name: "FK_Students_AspNetUsers_ParentID",
-                        column: x => x.ParentID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Students_Classrooms_ClassID",
-                        column: x => x.ClassID,
-                        principalTable: "Classrooms",
-                        principalColumn: "ClassID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LessonLogs",
-                columns: table => new
-                {
-                    LessonLogID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NotebookID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ScheduleID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TeacherID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TotalPresent = table.Column<int>(type: "int", nullable: false),
-                    TotalAbsent = table.Column<int>(type: "int", nullable: false),
-                    DisciplineNote = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LessonLogs", x => x.LessonLogID);
-                    table.ForeignKey(
-                        name: "FK_LessonLogs_AspNetUsers_TeacherID",
-                        column: x => x.TeacherID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_LessonLogs_ClassNotebooks_NotebookID",
-                        column: x => x.NotebookID,
+                        name: "FK_ClassBehaviorLogs_ClassNotebooks_NotebookId",
+                        column: x => x.NotebookId,
                         principalTable: "ClassNotebooks",
-                        principalColumn: "NotebookID",
+                        principalColumn: "NotebookId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentBehaviorNotes",
+                columns: table => new
+                {
+                    NoteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NotebookId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BehaviorType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentBehaviorNotes", x => x.NoteId);
                     table.ForeignKey(
-                        name: "FK_LessonLogs_Schedules_ScheduleID",
-                        column: x => x.ScheduleID,
-                        principalTable: "Schedules",
-                        principalColumn: "ScheduleID");
+                        name: "FK_StudentBehaviorNotes_ClassNotebooks_NotebookId",
+                        column: x => x.NotebookId,
+                        principalTable: "ClassNotebooks",
+                        principalColumn: "NotebookId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StudentBehaviorNotes_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "StudentId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
-                    NotificationID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StudentID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SentBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SentDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    NotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RecipientUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClassReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    StudentReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notifications", x => x.NotificationID);
+                    table.PrimaryKey("PK_Notifications", x => x.NotificationId);
                     table.ForeignKey(
-                        name: "FK_Notifications_AspNetUsers_SentBy",
-                        column: x => x.SentBy,
+                        name: "FK_Notifications_AspNetUsers_RecipientUserId",
+                        column: x => x.RecipientUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Notifications_Students_StudentID",
-                        column: x => x.StudentID,
-                        principalTable: "Students",
-                        principalColumn: "StudentID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StudentLessonNotes",
-                columns: table => new
-                {
-                    StudentNoteID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LessonLogID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StudentID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NoteContent = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StudentLessonNotes", x => x.StudentNoteID);
+                        name: "FK_Notifications_ClassReports_ClassReportId",
+                        column: x => x.ClassReportId,
+                        principalTable: "ClassReports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_StudentLessonNotes_LessonLogs_LessonLogID",
-                        column: x => x.LessonLogID,
-                        principalTable: "LessonLogs",
-                        principalColumn: "LessonLogID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_StudentLessonNotes_Students_StudentID",
-                        column: x => x.StudentID,
-                        principalTable: "Students",
-                        principalColumn: "StudentID");
+                        name: "FK_Notifications_StudentReports_StudentReportId",
+                        column: x => x.StudentReportId,
+                        principalTable: "StudentReports",
+                        principalColumn: "ReportId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.InsertData(
@@ -440,9 +441,9 @@ namespace EduConnect.Persistence.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, "seed-7", "teacher@example.com", true, true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAEAPlkdmwriKMYwT/qBXLfHSRtCTg3oUUEm0Ht60m3yO8DFk4TVWqm/toKh30X8EH3g==", null, false, "", new DateTime(2025, 6, 10, 13, 15, 9, 400, DateTimeKind.Utc).AddTicks(5203), "seed-6", false, "teacher" },
-                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, "seed-5", "admin@example.com", true, true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEK9VYA1FUEOizjgY1tgHU4U+aod7h3CLiBzEPlqRTvBkE5djrNijGJbsUnAEkMKGNQ==", null, false, "", new DateTime(2025, 6, 10, 13, 15, 9, 349, DateTimeKind.Utc).AddTicks(5945), "seed-4", false, "admin" },
-                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, "seed-9", "parent@example.com", true, true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAEDcU1XkMO1QdfgVQV8YAwrK1GeJdrXZM+i8W7/4jBaXEX76+wWwdlliAL61H2iaTmQ==", null, false, "", new DateTime(2025, 6, 10, 13, 15, 9, 451, DateTimeKind.Utc).AddTicks(7356), "seed-8", false, "parent" }
+                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, "seed-7", "teacher@example.com", true, true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAELL3ommhUTYVqrjuftMzIhdae2Tw+2Q9cYWYLZEnlS61+Nuv3DvzkiylVuSdrs6Y2w==", null, false, "", new DateTime(2025, 6, 12, 13, 2, 43, 260, DateTimeKind.Utc).AddTicks(4255), "seed-6", false, "teacher" },
+                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, "seed-5", "admin@example.com", true, true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEOaNbksnNVWdfr2pDs5ZNb6FzAoxjCLuP5FFWqCAAQXJhQn3jrzWQ5wmFtSHr8SEng==", null, false, "", new DateTime(2025, 6, 12, 13, 2, 43, 210, DateTimeKind.Utc).AddTicks(1487), "seed-4", false, "admin" },
+                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, "seed-9", "parent@example.com", true, true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAECv0YSQujMt0Uki6sEQ0IKZ41tPiB6T6EtcGPJUr7f2eRlglx11Gxbu2mz4LYaSjBA==", null, false, "", new DateTime(2025, 6, 12, 13, 2, 43, 310, DateTimeKind.Utc).AddTicks(2740), "seed-8", false, "parent" }
                 });
 
             migrationBuilder.InsertData(
@@ -495,99 +496,85 @@ namespace EduConnect.Persistence.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClassNotebooks_ClassID",
-                table: "ClassNotebooks",
-                column: "ClassID");
+                name: "IX_ClassBehaviorLogs_NotebookId",
+                table: "ClassBehaviorLogs",
+                column: "NotebookId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClassNotebooks_CreatedBy",
+                name: "IX_ClassNotebooks_ClassPeriodId",
                 table: "ClassNotebooks",
-                column: "CreatedBy");
+                column: "ClassPeriodId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Classrooms_HomeroomTeacherID",
+                name: "IX_ClassPeriods_ClassroomId",
+                table: "ClassPeriods",
+                column: "ClassroomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClassPeriods_SubjectId",
+                table: "ClassPeriods",
+                column: "SubjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClassPeriods_TeacherId",
+                table: "ClassPeriods",
+                column: "TeacherId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClassReports_ClassroomId",
+                table: "ClassReports",
+                column: "ClassroomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Classrooms_HomeroomTeacherId",
                 table: "Classrooms",
-                column: "HomeroomTeacherID");
+                column: "HomeroomTeacherId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LessonLogs_NotebookID",
-                table: "LessonLogs",
-                column: "NotebookID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LessonLogs_ScheduleID",
-                table: "LessonLogs",
-                column: "ScheduleID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LessonLogs_TeacherID",
-                table: "LessonLogs",
-                column: "TeacherID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_FromUserID",
+                name: "IX_Messages_ParentId",
                 table: "Messages",
-                column: "FromUserID");
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_ToUserID",
-                table: "Messages",
-                column: "ToUserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_SentBy",
+                name: "IX_Notifications_ClassReportId",
                 table: "Notifications",
-                column: "SentBy");
+                column: "ClassReportId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_StudentID",
+                name: "IX_Notifications_RecipientUserId",
                 table: "Notifications",
-                column: "StudentID");
+                column: "RecipientUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reminders_ClassID",
-                table: "Reminders",
-                column: "ClassID");
+                name: "IX_Notifications_StudentReportId",
+                table: "Notifications",
+                column: "StudentReportId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reminders_CreatedBy",
-                table: "Reminders",
-                column: "CreatedBy");
+                name: "IX_StudentBehaviorNotes_NotebookId",
+                table: "StudentBehaviorNotes",
+                column: "NotebookId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Schedules_ClassID",
-                table: "Schedules",
-                column: "ClassID");
+                name: "IX_StudentBehaviorNotes_StudentId",
+                table: "StudentBehaviorNotes",
+                column: "StudentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Schedules_SubjectID",
-                table: "Schedules",
-                column: "SubjectID");
+                name: "IX_StudentReports_StudentId",
+                table: "StudentReports",
+                column: "StudentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Schedules_TeacherID",
-                table: "Schedules",
-                column: "TeacherID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StudentLessonNotes_LessonLogID",
-                table: "StudentLessonNotes",
-                column: "LessonLogID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StudentLessonNotes_StudentID",
-                table: "StudentLessonNotes",
-                column: "StudentID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Students_ClassID",
+                name: "IX_Students_ClassroomId",
                 table: "Students",
-                column: "ClassID");
+                column: "ClassroomId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Students_ParentID",
+                name: "IX_Students_ParentId",
                 table: "Students",
-                column: "ParentID");
+                column: "ParentId");
         }
 
         /// <inheritdoc />
@@ -609,31 +596,34 @@ namespace EduConnect.Persistence.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ClassBehaviorLogs");
+
+            migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
 
             migrationBuilder.DropTable(
-                name: "Reminders");
-
-            migrationBuilder.DropTable(
-                name: "StudentLessonNotes");
+                name: "StudentBehaviorNotes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "LessonLogs");
+                name: "ClassReports");
 
             migrationBuilder.DropTable(
-                name: "Students");
+                name: "StudentReports");
 
             migrationBuilder.DropTable(
                 name: "ClassNotebooks");
 
             migrationBuilder.DropTable(
-                name: "Schedules");
+                name: "Students");
+
+            migrationBuilder.DropTable(
+                name: "ClassPeriods");
 
             migrationBuilder.DropTable(
                 name: "Classrooms");

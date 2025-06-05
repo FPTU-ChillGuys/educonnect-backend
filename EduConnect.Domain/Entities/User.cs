@@ -8,13 +8,10 @@ namespace EduConnect.Domain.Entities
 		public DateTime RefreshTokenExpiryTime { get; set; } = DateTime.UtcNow.AddDays(7);
 		public bool IsActive { get; set; } = true;
 
-		public ICollection<Student>? Students { get; set; }
-		public ICollection<Schedule>? Schedules { get; set; }
-		public ICollection<ClassNotebook>? CreatedNotebooks { get; set; }
-		public ICollection<LessonLog>? LessonLogs { get; set; }
-		public ICollection<Reminder>? Reminders { get; set; }
-		public ICollection<Message>? SentMessages { get; set; }
-		public ICollection<Message>? ReceivedMessages { get; set; }
-		public ICollection<Notification>? Notifications { get; set; }
+		public virtual ICollection<Student> Children { get; set; } // if Parent
+		public virtual ICollection<Classroom> HomeroomClasses { get; set; } // if Teacher
+		public virtual ICollection<ClassPeriod> TeachingPeriods { get; set; } // if Teacher
+		public virtual ICollection<Notification> Notifications { get; set; } // if Parent
+		public virtual ICollection<Message> Messages { get; set; } // if Parent
 	}
 }
