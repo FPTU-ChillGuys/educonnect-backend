@@ -20,6 +20,7 @@ builder.Configuration
 builder.Services.AddInfrastructureService(builder.Configuration);
 builder.Services.AddJWTAuthenticationScheme(builder.Configuration);
 builder.Services.AddApplicationServices();
+builder.AddServiceDefaults();
 
 // Force all routes to be lowercase
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

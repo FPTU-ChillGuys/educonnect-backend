@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduConnect.Infrastructure",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduConnect.Persistence", "EduConnect.Persistence\EduConnect.Persistence.csproj", "{9F16DC1C-A30B-4671-A86D-3C07481040A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduConnect.AppHost", "EduConnect.AppHost\EduConnect.AppHost.csproj", "{AE35AE26-280F-446D-89A3-BA7628F96F72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduConnect.ServiceDefaults", "EduConnect.ServiceDefaults\EduConnect.ServiceDefaults.csproj", "{1E935AFF-C76D-4DF5-8E11-FFB29C81B7B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +53,14 @@ Global
 		{9F16DC1C-A30B-4671-A86D-3C07481040A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F16DC1C-A30B-4671-A86D-3C07481040A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F16DC1C-A30B-4671-A86D-3C07481040A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE35AE26-280F-446D-89A3-BA7628F96F72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE35AE26-280F-446D-89A3-BA7628F96F72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE35AE26-280F-446D-89A3-BA7628F96F72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE35AE26-280F-446D-89A3-BA7628F96F72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E935AFF-C76D-4DF5-8E11-FFB29C81B7B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E935AFF-C76D-4DF5-8E11-FFB29C81B7B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E935AFF-C76D-4DF5-8E11-FFB29C81B7B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E935AFF-C76D-4DF5-8E11-FFB29C81B7B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +71,8 @@ Global
 		{42EB8737-E97E-4E9E-94CE-5AD32B5C375A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{54ED65A4-EFA8-4830-9EA3-244CF19F929D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9F16DC1C-A30B-4671-A86D-3C07481040A8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{AE35AE26-280F-446D-89A3-BA7628F96F72} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{1E935AFF-C76D-4DF5-8E11-FFB29C81B7B6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2D8E6BFE-0CB3-4A22-AB56-4CC1C83ABBF0}
