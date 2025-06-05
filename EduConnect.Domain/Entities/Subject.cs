@@ -5,8 +5,13 @@ namespace EduConnect.Domain.Entities
 	public class Subject
 	{
 		[Key]
-		public Guid SubjectID { get; set; }
+		public Guid SubjectId { get; set; }
+
 		[Required]
-		public string SubjectName { get; set; } = default!;
+		public string SubjectName { get; set; }
+
+		public string? Description { get; set; }
+
+		public ICollection<ClassPeriod> ClassPeriods { get; set; }
 	}
 }
