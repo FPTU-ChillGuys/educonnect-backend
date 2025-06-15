@@ -9,14 +9,12 @@ namespace EduConnect.Domain.Entities
 		public Guid NoteId { get; set; }
 
 		[Required]
-		public Guid NotebookId { get; set; }
+		public Guid ClassSessionId { get; set; }
+		[ForeignKey(nameof(ClassSessionId))]
+		public ClassSession ClassSession { get; set; }
 
 		[Required]
 		public Guid StudentId { get; set; }
-
-		[ForeignKey(nameof(NotebookId))]
-		public ClassNotebook Notebook { get; set; }
-
 		[ForeignKey(nameof(StudentId))]
 		public Student Student { get; set; }
 

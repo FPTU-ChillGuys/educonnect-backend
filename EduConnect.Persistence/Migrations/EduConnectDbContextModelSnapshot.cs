@@ -22,126 +22,9 @@ namespace EduConnect.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassBehaviorLog", b =>
+            modelBuilder.Entity("EduConnect.Domain.Entities.Class", b =>
                 {
-                    b.Property<Guid>("LogId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("BehaviorType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("NotebookId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("LogId");
-
-                    b.HasIndex("NotebookId");
-
-                    b.ToTable("ClassBehaviorLogs");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassNotebook", b =>
-                {
-                    b.Property<Guid>("NotebookId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClassPeriodId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("GeneralBehaviorNote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LessonContent")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TotalAbsentStudents")
-                        .HasColumnType("int");
-
-                    b.HasKey("NotebookId");
-
-                    b.HasIndex("ClassPeriodId")
-                        .IsUnique();
-
-                    b.ToTable("ClassNotebooks");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassPeriod", b =>
-                {
-                    b.Property<Guid>("ClassPeriodId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PeriodNumber")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("TeacherId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ClassPeriodId");
-
-                    b.HasIndex("ClassroomId");
-
-                    b.HasIndex("SubjectId");
-
-                    b.HasIndex("TeacherId");
-
-                    b.ToTable("ClassPeriods");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassReport", b =>
-                {
-                    b.Property<Guid>("ReportId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("GeneratedByAI")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("GeneratedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SummaryContent")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReportId");
-
-                    b.HasIndex("ClassroomId");
-
-                    b.ToTable("ClassReports");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.Classroom", b =>
-                {
-                    b.Property<Guid>("ClassroomId")
+                    b.Property<Guid>("ClassId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
@@ -156,11 +39,117 @@ namespace EduConnect.Persistence.Migrations
                     b.Property<Guid>("HomeroomTeacherId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("ClassroomId");
+                    b.HasKey("ClassId");
 
                     b.HasIndex("HomeroomTeacherId");
 
-                    b.ToTable("Classrooms");
+                    b.ToTable("Classes");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.ClassBehaviorLog", b =>
+                {
+                    b.Property<Guid>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BehaviorType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ClassSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("ClassSessionId");
+
+                    b.ToTable("ClassBehaviorLogs");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.ClassReport", b =>
+                {
+                    b.Property<Guid>("ReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("GeneratedByAI")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("GeneratedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SummaryContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("ClassId");
+
+                    b.ToTable("ClassReports");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.ClassSession", b =>
+                {
+                    b.Property<Guid>("ClassSessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GeneralBehaviorNote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LessonContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PeriodNumber")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TotalAbsentStudents")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClassSessionId");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("ClassSessions");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Message", b =>
@@ -227,7 +216,7 @@ namespace EduConnect.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClassroomId")
+                    b.Property<Guid>("ClassId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("DateOfBirth")
@@ -245,7 +234,7 @@ namespace EduConnect.Persistence.Migrations
 
                     b.HasKey("StudentId");
 
-                    b.HasIndex("ClassroomId");
+                    b.HasIndex("ClassId");
 
                     b.HasIndex("ParentId");
 
@@ -262,11 +251,11 @@ namespace EduConnect.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("ClassSessionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Comment")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("NotebookId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");
@@ -276,7 +265,7 @@ namespace EduConnect.Persistence.Migrations
 
                     b.HasKey("NoteId");
 
-                    b.HasIndex("NotebookId");
+                    b.HasIndex("ClassSessionId");
 
                     b.HasIndex("StudentId");
 
@@ -289,10 +278,16 @@ namespace EduConnect.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("GeneratedByAI")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("GeneratedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("StudentId")
@@ -417,10 +412,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOaNbksnNVWdfr2pDs5ZNb6FzAoxjCLuP5FFWqCAAQXJhQn3jrzWQ5wmFtSHr8SEng==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEM0ccD8R4Fbb8gJIcf2b8IwVGJScNUsi60XOG7Fqu7awtys2bSJjoXlTJvnoBms29Q==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 6, 12, 13, 2, 43, 210, DateTimeKind.Utc).AddTicks(1487),
+                            RefreshTokenExpiryTime = new DateTime(2025, 6, 18, 4, 43, 22, 79, DateTimeKind.Utc).AddTicks(5086),
                             SecurityStamp = "seed-4",
                             TwoFactorEnabled = false,
                             UserName = "admin"
@@ -436,10 +431,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "TEACHER@EXAMPLE.COM",
                             NormalizedUserName = "TEACHER",
-                            PasswordHash = "AQAAAAIAAYagAAAAELL3ommhUTYVqrjuftMzIhdae2Tw+2Q9cYWYLZEnlS61+Nuv3DvzkiylVuSdrs6Y2w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEK5c7xvibhC9Fj0xMjlClW9IwB8CqzMgiMy6ZHkgQy8Vxxr5YQtpyOf4WBSurHfzpQ==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 6, 12, 13, 2, 43, 260, DateTimeKind.Utc).AddTicks(4255),
+                            RefreshTokenExpiryTime = new DateTime(2025, 6, 18, 4, 43, 22, 133, DateTimeKind.Utc).AddTicks(596),
                             SecurityStamp = "seed-6",
                             TwoFactorEnabled = false,
                             UserName = "teacher"
@@ -455,10 +450,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "PARENT@EXAMPLE.COM",
                             NormalizedUserName = "PARENT",
-                            PasswordHash = "AQAAAAIAAYagAAAAECv0YSQujMt0Uki6sEQ0IKZ41tPiB6T6EtcGPJUr7f2eRlglx11Gxbu2mz4LYaSjBA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAWRg2ecDKSBvn96uLvkXJgGlKAFtTPMBpb4K1fXPAROBjOs9Xr2PD0dwgoknVNVCQ==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 6, 12, 13, 2, 43, 310, DateTimeKind.Utc).AddTicks(2740),
+                            RefreshTokenExpiryTime = new DateTime(2025, 6, 18, 4, 43, 22, 189, DateTimeKind.Utc).AddTicks(1581),
                             SecurityStamp = "seed-8",
                             TwoFactorEnabled = false,
                             UserName = "parent"
@@ -636,67 +631,7 @@ namespace EduConnect.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassBehaviorLog", b =>
-                {
-                    b.HasOne("EduConnect.Domain.Entities.ClassNotebook", "Notebook")
-                        .WithMany("ClassBehaviorLogs")
-                        .HasForeignKey("NotebookId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Notebook");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassNotebook", b =>
-                {
-                    b.HasOne("EduConnect.Domain.Entities.ClassPeriod", "ClassPeriod")
-                        .WithOne("ClassNotebook")
-                        .HasForeignKey("EduConnect.Domain.Entities.ClassNotebook", "ClassPeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ClassPeriod");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassPeriod", b =>
-                {
-                    b.HasOne("EduConnect.Domain.Entities.Classroom", "Classroom")
-                        .WithMany("ClassPeriods")
-                        .HasForeignKey("ClassroomId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EduConnect.Domain.Entities.Subject", "Subject")
-                        .WithMany("ClassPeriods")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EduConnect.Domain.Entities.User", "Teacher")
-                        .WithMany("TeachingPeriods")
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Classroom");
-
-                    b.Navigation("Subject");
-
-                    b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassReport", b =>
-                {
-                    b.HasOne("EduConnect.Domain.Entities.Classroom", "Classroom")
-                        .WithMany("ClassReports")
-                        .HasForeignKey("ClassroomId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Classroom");
-                });
-
-            modelBuilder.Entity("EduConnect.Domain.Entities.Classroom", b =>
+            modelBuilder.Entity("EduConnect.Domain.Entities.Class", b =>
                 {
                     b.HasOne("EduConnect.Domain.Entities.User", "HomeroomTeacher")
                         .WithMany("HomeroomClasses")
@@ -705,6 +640,55 @@ namespace EduConnect.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("HomeroomTeacher");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.ClassBehaviorLog", b =>
+                {
+                    b.HasOne("EduConnect.Domain.Entities.ClassSession", "ClassSession")
+                        .WithMany("ClassBehaviorLogs")
+                        .HasForeignKey("ClassSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClassSession");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.ClassReport", b =>
+                {
+                    b.HasOne("EduConnect.Domain.Entities.Class", "Class")
+                        .WithMany("ClassReports")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.ClassSession", b =>
+                {
+                    b.HasOne("EduConnect.Domain.Entities.Class", "Class")
+                        .WithMany("ClassSessions")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EduConnect.Domain.Entities.Subject", "Subject")
+                        .WithMany("ClassSessions")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EduConnect.Domain.Entities.User", "Teacher")
+                        .WithMany("TeachingSessions")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Message", b =>
@@ -745,9 +729,9 @@ namespace EduConnect.Persistence.Migrations
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Student", b =>
                 {
-                    b.HasOne("EduConnect.Domain.Entities.Classroom", "Classroom")
+                    b.HasOne("EduConnect.Domain.Entities.Class", "Class")
                         .WithMany("Students")
-                        .HasForeignKey("ClassroomId")
+                        .HasForeignKey("ClassId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -757,16 +741,16 @@ namespace EduConnect.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Classroom");
+                    b.Navigation("Class");
 
                     b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.StudentBehaviorNote", b =>
                 {
-                    b.HasOne("EduConnect.Domain.Entities.ClassNotebook", "Notebook")
+                    b.HasOne("EduConnect.Domain.Entities.ClassSession", "ClassSession")
                         .WithMany("StudentBehaviorNotes")
-                        .HasForeignKey("NotebookId")
+                        .HasForeignKey("ClassSessionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -776,7 +760,7 @@ namespace EduConnect.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Notebook");
+                    b.Navigation("ClassSession");
 
                     b.Navigation("Student");
                 });
@@ -843,17 +827,13 @@ namespace EduConnect.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassNotebook", b =>
+            modelBuilder.Entity("EduConnect.Domain.Entities.Class", b =>
                 {
-                    b.Navigation("ClassBehaviorLogs");
+                    b.Navigation("ClassReports");
 
-                    b.Navigation("StudentBehaviorNotes");
-                });
+                    b.Navigation("ClassSessions");
 
-            modelBuilder.Entity("EduConnect.Domain.Entities.ClassPeriod", b =>
-                {
-                    b.Navigation("ClassNotebook")
-                        .IsRequired();
+                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.ClassReport", b =>
@@ -861,13 +841,11 @@ namespace EduConnect.Persistence.Migrations
                     b.Navigation("Notifications");
                 });
 
-            modelBuilder.Entity("EduConnect.Domain.Entities.Classroom", b =>
+            modelBuilder.Entity("EduConnect.Domain.Entities.ClassSession", b =>
                 {
-                    b.Navigation("ClassPeriods");
+                    b.Navigation("ClassBehaviorLogs");
 
-                    b.Navigation("ClassReports");
-
-                    b.Navigation("Students");
+                    b.Navigation("StudentBehaviorNotes");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Student", b =>
@@ -884,7 +862,7 @@ namespace EduConnect.Persistence.Migrations
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Subject", b =>
                 {
-                    b.Navigation("ClassPeriods");
+                    b.Navigation("ClassSessions");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.User", b =>
@@ -897,7 +875,7 @@ namespace EduConnect.Persistence.Migrations
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("TeachingPeriods");
+                    b.Navigation("TeachingSessions");
                 });
 #pragma warning restore 612, 618
         }

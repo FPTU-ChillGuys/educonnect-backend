@@ -3,16 +3,31 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EduConnect.Domain.Entities
 {
-	public class ClassNotebook
+	public class ClassSession
 	{
 		[Key]
-		public Guid NotebookId { get; set; }
+		public Guid ClassSessionId { get; set; }
 
 		[Required]
-		public Guid ClassPeriodId { get; set; }
+		public Guid ClassId { get; set; }
+		[ForeignKey(nameof(ClassId))]
+		public Class Class { get; set; }
 
-		[ForeignKey(nameof(ClassPeriodId))]
-		public ClassPeriod ClassPeriod { get; set; }
+		[Required]
+		public Guid SubjectId { get; set; }
+		[ForeignKey(nameof(SubjectId))]
+		public Subject Subject { get; set; }
+
+		[Required]
+		public Guid TeacherId { get; set; }
+		[ForeignKey(nameof(TeacherId))]
+		public User Teacher { get; set; }
+
+		[Required]
+		public DateTime Date { get; set; }
+
+		[Required]
+		public int PeriodNumber { get; set; }
 
 		[Required]
 		public string LessonContent { get; set; }

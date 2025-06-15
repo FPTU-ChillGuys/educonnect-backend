@@ -12,6 +12,6 @@ namespace EduConnect.Domain.Entities
 
 		public string? Description { get; set; }
 
-		public ICollection<ClassPeriod> ClassPeriods { get; set; }
+		public ICollection<ClassSession> ClassSessions { get; set; }
 	}
 }
