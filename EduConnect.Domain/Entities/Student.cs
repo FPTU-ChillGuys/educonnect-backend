@@ -9,12 +9,18 @@ namespace EduConnect.Domain.Entities
 		public Guid StudentId { get; set; }
 
 		[Required]
+		public string StudentCode { get; set; }
+
+		[Required]
 		public string FullName { get; set; }
 
 		[Required]
 		public DateTime DateOfBirth { get; set; }
 
 		public string? Gender { get; set; }
+
+		[Required]
+		public string Status { get; set; } = "Active";
 
 		[Required]
 		public Guid ClassId { get; set; }

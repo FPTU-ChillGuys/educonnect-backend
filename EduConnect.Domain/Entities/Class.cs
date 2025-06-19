@@ -9,6 +9,9 @@ namespace EduConnect.Domain.Entities
 		public Guid ClassId { get; set; }
 
 		[Required]
+		public string GradeLevel { get; set; }
+
+		[Required]
 		public string ClassName { get; set; }
 
 		[Required]
