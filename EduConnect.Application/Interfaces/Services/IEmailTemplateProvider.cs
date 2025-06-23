@@ -2,6 +2,7 @@
 {
 	public interface IEmailTemplateProvider
 	{
-		public string GetRegisterTemplate(string username, string verifyUrl);
+		string GetRegisterTemplate(string username, string verifyUrl);
+		string GetForgotPasswordTemplate(string username, string resetUrl);
 	}
 }

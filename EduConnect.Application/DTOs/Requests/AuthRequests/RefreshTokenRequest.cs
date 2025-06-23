@@ -1,4 +1,4 @@
-﻿namespace EduConnect.Application.DTOs.Requests
+﻿namespace EduConnect.Application.DTOs.Requests.AuthRequests
 {
 	public class RefreshTokenRequest
 	{

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EduConnect.Application.DTOs.Users
+namespace EduConnect.Application.DTOs.Requests.AuthRequests
 {
 	public class Register
 	{
@@ -14,5 +14,8 @@ namespace EduConnect.Application.DTOs.Users
 
 		[Required(ErrorMessage = "Please input password!")]
 		public string Password { get; set; } = string.Empty;
+
+		[Required]
+		public string? ClientUri { get; set; } //https://localhost:7299/api/auth/verify-email
 	}
 }

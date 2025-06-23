@@ -1,14 +1,24 @@
-﻿using EduConnect.Application.Interfaces.Repositories;
+﻿using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
+using EduConnect.Application.Validators.ClassSessionValidators;
+using EduConnect.Application.DTOs.Requests.StudentRequests;
+using EduConnect.Application.Validators.StudentValidators;
+using EduConnect.Application.DTOs.Requests.ClassRequests;
+using EduConnect.Application.Validators.ClassValidators;
+using EduConnect.Application.DTOs.Requests.UserRequests;
+using EduConnect.Application.Validators.UserValidators;
+using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Application.Services;
-using EduConnect.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using EduConnect.Infrastructure.Repositories;
 using EduConnect.Infrastructure.Services;
-using EduConnect.Persistence.Data;
+using Microsoft.Extensions.Configuration;
+using EduConnect.Application.Mappings;
+using EduConnect.Application.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using EduConnect.Persistence.Data;
+using EduConnect.Domain.Entities;
+using FluentValidation;
 
 namespace EduConnect.Infrastructure.Extensions
 {
@@ -16,7 +26,13 @@ namespace EduConnect.Infrastructure.Extensions
 	{
 		public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration config)
 		{
+			// Register Repositories
+			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
+			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
+			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
 			services.AddScoped<IAuthRepository, AuthRepository>();
+			services.AddScoped<IUserRepository, UserRepository>();
 			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
 
@@ -43,6 +59,11 @@ namespace EduConnect.Infrastructure.Extensions
 			})
 			.AddEntityFrameworkStores<EduConnectDbContext>()
 			.AddDefaultTokenProviders();
+
+			services.Configure<DataProtectionTokenProviderOptions>(options =>
+			{
+				options.TokenLifespan = TimeSpan.FromHours(24); // Set token lifespan to 24 hours
+			});
 
 			services.Configure<IdentityOptions>(options =>
 			{
@@ -74,12 +95,24 @@ namespace EduConnect.Infrastructure.Extensions
 		{
 			// Register Services
 			services.AddScoped<IAuthService, AuthService>();
+			services.AddScoped<IStudentService, StudentService>();
+			services.AddScoped<IClassService, ClassService>();
+			services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IClassSessionService, ClassSessionService>();
 
 			// AutoMapper
-			//services.AddAutoMapper(typeof(MappingProfile).Assembly);
+			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
+			services.AddAutoMapper(typeof(ClassProfile).Assembly);
+			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
-			// FluentValidation (if validators are here)
-			//services.AddValidatorsFromAssembly(typeof(RegisterValidator).Assembly);
+			// FluentValidation
+			services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
+			services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
+			services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
+			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
+			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
+			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
+			services.AddScoped<IValidator<UpdateClassSessionByAdminRequest>, UpdateClassSessionByAdminRequestValidator>();
 
 			return services;
 		}

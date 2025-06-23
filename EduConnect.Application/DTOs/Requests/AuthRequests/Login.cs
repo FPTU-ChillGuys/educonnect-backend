@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EduConnect.Application.DTOs.Users
+namespace EduConnect.Application.DTOs.Requests.AuthRequests
 {
 	public record Login
 	(

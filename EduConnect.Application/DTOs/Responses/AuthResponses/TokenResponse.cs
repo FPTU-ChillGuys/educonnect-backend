@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EduConnect.Application.DTOs.Responses
+namespace EduConnect.Application.DTOs.Responses.AuthResponses
 {
 	public class TokenResponse
 	{

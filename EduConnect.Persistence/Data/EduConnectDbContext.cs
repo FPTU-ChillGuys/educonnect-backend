@@ -1,7 +1,7 @@
-﻿using EduConnect.Domain.Entities;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using EduConnect.Domain.Entities;
 
 namespace EduConnect.Persistence.Data
 {

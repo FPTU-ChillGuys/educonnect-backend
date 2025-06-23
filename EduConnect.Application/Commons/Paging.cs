@@ -18,5 +18,18 @@
 				PageSize = pageSize
 			};
 		}
+
+		public static PagedResponse<T> Fail(string message, int page, int pageSize)
+		{
+			return new PagedResponse<T>
+			{
+				Success = false,
+				Message = message,
+				Data = new List<T>(),
+				TotalCount = 0,
+				Page = page,
+				PageSize = pageSize
+			};
+		}
 	}
 }

@@ -1,0 +1,16 @@
+﻿using EduConnect.Application.DTOs.Requests.ClassRequests;
+using FluentValidation;
+
+namespace EduConnect.Application.Validators.ClassValidators
+{
+	public class CreateClassRequestValidator : AbstractValidator<CreateClassRequest>
+	{
+		public CreateClassRequestValidator()
+		{
+			RuleFor(x => x.GradeLevel).NotEmpty().MaximumLength(20);
+			RuleFor(x => x.ClassName).NotEmpty().MaximumLength(50);
+			RuleFor(x => x.AcademicYear).NotEmpty().Matches(@"^\d{4}-\d{4}$").WithMessage("Format should be YYYY-YYYY");
+			RuleFor(x => x.HomeroomTeacherId).NotEmpty();
+		}
+	}
+}

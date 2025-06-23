@@ -1,0 +1,231 @@
+﻿using EduConnect.Application.DTOs.Responses.StudentResponses;
+using EduConnect.Application.DTOs.Requests.StudentRequests;
+using EduConnect.Application.Interfaces.Repositories;
+using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons;
+using Microsoft.EntityFrameworkCore;
+using EduConnect.Domain.Entities;
+using System.Linq.Expressions;
+using FluentValidation;
+using AutoMapper;
+using OfficeOpenXml;
+
+namespace EduConnect.Application.Services
+{
+	public class StudentService : IStudentService
+	{
+		private readonly IGenericRepository<Student> _studentRepo;
+		private readonly IMapper _mapper;
+		private readonly IValidator<CreateStudentRequest> _validatorCreate;
+		private readonly IValidator<UpdateStudentRequest> _validatorUpdate;
+
+		public StudentService(IGenericRepository<Student> studentRepo, 
+			IValidator<CreateStudentRequest> validatorCreate, 
+			IValidator<UpdateStudentRequest> validatorUpdate,
+			IMapper mapper)
+		{
+			_validatorUpdate = validatorUpdate;	
+			_validatorCreate = validatorCreate;
+			_studentRepo = studentRepo;
+			_mapper = mapper;
+		}
+
+		public async Task<BaseResponse<string>> UpdateStudentAsync(Guid id, UpdateStudentRequest request)
+		{
+			var student = await _studentRepo.GetByIdAsync(id);
+			if (student == null)
+				return BaseResponse<string>.Fail("Student not found");
+
+			var validationResult = await _validatorUpdate.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = validationResult.Errors.Select(e => e.ErrorMessage);
+				return BaseResponse<string>.Fail(string.Join(" | ", errors));
+			}
+
+			// Additional validation here
+			//var classExists = await _classRepo.GetByIdAsync(request.ClassId) is not null;
+			//var parentExists = await _userRepo.GetByIdAsync(request.ParentId) is not null;
+
+			//if (!classExists)
+			//	return BaseResponse<string>.Fail("Class not found");
+			//if (!parentExists)
+			//	return BaseResponse<string>.Fail("Parent not found");
+
+			_mapper.Map(request, student);
+			_studentRepo.Update(student);
+
+			var saved = await _studentRepo.SaveChangesAsync();
+			return saved
+				? BaseResponse<string>.Ok("Student updated successfully")
+				: BaseResponse<string>.Fail("Failed to update student");
+		}
+
+		public async Task<BaseResponse<string>> CreateStudentAsync(CreateStudentRequest request)
+		{
+			var validationResult = await _validatorCreate.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+				return BaseResponse<string>.Fail(string.Join(" | ", errors));
+			}
+
+			var student = _mapper.Map<Student>(request);
+			student.Status = "Active";
+			await _studentRepo.AddAsync(student);
+			var saved = await _studentRepo.SaveChangesAsync();
+
+			return saved
+				? BaseResponse<string>.Ok("Student created successfully")
+				: BaseResponse<string>.Fail("Failed to create student");
+		}
+
+		public async Task<PagedResponse<StudentDto>> GetPagedStudentsAsync(StudentPagingRequest request)
+		{
+			// Start with base query
+			Expression<Func<Student, bool>> filter = s => true;
+
+			// Apply keyword filter
+			if (!string.IsNullOrWhiteSpace(request.Keyword))
+			{
+				filter = filter.AndAlso(s =>
+					s.FullName.Contains(request.Keyword) || s.StudentCode!.Contains(request.Keyword));
+			}
+
+			// Filter by ClassId
+			if (request.ClassId.HasValue)
+			{
+				filter = filter.AndAlso(s => s.ClassId == request.ClassId.Value);
+			}
+
+			// Filter by Status
+			if (!string.IsNullOrWhiteSpace(request.Status))
+			{
+				filter = filter.AndAlso(s => s.Status == request.Status);
+			}
+
+			// Filter by Gender
+			if (!string.IsNullOrWhiteSpace(request.Gender))
+			{
+				filter = filter.AndAlso(s => s.Gender == request.Gender);
+			}
+
+			// Filter by DOB range
+			if (request.FromDate.HasValue)
+			{
+				filter = filter.AndAlso(s => s.DateOfBirth >= request.FromDate.Value);
+			}
+			if (request.ToDate.HasValue)
+			{
+				filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
+			}
+
+			var result = await _studentRepo.GetPagedAsync(
+				filter: filter,
+				include: q => q.Include(s => s.Class).Include(s => s.Parent),
+				pageNumber: request.PageNumber,
+				pageSize: request.PageSize,
+				asNoTracking: true
+			);
+
+			var dtoList = result.Items.Select(s => new StudentDto
+			{
+				StudentId = s.StudentId,
+				FullName = s.FullName,
+				StudentCode = s.StudentCode,
+				ClassName = s.Class?.ClassName,
+				ParentEmail = s.Parent?.Email,
+				Gender = s.Gender
+			}).ToList();
+
+			if (!dtoList.Any())
+			{
+				return PagedResponse<StudentDto>.Fail("No students found", request.PageNumber, request.PageSize);
+			}
+
+			return PagedResponse<StudentDto>.Ok(
+				data: dtoList,
+				total: result.TotalCount,
+				page: request.PageNumber,
+				pageSize: request.PageSize
+			);
+		}
+
+		public async Task<BaseResponse<int>> CountStudentsAsync()
+		{
+			var result = await _studentRepo.CountAsync();
+			return result >= 0
+				? BaseResponse<int>.Ok(result)
+				: BaseResponse<int>.Fail("Failed to count students");
+		}
+
+		public async Task<BaseResponse<byte[]>> ExportStudentsToExcelAsync(ExportStudentRequest request)
+		{
+			try
+			{
+				Expression<Func<Student, bool>> filter = s => true;
+
+				if (!string.IsNullOrWhiteSpace(request.Keyword))
+					filter = filter.AndAlso(s => s.FullName.Contains(request.Keyword) || s.StudentCode!.Contains(request.Keyword));
+
+				if (request.ClassId.HasValue)
+					filter = filter.AndAlso(s => s.ClassId == request.ClassId.Value);
+
+				if (!string.IsNullOrWhiteSpace(request.Status))
+					filter = filter.AndAlso(s => s.Status == request.Status);
+
+				if (!string.IsNullOrWhiteSpace(request.Gender))
+					filter = filter.AndAlso(s => s.Gender == request.Gender);
+
+				if (request.FromDate.HasValue)
+					filter = filter.AndAlso(s => s.DateOfBirth >= request.FromDate.Value);
+
+				if (request.ToDate.HasValue)
+					filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
+
+				var students = await _studentRepo.GetAllAsync(
+					filter: filter,
+					include: q => q.Include(s => s.Class).Include(s => s.Parent),
+					asNoTracking: true
+				);
+
+				if (!students.Any())
+					return BaseResponse<byte[]>.Fail("No students found to export");
+
+				ExcelPackage.License.SetNonCommercialOrganization("EduConnect");
+				using var package = new ExcelPackage();
+				var worksheet = package.Workbook.Worksheets.Add("Students");
+
+				// Header
+				worksheet.Cells[1, 1].Value = "Student Code";
+				worksheet.Cells[1, 2].Value = "Full Name";
+				worksheet.Cells[1, 3].Value = "Date of Birth";
+				worksheet.Cells[1, 4].Value = "Gender";
+				worksheet.Cells[1, 5].Value = "Status";
+				worksheet.Cells[1, 6].Value = "Class";
+				worksheet.Cells[1, 7].Value = "Parent Email";
+
+				int row = 2;
+				foreach (var s in students)
+				{
+					worksheet.Cells[row, 1].Value = s.StudentCode;
+					worksheet.Cells[row, 2].Value = s.FullName;
+					worksheet.Cells[row, 3].Value = s.DateOfBirth.ToShortDateString();
+					worksheet.Cells[row, 4].Value = s.Gender;
+					worksheet.Cells[row, 5].Value = s.Status;
+					worksheet.Cells[row, 6].Value = s.Class?.ClassName;
+					worksheet.Cells[row, 7].Value = s.Parent?.Email;
+					row++;
+				}
+
+				worksheet.Cells.AutoFitColumns();
+
+				return BaseResponse<byte[]>.Ok(package.GetAsByteArray(), "Export successful");
+			}
+			catch (Exception ex)
+			{
+				return BaseResponse<byte[]>.Fail("An error occurred while exporting: " + ex.Message);
+			}
+		}
+	}
+}

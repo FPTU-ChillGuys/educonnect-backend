@@ -16,5 +16,19 @@ namespace EduConnect.Infrastructure.Services
 				</body>
 			</html>";
 		}
+
+		public string GetForgotPasswordTemplate(string username, string resetUrl)
+		{
+			return $@"
+			<html>
+				<body style='font-family: Arial, sans-serif;'>
+					<p>Hi {username},</p>
+					<p>We received a request to reset your password.</p>
+					<p>Click <a href='{resetUrl}'>here</a> to reset your password.</p>
+					<p>If you did not request a password reset, please ignore this email. This link will expire soon for security reasons.</p>
+					<p>Best regards,<br/>EduConnect Team</p>
+				</body>
+			</html>";
+		}
 	}
 }

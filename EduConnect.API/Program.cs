@@ -1,7 +1,7 @@
-﻿using DotNetEnv;
+﻿using EduConnect.Infrastructure.Extensions;
 using EduConnect.API.Configurations;
-using EduConnect.Infrastructure.Extensions;
 using Microsoft.OpenApi.Models;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
