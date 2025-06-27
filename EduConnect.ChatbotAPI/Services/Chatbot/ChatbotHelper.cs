@@ -1,5 +1,7 @@
-﻿using Microsoft.SemanticKernel;
+﻿using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Ollama;
 using System.Runtime.CompilerServices;
 
 namespace EduConnect.ChatbotAPI.Services.Chatbot
@@ -30,10 +32,18 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
-            yield return "Processing your request...";
+            #pragma warning disable SKEXP0070
+            OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
+            {
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            };
+
+            await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct))
+            {
+                response += item;
+                yield return response;
+            }
 
         }
-
-
     }
 }
