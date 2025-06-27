@@ -19,7 +19,7 @@ namespace EduConnect.Infrastructure.Repositories
         {
         }
 
-        public async Task<IEnumerable<Conversation>> GetAllConversationsByUserIdAsync(Guid userId, bool asNoTracking = false)
+        public async Task<IEnumerable<Conversation>> GetAllConversationsByUserIdAsync(Guid userId)
         {
             var conversations = await _context.Conversations
                 .Include(c => c.Parent)
@@ -30,7 +30,7 @@ namespace EduConnect.Infrastructure.Repositories
 
         }
 
-        public async Task<Conversation?> GetConversationByIdAsync(Guid conversationId, bool asNoTracking = false)
+        public async Task<Conversation?> GetConversationByIdAsync(Guid conversationId)
         {
             var conversationQuery = await _context.Conversations
                 .Include(c => c.Parent)

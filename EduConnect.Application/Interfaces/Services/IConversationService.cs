@@ -10,7 +10,9 @@ namespace EduConnect.Application.Interfaces.Services
 {
     public interface IConversationService
     {
-        Task<BaseResponse<Conversation>> GetAllConversationsByUserId(Guid userId);
+        Task<BaseResponse<IEnumerable<Conversation>>> GetAllConversationsByUserId(Guid userId);
+
+        Task<BaseResponse<Conversation>> GetConversationById(Guid conversationId);
 
     }
 }
