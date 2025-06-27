@@ -14,5 +14,11 @@ namespace EduConnect.Application.Interfaces.Services
 
         Task<BaseResponse<Conversation>> GetConversationById(Guid conversationId);
 
+        Task<BaseResponse<object>> CreateConversation(Conversation conversation);
+
+        Task<BaseResponse<object>> UpdateConversation(Conversation conversation);
+
+        Task<BaseResponse<object>> DeleteConversation(Guid conversationId);
+
     }
 }

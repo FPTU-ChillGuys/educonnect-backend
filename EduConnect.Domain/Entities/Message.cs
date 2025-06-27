@@ -20,7 +20,7 @@ namespace EduConnect.Domain.Entities
 		public DateTime CreatedAt { get; set; }
 
 		[ForeignKey(nameof(ConversationId))]
-        public required Conversation Conversation { get; set; }
+        public Conversation? Conversation { get; set; }
     }
 
 	public enum RoleType

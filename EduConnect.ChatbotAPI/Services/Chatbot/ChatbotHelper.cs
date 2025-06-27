@@ -28,13 +28,24 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
         public async IAsyncEnumerable<string> ChatbotResponseAsync(string userPrompt, Guid conversationId, [EnumeratorCancellation] CancellationToken ct = default)
         {
 
-            //Lay lich su cuoc hoi thoai tu khoi tao
-            Conversation? conversation = await _chatbotStorage.GetConversation(conversationId);
+            ////Lay lich su cuoc hoi thoai tu khoi tao
+            //Conversation? conversation = await _chatbotStorage.GetConversation(conversationId);
             
-            
+            //if (conversation == null)
+            //{
+            //    //Neu khong co lich su, khoi tao mot cuoc hoi thoai moi
+            //    conversation = new Conversation
+            //    {
+            //        ConversationId = conversationId,
+            //        Messages = new List<Message>(),
+            //        CreatedAt = DateTime.UtcNow,
+            //        UpdatedAt = DateTime.UtcNow
+            //    };
+            //}
 
-                IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
-            string response = string.Empty;
+            chatHistory = await _chatbotStorage.GetChatHistory(conversationId);
+            IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+            string response = string.Empty; 
 
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
@@ -50,6 +61,11 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
                 response += item;
                 yield return response;
             }
+
+            ////Them phan hoi cua chatbot vao lich su
+            //chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, response));
+
+
 
         }
     }

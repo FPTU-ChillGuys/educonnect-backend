@@ -14,6 +14,24 @@ namespace EduConnect.Application.Services
             IConversationRepository conversationRepo
         ) : IConversationService
     {
+        public async Task<BaseResponse<object>> CreateConversation(Conversation conversation)
+        {
+            await conversationRepo.AddAsync(conversation);
+            var result = await conversationRepo.SaveChangesAsync();
+
+            if (!result)
+            {
+                return BaseResponse<object>.Fail("Failed to create conversation.");
+            }
+            return BaseResponse<object>.Ok(new { conversationId = conversation.ConversationId });
+
+        }
+
+        public Task<BaseResponse<object>> DeleteConversation(Guid conversationId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<BaseResponse<IEnumerable<Conversation>>> GetAllConversationsByUserId(Guid userId)
         {
             var conversations = await conversationRepo.GetAllConversationsByUserIdAsync(userId);
@@ -33,6 +51,22 @@ namespace EduConnect.Application.Services
                 return BaseResponse<Conversation>.Fail("Conversation not found.");
             }
             return BaseResponse<Conversation>.Ok(conversation);
+        }
+
+        public Task<BaseResponse<object>> UpdateConversation(Conversation conversation)
+        {
+            var existingConversation = conversationRepo.GetByIdAsync(conversation.ConversationId);
+
+            if (existingConversation == null)
+            {
+                return Task.FromResult(BaseResponse<object>.Fail("Conversation not found."));
+            }
+
+
+
+
+
+
         }
     }
 }
