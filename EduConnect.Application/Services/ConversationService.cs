@@ -1,4 +1,5 @@
-﻿using EduConnect.Application.Commons;
+﻿using AutoMapper;
+using EduConnect.Application.Commons;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Domain.Entities;
@@ -11,7 +12,8 @@ using System.Threading.Tasks;
 namespace EduConnect.Application.Services
 {
     public class ConversationService(
-            IConversationRepository conversationRepo
+            IConversationRepository conversationRepo,
+            IMapper mapper
         ) : IConversationService
     {
         public async Task<BaseResponse<object>> CreateConversation(Conversation conversation)
@@ -53,20 +55,21 @@ namespace EduConnect.Application.Services
             return BaseResponse<Conversation>.Ok(conversation);
         }
 
-        public Task<BaseResponse<object>> UpdateConversation(Conversation conversation)
+        public async Task<BaseResponse<object>> UpdateConversation(Conversation conversation)
         {
-            var existingConversation = conversationRepo.GetByIdAsync(conversation.ConversationId);
+            var existingConversation = await conversationRepo.GetByIdAsync(conversation.ConversationId);
 
             if (existingConversation == null)
             {
-                return Task.FromResult(BaseResponse<object>.Fail("Conversation not found."));
+                return BaseResponse<object>.Fail("Conversation not found.");
             }
 
+            mapper.Map(conversation, existingConversation);
+            conversationRepo.Update(existingConversation);
 
-
-
-
-
+            return await conversationRepo.SaveChangesAsync()
+                ? BaseResponse<object>.Ok(existingConversation)
+                : BaseResponse<object>.Fail("Failed to update conversation.");
         }
     }
 }
