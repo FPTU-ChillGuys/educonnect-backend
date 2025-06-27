@@ -8,6 +8,7 @@ namespace EduConnect.ChatbotAPI.Configurations
         public IServiceCollection AddInfrastructureService(IServiceCollection services, IConfiguration config)
         {
 
+            services.AddScoped<ChatbotStorage>();
             services.AddScoped<ChatbotHelper>();
             services.AddDistributedMemoryCache();
             services.AddSingleton<Kernel>(AddKernal());

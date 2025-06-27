@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.AI;
+﻿using EduConnect.Domain.Entities;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
@@ -12,21 +13,27 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
         private readonly Kernel _kernel;
         private readonly HttpClient _httpClient;
+        private readonly ChatbotStorage _chatbotStorage;
 
 
-        public ChatbotHelper(Kernel kernel, HttpClient httpClient)
+        public ChatbotHelper(Kernel kernel, HttpClient httpClient, ChatbotStorage chatbotStorage)
         {
             _kernel = kernel;
             _httpClient = httpClient;
+            _chatbotStorage = chatbotStorage;
 
-            chatHistory.AddAssistantMessage("You are a good asistant!");
-            chatHistory.AddDeveloperMessage("If user say hello, say hello");
         }
 
 
-        public async IAsyncEnumerable<string> ChatbotResponseAsync(string userPrompt, object conversationId, [EnumeratorCancellation] CancellationToken ct = default)
+        public async IAsyncEnumerable<string> ChatbotResponseAsync(string userPrompt, Guid conversationId, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+
+            //Lay lich su cuoc hoi thoai tu khoi tao
+            Conversation? conversation = await _chatbotStorage.GetConversation(conversationId);
+            
+            
+
+                IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             string response = string.Empty;
 
             //Them prompt nguoi dung vao chat history
