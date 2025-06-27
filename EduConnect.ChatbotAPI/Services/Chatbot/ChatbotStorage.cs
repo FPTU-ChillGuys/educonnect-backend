@@ -1,11 +1,13 @@
-﻿using EduConnect.Domain.Entities;
+﻿using EduConnect.Application.Interfaces.Services;
+using EduConnect.Domain.Entities;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
 namespace EduConnect.ChatbotAPI.Services.Chatbot
 {
     public class ChatbotStorage(
-            IDistributedCache cache
+            IDistributedCache cache,
+            IConversationService conversationService
         )
     {
 
@@ -15,10 +17,13 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
             var conversationJson = await cache.GetStringAsync(key);
 
-            var conversation = string.IsNullOrEmpty(conversationJson) ? 
-                new Conversation { ConversationId = converstationId } : 
-                JsonSerializer.Deserialize<Conversation>(conversationJson) 
-                ?? new Conversation { ConversationId = converstationId };
+            var conversation = await GetConversation(converstationId) ?? new Conversation
+            {
+                ConversationId = converstationId,
+                Messages = new List<Message>(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
             conversation.Messages.Add(message);
             converstationId = conversation.ConversationId;
@@ -36,8 +41,15 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             var key = conversationId.ToString();
             var conversationJson = await cache.GetStringAsync(key);
             if (string.IsNullOrEmpty(conversationJson))
-            {
-                return null;
+            { 
+                var conversation = await conversationService.GetConversationById(conversationId);
+                if (conversation.Success && conversation.Data != null)
+                {
+                    return conversation.Data; 
+                } else
+                {
+                    return null; // or throw an exception based on your error handling strategy
+                }
             }
             return JsonSerializer.Deserialize<Conversation>(conversationJson);
         }

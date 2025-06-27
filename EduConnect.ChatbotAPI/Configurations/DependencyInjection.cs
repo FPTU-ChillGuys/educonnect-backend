@@ -1,4 +1,8 @@
-﻿using EduConnect.ChatbotAPI.Services.Chatbot;
+﻿using EduConnect.Application.Interfaces.Repositories;
+using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Services;
+using EduConnect.ChatbotAPI.Services.Chatbot;
+using EduConnect.Infrastructure.Repositories;
 using Microsoft.SemanticKernel;
 
 namespace EduConnect.ChatbotAPI.Configurations
@@ -7,7 +11,8 @@ namespace EduConnect.ChatbotAPI.Configurations
     {
         public IServiceCollection AddInfrastructureService(IServiceCollection services, IConfiguration config)
         {
-
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<ChatbotStorage>();
             services.AddScoped<ChatbotHelper>();
             services.AddDistributedMemoryCache();
