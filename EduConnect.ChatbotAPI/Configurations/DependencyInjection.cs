@@ -1,4 +1,5 @@
-﻿using Microsoft.SemanticKernel;
+﻿using EduConnect.ChatbotAPI.Services.Chatbot;
+using Microsoft.SemanticKernel;
 
 namespace EduConnect.ChatbotAPI.Configurations
 {
@@ -7,6 +8,8 @@ namespace EduConnect.ChatbotAPI.Configurations
         public IServiceCollection AddInfrastructureService(IServiceCollection services, IConfiguration config)
         {
 
+            services.AddScoped<ChatbotHelper>();
+            services.AddDistributedMemoryCache();
             services.AddSingleton<Kernel>(AddKernal());
             return services; 
         }

@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Caching.Distributed;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,5 +23,16 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Add custom services
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    var currentTimeUTC = DateTime.UtcNow.ToString();
+    byte[] encodedCurrentTimeUTC = System.Text.Encoding.UTF8.GetBytes(currentTimeUTC);
+    var options = new DistributedCacheEntryOptions()
+        .SetSlidingExpiration(TimeSpan.FromHours(1));
+    app.Services.GetService<IDistributedCache>()
+                              .Set("cachedTimeUTC", encodedCurrentTimeUTC, options);
+});
 
 app.Run();
