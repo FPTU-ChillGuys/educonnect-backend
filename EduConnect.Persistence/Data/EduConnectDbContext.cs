@@ -92,11 +92,18 @@ namespace EduConnect.Persistence.Data
 				.HasForeignKey(r => r.StudentId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			// Message
-			modelBuilder.Entity<Message>()
-				.HasOne(m => m.Parent)
+            //Conversation
+			modelBuilder.Entity<Conversation>()
+				.HasOne(c => c.Parent)
+				.WithMany(u => u.Conversations)
+				.HasForeignKey(c => c.ParentId)
+				.OnDelete(DeleteBehavior.Restrict);
+
+            // Message
+            modelBuilder.Entity<Message>()
+				.HasOne(m => m.Conversation)
 				.WithMany(u => u.Messages)
-				.HasForeignKey(m => m.ParentId)
+				.HasForeignKey(m => m.ConversationId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			// Notification

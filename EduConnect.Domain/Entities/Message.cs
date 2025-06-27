@@ -8,18 +8,24 @@ namespace EduConnect.Domain.Entities
 		[Key]
 		public Guid MessageId { get; set; }
 
-		[Required]
-		public Guid ParentId { get; set; }
+		public Guid ConversationId { get; set; }
 
-		[ForeignKey(nameof(ParentId))]
-		public User Parent { get; set; }
-
-		[Required]
-		public string Content { get; set; }
-
-		public string? AIResponse { get; set; }
+        [Required]
+        public string? Content { get; set; }
 
 		[Required]
+        public string? Role { get; set; } = RoleType.User.ToString(); 
+
+        [Required]
 		public DateTime CreatedAt { get; set; }
-	}
+
+		[ForeignKey(nameof(ConversationId))]
+        public required Conversation Conversation { get; set; }
+    }
+
+	public enum RoleType
+	{
+		User,
+		Assistant
+    }
 }
