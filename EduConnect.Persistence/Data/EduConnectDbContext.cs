@@ -20,8 +20,9 @@ namespace EduConnect.Persistence.Data
 		public DbSet<StudentReport> StudentReports { get; set; }
 		public DbSet<Notification> Notifications { get; set; }
 		public DbSet<Message> Messages { get; set; }
+		public DbSet<Conversation> Conversations { get; set; }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			base.OnModelCreating(modelBuilder);
 
