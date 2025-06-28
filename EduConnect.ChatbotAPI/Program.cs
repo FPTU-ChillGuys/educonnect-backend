@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using EduConnect.ChatbotAPI.Configurations;
 using DotNetEnv;
+using EduConnect.ChatbotAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,5 +49,7 @@ app.Lifetime.ApplicationStarted.Register(() =>
     app.Services.GetService<IDistributedCache>()
                               .Set("cachedTimeUTC", encodedCurrentTimeUTC, options);
 });
+
+app.MapHub<ChatbotHub>("/chatbot");
 
 app.Run();
