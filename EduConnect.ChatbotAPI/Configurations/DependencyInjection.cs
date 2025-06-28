@@ -40,6 +40,7 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             //Add other services
             services.AddSingleton<HttpClient>();
+            services.AddSignalR();
 
             services.AddDistributedMemoryCache();
             services.AddSingleton<Kernel>(AddKernal());

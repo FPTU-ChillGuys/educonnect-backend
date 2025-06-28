@@ -40,6 +40,7 @@ namespace EduConnect.ChatbotAPI.Hubs
                     {
                         responseMessage = new Message
                         {
+                            MessageId = Guid.NewGuid(),
                             Content = res, 
                             ConversationId = conversation.ConversationId,
                             Role = MessageRole.Assistant.ToString(),
