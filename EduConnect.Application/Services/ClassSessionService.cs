@@ -2,7 +2,8 @@
 using EduConnect.Application.DTOs.Responses.ClassSessionResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Application.Commons;
+using EduConnect.Application.Commons.Extensions;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.EntityFrameworkCore;
 using EduConnect.Domain.Entities;
 using System.Linq.Expressions;
@@ -47,6 +48,8 @@ namespace EduConnect.Application.Services
 				Expression<Func<ClassSession, bool>> filter = cs => cs.ClassId == classId;
 				if (hasDateRange)
 					filter = filter.AndAlso(cs => cs.Date >= from && cs.Date <= to);
+
+				filter = filter.AndAlso(cs => !cs.IsDeleted);
 
 				var sessions = await _classSessionRepo.GetAllAsync(
 					filter: filter,
@@ -100,6 +103,8 @@ namespace EduConnect.Application.Services
 				Expression<Func<ClassSession, bool>> filter = cs => cs.TeacherId == teacherId;
 				if (hasDateRange)
 					filter = filter.AndAlso(cs => cs.Date >= from && cs.Date <= to);
+
+				filter = filter.AndAlso(cs => !cs.IsDeleted);
 
 				var sessions = await _classSessionRepo.GetAllAsync(
 					filter: filter,
@@ -157,26 +162,20 @@ namespace EduConnect.Application.Services
 			if (request.ToDate.HasValue)
 				filter = filter.AndAlso(s => s.Date <= request.ToDate.Value);
 
+			filter = filter.AndAlso(s => !s.IsDeleted); 
+
 			var result = await _classSessionRepo.GetPagedAsync(
 				filter: filter,
 				include: q => q.Include(c => c.Class).Include(c => c.Subject).Include(c => c.Teacher),
+				orderBy: q => q.OrderByDescending(c => c.Date).ThenBy(c => c.PeriodNumber),
 				pageNumber: request.PageNumber,
 				pageSize: request.PageSize,
 				asNoTracking: true
 			);
 
-			var dtoList = result.Items.Select(s => new ClassSessionDto
-			{
-				ClassSessionId = s.ClassSessionId,
-				ClassName = s.Class.ClassName,
-				SubjectName = s.Subject.SubjectName,
-				TeacherName = s.Teacher.UserName,
-				Date = s.Date,
-				PeriodNumber = s.PeriodNumber,
-				LessonContent = s.LessonContent,
-				TotalAbsentStudents = s.TotalAbsentStudents,
-				GeneralBehaviorNote = s.GeneralBehaviorNote
-			}).ToList();
+			var dtoList = _mapper.Map<List<ClassSessionDto>>(result.Items);
+			if (dtoList == null || !dtoList.Any())
+				return PagedResponse<ClassSessionDto>.Fail("No class sessions found", request.PageNumber, request.PageSize);
 
 			return PagedResponse<ClassSessionDto>.Ok(dtoList, result.TotalCount, request.PageNumber, request.PageSize);
 		}
@@ -192,7 +191,7 @@ namespace EduConnect.Application.Services
 					return BaseResponse<byte[]>.Fail("Invalid date range");
 
 				var sessions = await _classSessionRepo.GetAllAsync(
-					filter: cs => cs.ClassId == classId && cs.Date >= from && cs.Date <= to,
+					filter: cs => cs.ClassId == classId && cs.Date >= from && cs.Date <= to && !cs.IsDeleted,
 					include: q => q.Include(cs => cs.Subject).Include(cs => cs.Teacher).Include(cs => cs.Class),
 					asNoTracking: true
 				);
@@ -245,7 +244,7 @@ namespace EduConnect.Application.Services
 					return BaseResponse<byte[]>.Fail("Invalid date range");
 
 				var sessions = await _classSessionRepo.GetAllAsync(
-					filter: cs => cs.TeacherId == teacherId && cs.Date >= from && cs.Date <= to,
+					filter: cs => cs.TeacherId == teacherId && cs.Date >= from && cs.Date <= to && !cs.IsDeleted,
 					include: q => q.Include(cs => cs.Subject).Include(cs => cs.Class).Include(cs => cs.Teacher),
 					asNoTracking: true
 				);
@@ -317,11 +316,11 @@ namespace EduConnect.Application.Services
 			if (!validation.IsValid)
 				return BaseResponse<string>.Fail(string.Join(" | ", validation.Errors.Select(e => e.ErrorMessage)));
 
-			var session = await _classSessionRepo.FirstOrDefaultAsync(
-				cs => cs.ClassSessionId == classSessionId && cs.TeacherId == currentTeacherId);
+			var session = await _classSessionRepo.GetByIdAsync(
+				cs => cs.ClassSessionId == classSessionId && cs.TeacherId == currentTeacherId && !cs.IsDeleted);
 
 			if (session == null)
-				return BaseResponse<string>.Fail("Class session not found or not authorized");
+				return BaseResponse<string>.Fail("Class session not found or not authorized or deleted");
 
 			session.LessonContent = request.LessonContent;
 			session.TotalAbsentStudents = request.TotalAbsentStudents;
@@ -341,11 +340,10 @@ namespace EduConnect.Application.Services
 			if (!validation.IsValid)
 				return BaseResponse<string>.Fail(string.Join(" | ", validation.Errors.Select(e => e.ErrorMessage)));
 
-			var session = await _classSessionRepo.GetByIdAsync(classSessionId);
+			var session = await _classSessionRepo.GetByIdAsync(s => s.ClassSessionId == classSessionId);
 			if (session == null)
 				return BaseResponse<string>.Fail("Class session not found");
 
-			// Map updates
 			_mapper.Map(request, session);
 
 			_classSessionRepo.Update(session);
@@ -353,6 +351,56 @@ namespace EduConnect.Application.Services
 			return saved
 				? BaseResponse<string>.Ok("Class session updated successfully")
 				: BaseResponse<string>.Fail("Failed to update class session");
+		}
+
+		public async Task<BaseResponse<string>> SoftDeleteClassSessionAsync(Guid id)
+		{
+			var session = await _classSessionRepo.GetByIdAsync(s => s.ClassSessionId == id && !s.IsDeleted);
+			if (session == null)
+				return BaseResponse<string>.Fail("Class session not found or deleted");
+
+			if (session.Date < DateTime.UtcNow)
+				return BaseResponse<string>.Fail("Cannot delete past sessions");
+
+			session.IsDeleted = true;
+			session.DeleteAt = DateTime.UtcNow;
+
+			_classSessionRepo.Update(session);
+			var saved = await _classSessionRepo.SaveChangesAsync();
+
+			return saved
+				? BaseResponse<string>.Ok("Class session marked as deleted")
+				: BaseResponse<string>.Fail("Failed to delete class session");
+		}
+
+		public async Task<BaseResponse<string>> DeleteClassSessionAsync(Guid id)
+		{
+			var session = await _classSessionRepo.GetByIdAsync(
+				s => s.ClassSessionId == id,
+				include: q => q
+					.Include(c => c.StudentBehaviorNotes)
+					.Include(c => c.ClassBehaviorLogs)
+			);
+
+			if (session == null)
+				return BaseResponse<string>.Fail("Class session not found");
+
+			if (session.Date < DateTime.UtcNow)
+				return BaseResponse<string>.Fail("Cannot delete past sessions");
+
+			if (session.ClassBehaviorLogs.Count != 0)
+				return BaseResponse<string>.Fail("Cannot delete session with class behavior logs");
+
+			if (session.StudentBehaviorNotes.Count != 0)
+				return BaseResponse<string>.Fail("Cannot delete session with student behavior notes");
+
+			// ClassBehaviorLogs will be auto-deleted by cascade
+			_classSessionRepo.Remove(session);
+			var saved = await _classSessionRepo.SaveChangesAsync();
+
+			return saved
+				? BaseResponse<string>.Ok("Class session deleted")
+				: BaseResponse<string>.Fail("Failed to delete class session");
 		}
 	}
 }

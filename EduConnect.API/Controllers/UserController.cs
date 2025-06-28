@@ -15,28 +15,28 @@ namespace EduConnect.API.Controllers
 			_userService = userService;
 		}
 
-		[HttpGet("total")]
+		[HttpGet("count")]
 		public async Task<IActionResult> CountUsers()
 		{
 			var result = await _userService.CountTeachersAsync();
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
-		[HttpGet("total/homeroom-teacher")]
+		[HttpGet("count/homeroom-teachers")]
 		public async Task<IActionResult> CountHomeroomTeachers()
 		{
 			var result = await _userService.CountHomeroomTeachersAsync();
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
-		[HttpGet("total/subject-teacher")]
+		[HttpGet("count/subject-teachers")]
 		public async Task<IActionResult> CountSubjectTeachers()
 		{
 			var result = await _userService.CountSubjectTeachersAsync();
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
-		[HttpGet("paged")]
+		[HttpGet]
 		public async Task<IActionResult> GetTeacher([FromQuery] UserFilterRequest request)
 		{
 			var result = await _userService.GetPagedUsersAsync(request);
@@ -57,6 +57,13 @@ namespace EduConnect.API.Controllers
 		public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
 		{
 			var result = await _userService.UpdateUserAsync(id, request);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
+		[HttpPatch("{id}/status")]
+		public async Task<IActionResult> UpdateUserStatus(Guid id, [FromBody] UpdateUserStatusRequest request)
+		{
+			var result = await _userService.UpdateUserStatsusAsync(id, request);
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 	}

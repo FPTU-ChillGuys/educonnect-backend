@@ -39,6 +39,10 @@ namespace EduConnect.Domain.Entities
 		[Required]
 		public DateTime CreatedAt { get; set; }
 
+		public DateTime? DeleteAt { get; set; }
+
+		public bool IsDeleted { get; set; } = false;
+
 		public ICollection<ClassBehaviorLog> ClassBehaviorLogs { get; set; }
 		public ICollection<StudentBehaviorNote> StudentBehaviorNotes { get; set; }
 	}

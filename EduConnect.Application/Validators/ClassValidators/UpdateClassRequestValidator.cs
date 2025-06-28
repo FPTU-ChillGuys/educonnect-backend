@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace EduConnect.Application.Validators.ClassValidators
 {
-	public class CreateClassRequestValidator : AbstractValidator<CreateClassRequest>
+	public class UpdateClassRequestValidator : AbstractValidator<UpdateClassRequest>
 	{
-		public CreateClassRequestValidator()
+		public UpdateClassRequestValidator()
 		{
 			RuleFor(x => x.GradeLevel)
 				.NotEmpty()
@@ -16,4 +16,5 @@ namespace EduConnect.Application.Validators.ClassValidators
 			RuleFor(x => x.HomeroomTeacherId).NotEmpty();
 		}
 	}
+
 }

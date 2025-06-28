@@ -1,4 +1,4 @@
-﻿using EduConnect.Application.Commons;
+﻿using EduConnect.Application.Commons.Dtos;
 using EduConnect.Application.DTOs.Requests.AuthRequests;
 using EduConnect.Application.DTOs.Responses.AuthResponses;
 

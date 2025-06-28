@@ -1,9 +1,9 @@
-﻿namespace EduConnect.Application.DTOs.Requests.StudentRequests
+﻿using EduConnect.Application.Commons.Dtos;
+
+namespace EduConnect.Application.DTOs.Requests.StudentRequests
 {
-	public class StudentPagingRequest
+	public class StudentPagingRequest : PagedAndSortedRequest
 	{
-		public int PageNumber { get; set; } = 1;
-		public int PageSize { get; set; } = 10;
 		public string? Keyword { get; set; }
 		public Guid? ClassId { get; set; }
 		public string? Status { get; set; }

@@ -8,6 +8,7 @@ namespace EduConnect.Application.Interfaces.Repositories
 		Task<IEnumerable<T>> GetAllAsync(
 			Expression<Func<T, bool>>? filter = null,
 			Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null,
+			Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
 			bool asNoTracking = false,
 			int? skip = null,
 			int? take = null
@@ -16,14 +17,14 @@ namespace EduConnect.Application.Interfaces.Repositories
 		Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
 			Expression<Func<T, bool>>? filter = null,
 			Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null,
+			Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
 			int pageNumber = 1,
 			int pageSize = 10,
 			bool asNoTracking = false
 		);
 
-		Task<T?> GetByIdAsync(Guid id);
-		Task<T?> FirstOrDefaultAsync(
-			Expression<Func<T, bool>> filter,
+		Task<T?> GetByIdAsync(
+			Expression<Func<T, bool>> predicate,
 			Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null,
 			bool asNoTracking = false
 		);

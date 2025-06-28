@@ -2,12 +2,11 @@
 using EduConnect.Application.DTOs.Requests.AuthRequests;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.WebUtilities;
-using EduConnect.Application.Commons;
 using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using EduConnect.Domain.Enums;
+using EduConnect.Application.Commons.Dtos;
 
 namespace EduConnect.Application.Services
 {
@@ -23,6 +22,9 @@ namespace EduConnect.Application.Services
 			var user = await _userManager.FindByEmailAsync(login.Email!);
 			if (user == null)
 				return BaseResponse<TokenResponse>.Fail("User not found");
+
+			if (!user.IsActive)
+				return BaseResponse<TokenResponse>.Fail("User is inactive");
 
 			var isPasswordValid = await _userManager.CheckPasswordAsync(user, login.Password!);
 			if (!isPasswordValid)

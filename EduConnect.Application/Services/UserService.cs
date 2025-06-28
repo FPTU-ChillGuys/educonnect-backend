@@ -2,7 +2,7 @@
 using EduConnect.Application.DTOs.Requests.UserRequests;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Application.Commons;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using FluentValidation;
@@ -62,33 +62,6 @@ namespace EduConnect.Application.Services
 			}
 		}
 
-		public async Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request)
-		{
-			var validation = await _validator.ValidateAsync(request);
-			if (!validation.IsValid)
-				return BaseResponse<string>.Fail(string.Join(" | ", validation.Errors.Select(e => e.ErrorMessage)));
-
-			var user = await _userManager.FindByIdAsync(id.ToString());
-			if (user == null)
-				return BaseResponse<string>.Fail("User not found");
-
-			// Apply updates
-			user.PhoneNumber = request.PhoneNumber;
-			user.Address = request.Address;
-			user.IsActive = request.IsActive;
-
-			// You might want to update FullName, but IdentityUser doesn't have it by default.
-			// Consider extending User with a FullName property if not done already
-			user.UserName = request.FullName; // or add user.FullName if you added that field
-			user.NormalizedUserName = request.FullName?.ToUpperInvariant(); // Normalize if needed
-
-			var result = await _userManager.UpdateAsync(user);
-			if (!result.Succeeded)
-				return BaseResponse<string>.Fail("Failed to update user");
-
-			return BaseResponse<string>.Ok("User updated successfully");
-		}
-
 		public async Task<PagedResponse<UserDto>> GetPagedUsersAsync(UserFilterRequest request)
 		{
 			var (items, totalCount) = await _userRepo.GetPagedUsersAsync(request);
@@ -144,6 +117,44 @@ namespace EduConnect.Application.Services
 			{
 				return BaseResponse<byte[]>.Fail($"An error occurred during export: {ex.Message}");
 			}
+		}
+
+		public async Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request)
+		{
+			var validation = await _validator.ValidateAsync(request);
+			if (!validation.IsValid)
+				return BaseResponse<string>.Fail(string.Join(" | ", validation.Errors.Select(e => e.ErrorMessage)));
+
+			var user = await _userManager.FindByIdAsync(id.ToString());
+			if (user == null)
+				return BaseResponse<string>.Fail("User not found");
+
+			// Apply updates
+			user.PhoneNumber = request.PhoneNumber;
+			user.Address = request.Address;
+
+			// You might want to update FullName, but IdentityUser doesn't have it by default.
+			// Consider extending User with a FullName property if not done already
+			user.UserName = request.FullName; // or add user.FullName if you added that field
+			user.NormalizedUserName = request.FullName?.ToUpperInvariant(); // Normalize if needed
+
+			var result = await _userManager.UpdateAsync(user);
+			if (!result.Succeeded)
+				return BaseResponse<string>.Fail("Failed to update user");
+
+			return BaseResponse<string>.Ok("User updated successfully");
+		}
+
+		public async Task<BaseResponse<string>> UpdateUserStatsusAsync(Guid id, UpdateUserStatusRequest request)
+		{
+			var user = await _userManager.FindByIdAsync(id.ToString());
+			if (user == null)
+				return BaseResponse<string>.Fail("User not found");
+			user.IsActive = request.IsActive;
+			var result = await _userManager.UpdateAsync(user);
+			if (!result.Succeeded)
+				return BaseResponse<string>.Fail("Failed to update user status");
+			return BaseResponse<string>.Ok("User status updated successfully");
 		}
 	}
 }

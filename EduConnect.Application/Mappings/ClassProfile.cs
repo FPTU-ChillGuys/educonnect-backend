@@ -9,11 +9,13 @@ namespace EduConnect.Application.Mappings
 	{
 		public ClassProfile()
 		{
-			CreateMap<CreateClassRequest, Class>();
+			CreateMap<CreateClassRequest, Class>()
+			.ForMember(dest => dest.ClassId, opt => opt.MapFrom(_ => Guid.NewGuid()));
+
+			CreateMap<UpdateClassRequest, Class>();
 
 			CreateMap<Class, ClassDto>()
-				.ForMember(dest => dest.HomeroomTeacherEmail,
-					opt => opt.MapFrom(src => src.HomeroomTeacher.Email));
+			.ForMember(dest => dest.HomeroomTeacherName, opt => opt.MapFrom(src => src.HomeroomTeacher.UserName));
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace EduConnect.Application.Commons
+namespace EduConnect.Application.Commons.Extensions
 {
 	public static class ExpressionExtensions
 	{

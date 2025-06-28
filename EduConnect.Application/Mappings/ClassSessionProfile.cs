@@ -1,6 +1,7 @@
-﻿using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
+﻿using AutoMapper;
+using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
+using EduConnect.Application.DTOs.Responses.ClassSessionResponses;
 using EduConnect.Domain.Entities;
-using AutoMapper;
 
 namespace EduConnect.Application.Mappings
 {
@@ -12,6 +13,11 @@ namespace EduConnect.Application.Mappings
 				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
 			CreateMap<UpdateClassSessionByAdminRequest, ClassSession>();
+
+			CreateMap<ClassSession, ClassSessionDto>()
+				.ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.Class.ClassName))
+				.ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.SubjectName))
+				.ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.UserName));
 		}
 	}
 }

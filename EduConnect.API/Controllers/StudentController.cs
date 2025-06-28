@@ -13,26 +13,31 @@ namespace EduConnect.API.Controllers
 
 		public StudentController(IStudentService studentService)
 		{
-			_studentService = studentService ?? throw new ArgumentNullException(nameof(studentService));
+			_studentService = studentService;
 		}
 
-		[HttpGet("total")]
+		[HttpGet("count")]
 		public async Task<IActionResult> CountStudents()
 		{
 			var result = await _studentService.CountStudentsAsync();
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
-		[HttpPost("export")]
-		public async Task<IActionResult> ExportStudentsToExcel([FromBody] ExportStudentRequest request)
+		[HttpGet("class/{classId}")]
+		public async Task<IActionResult> GetStudentsByClass(Guid classId, [FromQuery] GetStudentsByClassIdRequest request)
 		{
-			var result = await _studentService.ExportStudentsToExcelAsync(request);
-			return result.Success
-				? File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students.xlsx")
-				: BadRequest(result);
+			var result = await _studentService.GetStudentsByClassIdAsync(classId, request);
+			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
-		[HttpGet("paged")]
+		[HttpGet("parent/{parentId}/childrens")]
+		public async Task<IActionResult> GetStudentsByParent(Guid parentId)
+		{
+			var result = await _studentService.GetStudentsByParentIdAsync(parentId);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
+		[HttpGet]
 		public async Task<IActionResult> GetPaged([FromQuery] StudentPagingRequest request)
 		{
 			var result = await _studentService.GetPagedStudentsAsync(request);
@@ -46,7 +51,15 @@ namespace EduConnect.API.Controllers
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
-		[Authorize(Roles = "admin")]
+		[HttpPost("export")]
+		public async Task<IActionResult> ExportStudentsToExcel([FromBody] ExportStudentRequest request)
+		{
+			var result = await _studentService.ExportStudentsToExcelAsync(request);
+			return result.Success
+				? File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students.xlsx")
+				: BadRequest(result);
+		}
+
 		[HttpPut("{id}")]
 		public async Task<IActionResult> UpdateStudent(Guid id, [FromBody] UpdateStudentRequest request)
 		{

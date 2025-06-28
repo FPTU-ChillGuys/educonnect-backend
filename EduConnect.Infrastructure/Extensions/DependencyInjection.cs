@@ -1,6 +1,8 @@
 ﻿using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
 using EduConnect.Application.Validators.ClassSessionValidators;
+using EduConnect.Application.DTOs.Requests.BehaviorRequests;
 using EduConnect.Application.DTOs.Requests.StudentRequests;
+using EduConnect.Application.Validators.BehaviorValidators;
 using EduConnect.Application.Validators.StudentValidators;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
 using EduConnect.Application.Validators.ClassValidators;
@@ -27,15 +29,17 @@ namespace EduConnect.Infrastructure.Extensions
 		public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration config)
 		{
 			// Register Repositories
-			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
-			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
-			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
-			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
+			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IAuthRepository, AuthRepository>();
 			services.AddScoped<IUserRepository, UserRepository>();
-			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
-
+			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
+			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
+			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
+			services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
+			services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
+					
 			// - DBContext
 			var connectionString = config["DATABASE_CONNECTION_STRING"];
 
@@ -95,24 +99,32 @@ namespace EduConnect.Infrastructure.Extensions
 		{
 			// Register Services
 			services.AddScoped<IAuthService, AuthService>();
-			services.AddScoped<IStudentService, StudentService>();
-			services.AddScoped<IClassService, ClassService>();
 			services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IClassService, ClassService>();
+			services.AddScoped<IStudentService, StudentService>();
+			services.AddScoped<IBehaviorService, BehaviorService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 
 			// AutoMapper
-			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
 			services.AddAutoMapper(typeof(ClassProfile).Assembly);
+			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
+			services.AddAutoMapper(typeof(BehaviorProfile).Assembly);
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
 			// FluentValidation
+			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
+			services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
+			services.AddScoped<IValidator<UpdateClassRequest>, UpdateClassRequestValidator>();
 			services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
 			services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
-			services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
-			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
 			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
+			services.AddScoped<IValidator<GetStudentsByClassIdRequest>, GetStudentsByClassIdRequestValidator>();
+			services.AddScoped<IValidator<UpdateClassBehaviorLogRequest>, UpdateClassBehaviorLogRequestValidator>();
+			services.AddScoped<IValidator<CreateClassBehaviorLogRequest>, CreateClassBehaviorLogRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionByAdminRequest>, UpdateClassSessionByAdminRequestValidator>();
+			services.AddScoped<IValidator<CreateStudentBehaviorNoteRequest>, CreateStudentBehaviorNoteRequestValidator>();
+			services.AddScoped<IValidator<UpdateStudentBehaviorNoteRequest>, UpdateStudentBehaviorNoteRequestValidator>();
 
 			return services;
 		}
