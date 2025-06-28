@@ -4,14 +4,27 @@ using EduConnect.Application.Mappings;
 using EduConnect.Application.Services;
 using EduConnect.ChatbotAPI.Services.Chatbot;
 using EduConnect.Infrastructure.Repositories;
+using EduConnect.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 
 namespace EduConnect.ChatbotAPI.Configurations
 {
-    public class DependencyInjection
+    public static class DependencyInjection
     {
-        public IServiceCollection AddApplicationServices(IServiceCollection services, IConfiguration config)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
         {
+            //Add DBContext
+            var connectionString = config["DATABASE_CONNECTION_STRING"];
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("DATABASE_CONNECTION_STRING is not configured.");
+            }
+
+            services.AddDbContext<EduConnectDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
             //Add Repositories
             services.AddScoped<IConversationRepository, ConversationRepository>();
 
@@ -25,13 +38,16 @@ namespace EduConnect.ChatbotAPI.Configurations
             //Add Mapper
             services.AddAutoMapper(typeof(ConversationProfile).Assembly);
 
+            //Add other services
+            services.AddSingleton<HttpClient>();
+
             services.AddDistributedMemoryCache();
             services.AddSingleton<Kernel>(AddKernal());
             return services; 
         }
 
         #pragma warning disable SKEXP0070
-        public Kernel AddKernal()
+        public static Kernel AddKernal()
         {
             IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
             kernelBuilder.AddOllamaChatCompletion("qwen3:0.6b", new Uri("http://localhost:11434"));

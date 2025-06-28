@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EduConnect.API\EduConnect.API.csproj" />
+    <ProjectReference Include="..\EduConnect.ChatbotAPI\EduConnect.ChatbotAPI.csproj" />
   </ItemGroup>
 
 </Project>

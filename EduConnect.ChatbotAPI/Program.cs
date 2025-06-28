@@ -1,10 +1,22 @@
-using EduConnect.Infrastructure.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using EduConnect.ChatbotAPI.Configurations;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Load.env files BEFORE configuration is built
+string? solutionRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+string envFile = Path.Combine(solutionRootPath, ".env");
+if (File.Exists(envFile)) Env.Load(envFile);
+
+// Add config sources
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 // Add services to the container.
-builder.Services.AddApplicationServices();
+builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
