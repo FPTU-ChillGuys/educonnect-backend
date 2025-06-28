@@ -35,9 +35,12 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IUserRepository, UserRepository>();
 			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+			services.AddScoped<IConversationService, ConversationService>();
 
-			// - DBContext
-			var connectionString = config["DATABASE_CONNECTION_STRING"];
+
+            // - DBContext
+            var connectionString = config["DATABASE_CONNECTION_STRING"];
 
 			if (string.IsNullOrWhiteSpace(connectionString))
 			{

@@ -13,7 +13,7 @@ namespace EduConnect.ChatbotAPI.Hubs
         ) : Hub
     {
 
-        public async Task SendMessageAsync(Guid conversationId, string message)
+        public async Task SendMessageAsync(Guid userId, Guid conversationId, string message)
         {
             var conversation = await chatbotStorage.GetConversation(conversationId);
 
@@ -32,6 +32,12 @@ namespace EduConnect.ChatbotAPI.Hubs
                 conversation.Messages.Add(newMessage);
 
                 await chatbotStorage.SaveConversationToCaching(conversationId, newMessage);
+
+                if (conversation.ParentId == null || conversation.ParentId == Guid.Empty)
+                {
+                    conversation.ParentId = userId;
+                }
+
                 await conversationService.UpdateConversation(conversation);
 
                 await foreach (var res in chatbotHelper.ChatbotResponseAsync(message, conversationId))

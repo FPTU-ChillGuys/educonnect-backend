@@ -37,11 +37,6 @@ namespace EduConnect.Application.Services
         public async Task<BaseResponse<IEnumerable<Conversation>>> GetAllConversationsByUserId(Guid userId)
         {
             var conversations = await conversationRepo.GetAllConversationsByUserIdAsync(userId);
-            if (conversations == null || !conversations.Any())
-            {
-                return BaseResponse<IEnumerable<Conversation>>.Fail("No conversations found for this user.");
-            }
-
             return BaseResponse<IEnumerable<Conversation>>.Ok(conversations);
         }
 
