@@ -3,6 +3,8 @@ using EduConnect.Application.Validators.ClassSessionValidators;
 using EduConnect.Application.DTOs.Requests.BehaviorRequests;
 using EduConnect.Application.DTOs.Requests.StudentRequests;
 using EduConnect.Application.Validators.BehaviorValidators;
+using EduConnect.Application.DTOs.Requests.SubjectRequests;
+using EduConnect.Application.Validators.SubjectValidators;
 using EduConnect.Application.Validators.StudentValidators;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
 using EduConnect.Application.Validators.ClassValidators;
@@ -29,13 +31,13 @@ namespace EduConnect.Infrastructure.Extensions
 		public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration config)
 		{
 			// Register Repositories
-			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IAuthRepository, AuthRepository>();
 			services.AddScoped<IUserRepository, UserRepository>();
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
 			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
 			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
+			services.AddScoped<IGenericRepository<Subject>, GenericRepository<Subject>>();
 			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
 			services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
 			services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
@@ -100,7 +102,9 @@ namespace EduConnect.Infrastructure.Extensions
 			// Register Services
 			services.AddScoped<IAuthService, AuthService>();
 			services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IClassService, ClassService>();
+			services.AddScoped<ISubjectService, SubjectService>();
 			services.AddScoped<IStudentService, StudentService>();
 			services.AddScoped<IBehaviorService, BehaviorService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
@@ -108,6 +112,7 @@ namespace EduConnect.Infrastructure.Extensions
 			// AutoMapper
 			services.AddAutoMapper(typeof(ClassProfile).Assembly);
 			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
+			services.AddAutoMapper(typeof(SubjectProfile).Assembly);
 			services.AddAutoMapper(typeof(BehaviorProfile).Assembly);
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
@@ -117,6 +122,8 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IValidator<UpdateClassRequest>, UpdateClassRequestValidator>();
 			services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
 			services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
+			services.AddScoped<IValidator<CreateSubjectRequest>, CreateSubjectRequestValidator>();
+			services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
 			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<GetStudentsByClassIdRequest>, GetStudentsByClassIdRequestValidator>();
