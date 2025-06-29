@@ -64,17 +64,17 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("AllowFrontend");
-
 app.UseHttpsRedirection();
 
 app.UseRouting();
 
-app.UseGlobalExceptionHandler();
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseGlobalExceptionHandler();
 
 app.MapControllers();
 
