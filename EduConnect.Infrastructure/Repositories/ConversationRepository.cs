@@ -27,7 +27,6 @@ namespace EduConnect.Infrastructure.Repositories
                 .Include(c => c.Messages)
                 .ToListAsync();
             return conversations;
-
         }
 
         public async Task<Conversation?> GetConversationByIdAsync(Guid conversationId)

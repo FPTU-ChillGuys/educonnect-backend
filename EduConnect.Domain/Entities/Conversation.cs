@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace EduConnect.Domain.Entities
@@ -18,6 +19,8 @@ namespace EduConnect.Domain.Entities
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<Message> Messages { get; set; } = new List<Message>();
         [ForeignKey(nameof(ParentId))]
+
+        [JsonIgnore]
         public User Parent { get; set; }
 
     }

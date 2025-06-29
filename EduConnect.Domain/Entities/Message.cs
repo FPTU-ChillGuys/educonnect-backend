@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EduConnect.Domain.Entities
 {
@@ -19,6 +20,7 @@ namespace EduConnect.Domain.Entities
         [Required]
 		public DateTime CreatedAt { get; set; }
 
+		[JsonIgnore]
 		[ForeignKey(nameof(ConversationId))]
         public Conversation? Conversation { get; set; }
     }

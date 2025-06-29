@@ -1,4 +1,7 @@
-﻿using EduConnect.Application.Interfaces.Services;
+﻿using AutoMapper;
+using EduConnect.Application.DTOs.Requests.ConversationRequests;
+using EduConnect.Application.Interfaces.Services;
+using EduConnect.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EduConnect.API.Controllers
@@ -8,10 +11,12 @@ namespace EduConnect.API.Controllers
     public class ConversationController : ControllerBase
     {
         private readonly IConversationService _conversationService;
+        private readonly IMapper _mapper;
 
-        public ConversationController(IConversationService conversationService)
+        public ConversationController(IConversationService conversationService, IMapper mapper)
         {
             _conversationService = conversationService;
+            _mapper = mapper;
         }
 
 
@@ -26,6 +31,14 @@ namespace EduConnect.API.Controllers
         public async Task<IActionResult> GetConversationByUserId(Guid id)
         {
             var result = await _conversationService.GetAllConversationsByUserId(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateConversation(CreateConversationRequest createConversation)
+        {
+            var conversation = _mapper.Map<Conversation>(createConversation);
+            var result = await _conversationService.CreateConversation(conversation);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
