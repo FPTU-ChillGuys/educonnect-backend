@@ -17,7 +17,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> GetPagedClassSessions([FromQuery] ClassSessionPagingRequest request)
 		{
 			var response = await _classSessionService.GetPagedClassSessionsAsync(request);
@@ -27,7 +27,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("timetable/class/{classId}")]
-		[Authorize(Roles = "Admin, Teacher, Parent")]
+		[Authorize(Roles = "admin,teacher,parent")]
 		public async Task<IActionResult> GetClassTimetable(Guid classId, [FromQuery] DateTime from, [FromQuery] DateTime to)
 		{
 			var timetable = await _classSessionService.GetClassTimetableAsync(classId, from, to);
@@ -35,7 +35,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("timetable/teacher/{teacherId}")]
-		[Authorize(Roles = "Admin, Teacher")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> GetTeacherTimetable(Guid teacherId, [FromQuery] DateTime from, [FromQuery] DateTime to)
 		{
 			if (teacherId == Guid.Empty)
@@ -45,7 +45,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("export/class/{classId}")]
-		[Authorize(Roles = "Admin, Teacher")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> ExportClassTimetable(Guid classId, DateTime from, DateTime to)
 		{
 			var result = await _classSessionService.ExportClassTimetableToExcelAsync(classId, from, to);
@@ -55,7 +55,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("export/teacher/{teacherId}")]
-		[Authorize(Roles = "Admin, Teacher")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> ExportTeacherTimetable(Guid teacherId, DateTime from, DateTime to)
 		{
 			var result = await _classSessionService.ExportTeacherTimetableToExcelAsync(teacherId, from, to);
@@ -65,7 +65,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPost]
-		[Authorize(Roles = "Teacher, Admin")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> CreateSession([FromBody] CreateClassSessionRequest request)
 		{
 			var result = await _classSessionService.CreateClassSessionAsync(request);
@@ -76,7 +76,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPut("teacher/{sessionId}")]
-		[Authorize(Roles = "Teacher")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> UpdateClassSession(Guid sessionId, [FromBody] UpdateClassSessionRequest request)
 		{
 			var teacherId = User.GetUserId(); // Assuming you have an extension method to extract user ID
@@ -86,7 +86,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPut("admin/{sessionId}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> UpdateClassSessionByAdmin(Guid sessionId, [FromBody] UpdateClassSessionByAdminRequest request)
 		{
 			var result = await _classSessionService.UpdateClassSessionByAdminAsync(request, sessionId);
@@ -94,7 +94,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		[Authorize(Roles = "Admin, Teacher")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> SoftDeleteClassSession(Guid id)
 		{
 			var result = await _classSessionService.SoftDeleteClassSessionAsync(id);
@@ -102,7 +102,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpDelete("hard/{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> DeleteClassSession(Guid id)
 		{
 			var result = await _classSessionService.DeleteClassSessionAsync(id);

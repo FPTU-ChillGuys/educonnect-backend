@@ -1,7 +1,10 @@
-﻿using EduConnect.Infrastructure.Extensions;
+﻿using DotNetEnv;
 using EduConnect.API.Configurations;
+using EduConnect.Application.Authorization;
+using EduConnect.Infrastructure.Authorization.Handlers;
+using EduConnect.Infrastructure.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
-using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,14 @@ builder.Services.AddInfrastructureService(builder.Configuration);
 builder.Services.AddJWTAuthenticationScheme(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.AddServiceDefaults();
+
+// Policy Authorization
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthorization(options =>
+{
+	options.AddPolicy("ClassAccessPolicy", policy =>
+		policy.Requirements.Add(new ClassAccessRequirement()));
+});
 
 // Force all routes to be lowercase
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

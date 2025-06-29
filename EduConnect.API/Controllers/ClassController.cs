@@ -1,5 +1,4 @@
-﻿using EduConnect.Application.Commons;
-using EduConnect.Application.DTOs.Requests.ClassRequests;
+﻿using EduConnect.Application.DTOs.Requests.ClassRequests;
 using EduConnect.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +16,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("count")]
-		[Authorize]
+		[Authorize(Roles = "admin,teacher,parent")]
 		public async Task<IActionResult> CountClassesAsync()
 		{
 			var response = await _classService.CountClassesAsync();
@@ -25,7 +24,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("{id}")]
-		[Authorize(Roles = "Parent, Teacher, Admin")]
+		[Authorize(Policy = "ClassAccessPolicy")]
 		public async Task<IActionResult> GetClassById(Guid id)
 		{
 			var result = await _classService.GetClassByIdAsync(id);
@@ -33,7 +32,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("homeroom-teacher/{teacherId}")]
-		[Authorize(Roles = "Teacher, Admin")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> GetClassesByTeacherId(Guid teacherId)
 		{
 			var result = await _classService.GetClassesByTeacherIdAsync(teacherId);
@@ -41,7 +40,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("student/{studentId}")]
-		[Authorize(Roles = "Parent, Teacher, Admin")]
+		[Authorize(Roles = "admin,teacher,parent")]
 		public async Task<IActionResult> GetClassesByStudentId(Guid studentId)
 		{
 			var result = await _classService.GetClassesByStudentIdAsync(studentId);
@@ -49,7 +48,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPost]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> CreateClass([FromBody] CreateClassRequest request)
 		{
 			var result = await _classService.CreateClassAsync(request);
@@ -57,7 +56,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPut("{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> UpdateClass(Guid id, [FromBody] UpdateClassRequest request)
 		{
 			var result = await _classService.UpdateClassAsync(id, request);
@@ -65,7 +64,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> DeleteClass(Guid id)
 		{
 			var result = await _classService.DeleteClassAsync(id);

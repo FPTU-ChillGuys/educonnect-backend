@@ -4,18 +4,20 @@ using EduConnect.Application.DTOs.Requests.BehaviorRequests;
 using EduConnect.Application.DTOs.Requests.StudentRequests;
 using EduConnect.Application.Validators.BehaviorValidators;
 using EduConnect.Application.DTOs.Requests.SubjectRequests;
-using EduConnect.Application.Validators.SubjectValidators;
 using EduConnect.Application.Validators.StudentValidators;
+using EduConnect.Application.Validators.SubjectValidators;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
 using EduConnect.Application.Validators.ClassValidators;
 using EduConnect.Application.DTOs.Requests.UserRequests;
 using EduConnect.Application.Validators.UserValidators;
+using EduConnect.Infrastructure.Authorization.Handlers;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 using EduConnect.Infrastructure.Repositories;
-using EduConnect.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
+using EduConnect.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using EduConnect.Application.Mappings;
 using EduConnect.Application.Services;
 using Microsoft.AspNetCore.Identity;
@@ -33,6 +35,7 @@ namespace EduConnect.Infrastructure.Extensions
 			// Register Repositories
 			services.AddScoped<IAuthRepository, AuthRepository>();
 			services.AddScoped<IUserRepository, UserRepository>();
+			services.AddScoped<IClassRepository, ClassRepository>();
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
 			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
@@ -41,7 +44,10 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
 			services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
 			services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
-					
+
+			// Authorization Handlers
+			services.AddScoped<IAuthorizationHandler, ClassAccessHandler>();
+
 			// - DBContext
 			var connectionString = config["DATABASE_CONNECTION_STRING"];
 
