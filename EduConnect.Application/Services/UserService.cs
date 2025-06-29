@@ -1,11 +1,12 @@
-﻿using EduConnect.Application.DTOs.Responses.UserResponses;
+﻿using EduConnect.Application.Commons.Dtos;
 using EduConnect.Application.DTOs.Requests.UserRequests;
+using EduConnect.Application.DTOs.Responses.StudentResponses;
+using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Application.Commons.Dtos;
-using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using OfficeOpenXml;
 
 namespace EduConnect.Application.Services
@@ -13,21 +14,29 @@ namespace EduConnect.Application.Services
 	public class UserService : IUserService
 	{
 		private readonly IUserRepository _userRepo;
+		private readonly IGenericRepository<User> _genericRepo;
 		private readonly UserManager<User> _userManager;
-		private readonly IValidator<UpdateUserRequest> _validator;
+		private readonly IValidator<UpdateUserRequest> _updateValidator;
+		private readonly IValidator<FilterUserRequest> _filterValidator;
 
-		public UserService(IUserRepository userRepo, UserManager<User> userManager, IValidator<UpdateUserRequest> validator)
+		public UserService(IUserRepository userRepo, 
+			UserManager<User> userManager, 
+			IValidator<UpdateUserRequest> updateValidator, 
+			IValidator<FilterUserRequest> filterValidator,
+			IGenericRepository<User> genericRepo)
 		{
 			_userRepo = userRepo;
 			_userManager = userManager;
-			_validator = validator;
+			_updateValidator = updateValidator;
+			_filterValidator = filterValidator;
+			_genericRepo = genericRepo;
 		}
 
 		public async Task<BaseResponse<int>> CountHomeroomTeachersAsync()
 		{
 			try
 			{
-				var count = await _userRepo.CountHomeroomTeachersAsync();
+				var count = await _genericRepo.CountAsync(u => u.HomeroomClasses.Any() && u.IsActive);
 				return BaseResponse<int>.Ok(count);
 			}
 			catch (Exception ex)
@@ -40,7 +49,7 @@ namespace EduConnect.Application.Services
 		{
 			try
 			{
-				var count = await _userRepo.CountSubjectTeachersAsync();
+				var count = await _genericRepo.CountAsync(u => u.TeachingSessions.Any() && u.IsActive);
 				return BaseResponse<int>.Ok(count);
 			}
 			catch (Exception ex)
@@ -62,8 +71,15 @@ namespace EduConnect.Application.Services
 			}
 		}
 
-		public async Task<PagedResponse<UserDto>> GetPagedUsersAsync(UserFilterRequest request)
+		public async Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request)
 		{
+			var validationResult = await _filterValidator.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
+				return PagedResponse<UserDto>.Fail(errors, request.PageNumber, request.PageSize);
+			}
+
 			var (items, totalCount) = await _userRepo.GetPagedUsersAsync(request);
 
 			var dtoList = items.Select(u => new UserDto
@@ -121,7 +137,7 @@ namespace EduConnect.Application.Services
 
 		public async Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request)
 		{
-			var validation = await _validator.ValidateAsync(request);
+			var validation = await _updateValidator.ValidateAsync(request);
 			if (!validation.IsValid)
 				return BaseResponse<string>.Fail(string.Join(" | ", validation.Errors.Select(e => e.ErrorMessage)));
 

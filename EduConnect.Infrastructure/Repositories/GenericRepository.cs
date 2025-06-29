@@ -1,7 +1,7 @@
 ﻿using EduConnect.Application.Interfaces.Repositories;
-using EduConnect.Persistence.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
+using EduConnect.Persistence.Data;
 using System.Linq.Expressions;
 
 namespace EduConnect.Infrastructure.Repositories
@@ -79,7 +79,6 @@ namespace EduConnect.Infrastructure.Repositories
 
 			return (items, totalCount);
 		}
-
 
 		public async Task<T?> GetByIdAsync(
 			Expression<Func<T, bool>> predicate,

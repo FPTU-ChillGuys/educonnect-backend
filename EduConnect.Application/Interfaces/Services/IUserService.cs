@@ -9,7 +9,7 @@ namespace EduConnect.Application.Interfaces.Services
 		Task<BaseResponse<int>> CountTeachersAsync();
 		Task<BaseResponse<int>> CountHomeroomTeachersAsync();
 		Task<BaseResponse<int>> CountSubjectTeachersAsync();
-		Task<PagedResponse<UserDto>> GetPagedUsersAsync(UserFilterRequest request);
+		Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request);
 		Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(ExportUserRequest request);
 		Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request);
 		Task<BaseResponse<string>> UpdateUserStatsusAsync(Guid id, UpdateUserStatusRequest request);

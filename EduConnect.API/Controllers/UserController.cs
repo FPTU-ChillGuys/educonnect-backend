@@ -1,5 +1,6 @@
 ﻿using EduConnect.Application.DTOs.Requests.UserRequests;
 using EduConnect.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EduConnect.API.Controllers
@@ -16,6 +17,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("count")]
+		[Authorize]
 		public async Task<IActionResult> CountUsers()
 		{
 			var result = await _userService.CountTeachersAsync();
@@ -23,6 +25,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("count/homeroom-teachers")]
+		[Authorize]
 		public async Task<IActionResult> CountHomeroomTeachers()
 		{
 			var result = await _userService.CountHomeroomTeachersAsync();
@@ -30,6 +33,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("count/subject-teachers")]
+		[Authorize]
 		public async Task<IActionResult> CountSubjectTeachers()
 		{
 			var result = await _userService.CountSubjectTeachersAsync();
@@ -37,13 +41,15 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> GetTeacher([FromQuery] UserFilterRequest request)
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> GetTeacher([FromQuery] FilterUserRequest request)
 		{
 			var result = await _userService.GetPagedUsersAsync(request);
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
 		[HttpGet("export")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> ExportTeachersToExcel([FromQuery] ExportUserRequest request)
 		{
 			var result = await _userService.ExportUsersToExcelAsync(request);
@@ -54,6 +60,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPut("{id}")]
+		[Authorize(Roles = "Admin,Parent,Teacher")]
 		public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserRequest request)
 		{
 			var result = await _userService.UpdateUserAsync(id, request);
@@ -61,6 +68,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPatch("{id}/status")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> UpdateUserStatus(Guid id, [FromBody] UpdateUserStatusRequest request)
 		{
 			var result = await _userService.UpdateUserStatsusAsync(id, request);

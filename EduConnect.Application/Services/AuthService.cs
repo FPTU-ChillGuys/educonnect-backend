@@ -2,11 +2,11 @@
 using EduConnect.Application.DTOs.Requests.AuthRequests;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using EduConnect.Domain.Enums;
-using EduConnect.Application.Commons.Dtos;
 
 namespace EduConnect.Application.Services
 {

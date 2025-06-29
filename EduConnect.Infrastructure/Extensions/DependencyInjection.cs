@@ -117,6 +117,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
 			// FluentValidation
+			services.AddScoped<IValidator<FilterUserRequest>, FilterUserRequestValidator>();
 			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
 			services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassRequest>, UpdateClassRequestValidator>();

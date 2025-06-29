@@ -17,6 +17,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("count")]
+		[Authorize]
 		public async Task<IActionResult> CountStudents()
 		{
 			var result = await _studentService.CountStudentsAsync();
@@ -24,6 +25,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("class/{classId}")]
+		[Authorize(Roles = "Parent,Admin,Teacher")]
 		public async Task<IActionResult> GetStudentsByClass(Guid classId, [FromQuery] GetStudentsByClassIdRequest request)
 		{
 			var result = await _studentService.GetStudentsByClassIdAsync(classId, request);
@@ -31,6 +33,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet("parent/{parentId}/childrens")]
+		[Authorize(Roles = "Parent,Admin,Teacher")]
 		public async Task<IActionResult> GetStudentsByParent(Guid parentId)
 		{
 			var result = await _studentService.GetStudentsByParentIdAsync(parentId);
@@ -38,6 +41,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> GetPaged([FromQuery] StudentPagingRequest request)
 		{
 			var result = await _studentService.GetPagedStudentsAsync(request);
@@ -45,6 +49,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request)
 		{
 			var result = await _studentService.CreateStudentAsync(request);
@@ -52,6 +57,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPost("export")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> ExportStudentsToExcel([FromBody] ExportStudentRequest request)
 		{
 			var result = await _studentService.ExportStudentsToExcelAsync(request);
@@ -61,6 +67,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpPut("{id}")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> UpdateStudent(Guid id, [FromBody] UpdateStudentRequest request)
 		{
 			var result = await _studentService.UpdateStudentAsync(id, request);

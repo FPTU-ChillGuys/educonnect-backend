@@ -2,11 +2,11 @@
 using EduConnect.Application.DTOs.Requests.BehaviorRequests;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.EntityFrameworkCore;
 using EduConnect.Domain.Entities;
 using FluentValidation;
 using AutoMapper;
-using EduConnect.Application.Commons.Dtos;
 
 namespace EduConnect.Application.Services
 {

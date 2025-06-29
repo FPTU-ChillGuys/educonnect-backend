@@ -10,20 +10,6 @@ namespace EduConnect.Infrastructure.Repositories
 	{
 		public UserRepository(EduConnectDbContext context) : base(context) { }
 
-		public async Task<int> CountHomeroomTeachersAsync()
-		{
-			return await _context.Users
-				.Where(u => u.HomeroomClasses.Any() && u.IsActive)
-				.CountAsync();
-		}
-
-		public async Task<int> CountSubjectTeachersAsync()
-		{
-			return await _context.Users
-				.Where(u => u.TeachingSessions.Any() && u.IsActive)
-				.CountAsync();
-		}
-
 		public async Task<int> CountUsersInRoleAsync(string roleName)
 		{
 			var roleId = await _context.Roles
@@ -38,7 +24,7 @@ namespace EduConnect.Infrastructure.Repositories
 				.CountAsync(ur => ur.RoleId == roleId);
 		}
 
-		public async Task<(IEnumerable<User> Items, int TotalCount)> GetPagedUsersAsync(UserFilterRequest request)
+		public async Task<(IEnumerable<User> Items, int TotalCount)> GetPagedUsersAsync(FilterUserRequest request)
 		{
 			IQueryable<User> query = _context.Users
 				.Include(u => u.HomeroomClasses)
