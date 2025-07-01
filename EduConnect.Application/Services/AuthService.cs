@@ -3,10 +3,12 @@ using EduConnect.Application.DTOs.Requests.AuthRequests;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Application.Commons.Dtos;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using EduConnect.Domain.Enums;
+using Google.Apis.Auth;
 
 namespace EduConnect.Application.Services
 {
@@ -14,7 +16,8 @@ namespace EduConnect.Application.Services
 								UserManager<User> _userManager,
 								IAuthRepository _authRepository,
 								IEmailService _emailService,
-								IEmailTemplateProvider _templateProvider
+								IEmailTemplateProvider _templateProvider,
+								IConfiguration config
 							) : IAuthService
 	{
 		public async Task<BaseResponse<TokenResponse>> LoginAsync(Login login)
@@ -36,6 +39,45 @@ namespace EduConnect.Application.Services
 
 			var tokenResponse = await GenerateTokenResponseAsync(user);
 			return BaseResponse<TokenResponse>.Ok(tokenResponse);
+		}
+
+		public async Task<BaseResponse<TokenResponse>> LoginWithGoogleAsync(GoogleLoginRequest request)
+		{
+			// Step 1: Validate Google ID token
+			var settings = new GoogleJsonWebSignature.ValidationSettings
+			{
+				Audience = new[] { config["Authentication:Google:ClientId"]! }
+			};
+
+			GoogleJsonWebSignature.Payload payload;
+			try
+			{
+				payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+			}
+			catch
+			{
+				return BaseResponse<TokenResponse>.Fail("Invalid Google token");
+			}
+
+			var email = payload.Email;
+			var user = await _userManager.FindByEmailAsync(email);
+
+			// Step 2: Allow login ONLY if user exists
+			if (user is null)
+				return BaseResponse<TokenResponse>.Fail("Your account is not registered.");
+
+			if (!user.IsActive)
+				return BaseResponse<TokenResponse>.Fail("Your account is inactive.");
+
+			if (!user.EmailConfirmed)
+			{
+				user.EmailConfirmed = true;
+				await _userManager.UpdateAsync(user);
+			}
+
+			// Step 3: Generate your own JWT + refresh token
+			var tokenResponse = await GenerateTokenResponseAsync(user);
+			return BaseResponse<TokenResponse>.Ok(tokenResponse, "Google login successful");
 		}
 
 		public async Task<BaseResponse<string>> RegisterAsync(Register register, string role)

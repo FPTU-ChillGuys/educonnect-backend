@@ -1,5 +1,5 @@
-﻿using EduConnect.Application.DTOs.Requests.AuthRequests;
-using EduConnect.Application.DTOs.Responses.AuthResponses;
+﻿using EduConnect.Application.DTOs.Responses.AuthResponses;
+using EduConnect.Application.DTOs.Requests.AuthRequests;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Application.Commons.Dtos;
 using Microsoft.AspNetCore.Authorization;
@@ -33,6 +33,13 @@ namespace EduConnect.API.Controllers
 		{
 			var result = await _authService.LoginAsync(request);
 			return result.Success ? Ok(result) : Unauthorized(result);
+		}
+
+		[HttpPost("google-login")]
+		public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+		{
+			var result = await _authService.LoginWithGoogleAsync(request);
+			return result.Success? Ok(result): BadRequest(result);
 		}
 
 		[HttpPost("refresh-token")]

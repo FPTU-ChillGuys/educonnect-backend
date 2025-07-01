@@ -7,11 +7,11 @@ namespace EduConnect.API.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class SubjectsController : ControllerBase
+	public class SubjectController : ControllerBase
 	{
 		private readonly ISubjectService _service;
 
-		public SubjectsController(ISubjectService service)
+		public SubjectController(ISubjectService service)
 		{
 			_service = service;
 		}
