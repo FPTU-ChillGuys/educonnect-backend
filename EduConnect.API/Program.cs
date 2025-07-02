@@ -4,6 +4,7 @@ using EduConnect.Infrastructure.Extensions;
 using EduConnect.Infrastructure.Services;
 using EduConnect.API.Configurations;
 using Microsoft.OpenApi.Models;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,6 +114,8 @@ app.UseGlobalExceptionHandler();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseHangfireDashboard();
 
 app.MapControllers();
 

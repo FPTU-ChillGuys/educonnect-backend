@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using EduConnect.Persistence.Data;
 using EduConnect.Domain.Entities;
 using FluentValidation;
+using Hangfire;
 
 namespace EduConnect.Infrastructure.Extensions
 {
@@ -102,6 +103,13 @@ namespace EduConnect.Infrastructure.Extensions
 				});
 			});
 
+			// Add hangfire service
+			services.AddHangfire(config => {
+				config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
+			});
+
+			services.AddHangfireServer();
+
 			return services;
 		}
 
@@ -115,6 +123,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<ISubjectService, SubjectService>();
 			services.AddScoped<IStudentService, StudentService>();
 			services.AddScoped<IBehaviorService, BehaviorService>();
+			services.AddScoped<INotificationJobService, NotificationJobService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 
 			// AutoMapper
