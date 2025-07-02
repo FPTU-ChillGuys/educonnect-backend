@@ -23,6 +23,14 @@ namespace EduConnect.API.Controllers
 			return response.Success ? Ok(response) : BadRequest(response);	
 		}
 
+		[HttpGet]
+		[Authorize(Roles = "admin")]
+		public async Task<IActionResult> GetAllClasses([FromQuery] ClassPagingRequest request)
+		{
+			var result = await _classService.GetPagedClassesAsync(request);
+			return result.Success ? Ok(result) : NotFound(result);
+		}
+
 		[HttpGet("{id}")]
 		[Authorize(Policy = "ClassAccessPolicy")]
 		public async Task<IActionResult> GetClassById(Guid id)

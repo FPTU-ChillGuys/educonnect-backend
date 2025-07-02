@@ -1,4 +1,5 @@
-﻿using EduConnect.Application.Commons.Dtos;
+﻿using AutoMapper;
+using EduConnect.Application.Commons.Dtos;
 using EduConnect.Application.DTOs.Requests.UserRequests;
 using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.Interfaces.Repositories;
@@ -18,18 +19,21 @@ namespace EduConnect.Application.Services
 		private readonly UserManager<User> _userManager;
 		private readonly IValidator<UpdateUserRequest> _updateValidator;
 		private readonly IValidator<FilterUserRequest> _filterValidator;
+		private readonly IMapper _mapper;
 
-		public UserService(IUserRepository userRepo, 
-			UserManager<User> userManager, 
-			IValidator<UpdateUserRequest> updateValidator, 
+		public UserService(IUserRepository userRepo,
+			UserManager<User> userManager,
+			IValidator<UpdateUserRequest> updateValidator,
 			IValidator<FilterUserRequest> filterValidator,
-			IGenericRepository<User> genericRepo)
+			IGenericRepository<User> genericRepo,
+			IMapper mapper)
 		{
 			_userRepo = userRepo;
 			_userManager = userManager;
 			_updateValidator = updateValidator;
 			_filterValidator = filterValidator;
 			_genericRepo = genericRepo;
+			_mapper = mapper;
 		}
 
 		public async Task<BaseResponse<int>> CountHomeroomTeachersAsync()
@@ -82,15 +86,7 @@ namespace EduConnect.Application.Services
 
 			var (items, totalCount) = await _userRepo.GetPagedUsersAsync(request);
 
-			var dtoList = items.Select(u => new UserDto
-			{
-				UserId = u.Id,
-				FullName = u.UserName,
-				Email = u.Email,
-				PhoneNumber = u.PhoneNumber,
-				IsHomeroomTeacher = u.HomeroomClasses.Any(),
-				IsSubjectTeacher = u.TeachingSessions.Any()
-			}).ToList();
+			var dtoList = _mapper.Map<List<UserDto>>(items);
 
 			return PagedResponse<UserDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize);
 		}
@@ -103,15 +99,8 @@ namespace EduConnect.Application.Services
 				.FirstOrDefaultAsync(u => u.Id == id);
 			if (user == null)
 				return BaseResponse<UserDto>.Fail("User not found");
-			var dto = new UserDto
-			{
-				UserId = user.Id,
-				FullName = user.UserName,
-				Email = user.Email,
-				PhoneNumber = user.PhoneNumber,
-				IsHomeroomTeacher = user.HomeroomClasses.Any(),
-				IsSubjectTeacher = user.TeachingSessions.Any()
-			};
+			
+			var dto = _mapper.Map<UserDto>(user);
 			return BaseResponse<UserDto>.Ok(dto, "User retrieved successfully");
 		}
 

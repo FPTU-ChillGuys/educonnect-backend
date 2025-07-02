@@ -1,12 +1,14 @@
-﻿using AutoMapper;
-using EduConnect.Application.Commons.Dtos;
+﻿using EduConnect.Application.DTOs.Responses.ClassResponses;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
-using EduConnect.Application.DTOs.Responses.ClassResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Domain.Entities;
-using FluentValidation;
+using EduConnect.Application.Commons.Extensions;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.EntityFrameworkCore;
+using EduConnect.Domain.Entities;
+using System.Linq.Expressions;
+using FluentValidation;
+using AutoMapper;
 
 namespace EduConnect.Application.Services
 {
@@ -14,18 +16,21 @@ namespace EduConnect.Application.Services
 	{
 		private readonly IValidator<CreateClassRequest> _createValidator;
 		private readonly IValidator<UpdateClassRequest> _updateValidator;
+		private readonly IValidator<ClassPagingRequest> _pagingValidator;
 		private readonly IGenericRepository<Class> _classRepo;
 		private readonly IMapper _mapper;
 
 		public ClassService(IValidator<CreateClassRequest> createValidator,
 			IValidator<UpdateClassRequest> updateValidator,
+			IValidator<ClassPagingRequest> pagingValidator,
 			IGenericRepository<Class> classRepo,
 			IMapper mapper)
 		{
 			_createValidator = createValidator;
+			_updateValidator = updateValidator;
+			_pagingValidator = pagingValidator;
 			_classRepo = classRepo;
 			_mapper = mapper;
-			_updateValidator = updateValidator;
 		}
 
 		public async Task<BaseResponse<int>> CountClassesAsync()
@@ -35,6 +40,40 @@ namespace EduConnect.Application.Services
 					? BaseResponse<int>.Ok(task.Result)
 					: BaseResponse<int>.Fail("Failed to retrieve class count"));
 		}
+
+		public async Task<PagedResponse<ClassDto>> GetPagedClassesAsync(ClassPagingRequest request)
+		{
+			var validationResult = await _pagingValidator.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
+				return PagedResponse<ClassDto>.Fail(errors, request.PageNumber, request.PageSize);
+			}
+
+			Expression<Func<Class, bool>> filter = c => true;
+
+			if (!string.IsNullOrWhiteSpace(request.Keyword))
+			{
+				filter = filter.AndAlso(c =>
+					c.ClassName.Contains(request.Keyword) ||
+					c.GradeLevel.Contains(request.Keyword) ||
+					c.AcademicYear.Contains(request.Keyword));
+			}
+
+			var (classes, totalCount) = await _classRepo.GetPagedAsync(
+				filter: filter,
+				include: q => q.Include(c => c.HomeroomTeacher),
+				orderBy: q => q.ApplySorting(request.SortBy, request.SortDescending),
+				pageNumber: request.PageNumber,
+				pageSize: request.PageSize,
+				asNoTracking: true
+			);
+
+			var dtoList = _mapper.Map<List<ClassDto>>(classes);
+
+			return PagedResponse<ClassDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize);
+		}
+
 
 		public async Task<BaseResponse<string>> CreateClassAsync(CreateClassRequest request)
 		{
@@ -57,8 +96,7 @@ namespace EduConnect.Application.Services
 
 		public async Task<BaseResponse<string>> UpdateClassAsync(Guid id, UpdateClassRequest request)
 		{
-			var validator = _updateValidator;
-			var validationResult = await validator.ValidateAsync(request);
+			var validationResult = await _updateValidator.ValidateAsync(request);
 
 			if (!validationResult.IsValid)
 			{

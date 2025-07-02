@@ -127,6 +127,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 
 			// AutoMapper
+			services.AddAutoMapper(typeof(UserProfile).Assembly);
 			services.AddAutoMapper(typeof(ClassProfile).Assembly);
 			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
 			services.AddAutoMapper(typeof(SubjectProfile).Assembly);
@@ -138,6 +139,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
 			services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassRequest>, UpdateClassRequestValidator>();
+			services.AddScoped<IValidator<ClassPagingRequest>, ClassPagingRequestValidator>();
 			services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
 			services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
 			services.AddScoped<IValidator<CreateSubjectRequest>, CreateSubjectRequestValidator>();
