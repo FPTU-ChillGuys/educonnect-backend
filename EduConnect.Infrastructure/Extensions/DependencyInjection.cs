@@ -127,6 +127,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 
 			// AutoMapper
+			services.AddAutoMapper(typeof(UserProfile).Assembly);
 			services.AddAutoMapper(typeof(ClassProfile).Assembly);
 			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
 			services.AddAutoMapper(typeof(SubjectProfile).Assembly);

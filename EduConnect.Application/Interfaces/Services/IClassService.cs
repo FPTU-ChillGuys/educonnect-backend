@@ -7,6 +7,7 @@ namespace EduConnect.Application.Interfaces.Services
 	public interface IClassService
 	{
 		Task<BaseResponse<int>> CountClassesAsync();
+		Task<PagedResponse<ClassDto>> GetPagedClassesAsync(ClassPagingRequest request);
 		Task<BaseResponse<ClassDto>> GetClassByIdAsync(Guid classId);
 		Task<BaseResponse<List<ClassDto>>> GetClassesByTeacherIdAsync(Guid teacherId);
 		Task<BaseResponse<List<ClassDto>>> GetClassesByStudentIdAsync(Guid studentId);
