@@ -37,22 +37,22 @@ namespace EduConnect.Application.Services
 			if (!isEmailConfirmed)
 				return BaseResponse<TokenResponse>.Fail("Email not confirmed");
 
+			if (!string.IsNullOrWhiteSpace(login.DeviceToken) && user.DeviceToken != login.DeviceToken)
+			{
+				user.DeviceToken = login.DeviceToken;
+				await _userManager.UpdateAsync(user);
+			}
+
 			var tokenResponse = await GenerateTokenResponseAsync(user);
 			return BaseResponse<TokenResponse>.Ok(tokenResponse);
 		}
 
+
 		public async Task<BaseResponse<TokenResponse>> LoginWithGoogleAsync(GoogleLoginRequest request)
 		{
-			// Step 1: Validate Google ID token
-			//var settings = new GoogleJsonWebSignature.ValidationSettings
-			//{
-			//	Audience = new[] { config["Authentication:Google:ClientId"]! }
-			//};
-
 			GoogleJsonWebSignature.Payload payload;
 			try
 			{
-				//payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
 				payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
 			}
 			catch
@@ -63,7 +63,7 @@ namespace EduConnect.Application.Services
 			var email = payload.Email;
 			var user = await _userManager.FindByEmailAsync(email);
 
-			// Step 2: Allow login ONLY if user exists
+			// Allow login ONLY if user exists
 			if (user is null)
 				return BaseResponse<TokenResponse>.Fail("Your account is not registered.");
 
@@ -76,7 +76,13 @@ namespace EduConnect.Application.Services
 				await _userManager.UpdateAsync(user);
 			}
 
-			// Step 3: Generate your own JWT + refresh token
+			if (!string.IsNullOrWhiteSpace(request.DeviceToken) && user.DeviceToken != request.DeviceToken)
+			{
+				user.DeviceToken = request.DeviceToken;
+			}
+			await _userManager.UpdateAsync(user);
+
+			// Generate your own JWT + refresh token
 			var tokenResponse = await GenerateTokenResponseAsync(user);
 			return BaseResponse<TokenResponse>.Ok(tokenResponse, "Google login successful");
 		}
