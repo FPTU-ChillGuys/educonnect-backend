@@ -1,12 +1,12 @@
 ﻿using EduConnect.Application.Commons.Dtos;
 using EduConnect.Application.DTOs.Requests.UserRequests;
-using EduConnect.Application.DTOs.Responses.StudentResponses;
 using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 
 namespace EduConnect.Application.Services
@@ -93,6 +93,26 @@ namespace EduConnect.Application.Services
 			}).ToList();
 
 			return PagedResponse<UserDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize);
+		}
+
+		public async Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id)
+		{
+			var user = await _userManager.Users
+				.Include(u => u.HomeroomClasses)
+				.Include(u => u.TeachingSessions)
+				.FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null)
+				return BaseResponse<UserDto>.Fail("User not found");
+			var dto = new UserDto
+			{
+				UserId = user.Id,
+				FullName = user.UserName,
+				Email = user.Email,
+				PhoneNumber = user.PhoneNumber,
+				IsHomeroomTeacher = user.HomeroomClasses.Any(),
+				IsSubjectTeacher = user.TeachingSessions.Any()
+			};
+			return BaseResponse<UserDto>.Ok(dto, "User retrieved successfully");
 		}
 
 		public async Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(ExportUserRequest request)

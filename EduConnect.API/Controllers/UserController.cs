@@ -42,10 +42,18 @@ namespace EduConnect.API.Controllers
 
 		[HttpGet]
 		[Authorize(Roles = "admin")]
-		public async Task<IActionResult> GetTeacher([FromQuery] FilterUserRequest request)
+		public async Task<IActionResult> GetUsers([FromQuery] FilterUserRequest request)
 		{
 			var result = await _userService.GetPagedUsersAsync(request);
 			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
+		[HttpGet("{id}")]
+		[Authorize(Roles = "admin,teacher,parent")]
+		public async Task<IActionResult> GetUserById(Guid id)
+		{
+			var result = await _userService.GetUserByIdAsync(id);
+			return result.Success ? Ok(result) : NotFound(result);
 		}
 
 		[HttpGet("export")]
