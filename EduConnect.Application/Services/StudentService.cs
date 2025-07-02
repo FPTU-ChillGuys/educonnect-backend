@@ -115,11 +115,6 @@ namespace EduConnect.Application.Services
 					s.FullName.Contains(request.Keyword) || s.StudentCode!.Contains(request.Keyword));
 			}
 
-			if (request.ClassId.HasValue)
-			{
-				filter = filter.AndAlso(s => s.ClassId == request.ClassId.Value);
-			}
-
 			if (!string.IsNullOrWhiteSpace(request.Status))
 			{
 				filter = filter.AndAlso(s => s.Status == request.Status);
@@ -149,12 +144,12 @@ namespace EduConnect.Application.Services
 				asNoTracking: true
 			);
 
-			var dto = _mapper.Map<List<StudentDto>>(students);
-			if (!dto.Any())
+			var dtoList = _mapper.Map<List<StudentDto>>(students);
+			if (!dtoList.Any())
 			{
 				return PagedResponse<StudentDto>.Fail("No students found for this class", request.PageNumber, request.PageSize);
 			}
-			return PagedResponse<StudentDto>.Ok(dto, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
+			return PagedResponse<StudentDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
 		}
 
 		public async Task<PagedResponse<StudentDto>> GetPagedStudentsAsync(StudentPagingRequest request)
@@ -197,7 +192,7 @@ namespace EduConnect.Application.Services
 				filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
 			}
 
-			var result = await _studentRepo.GetPagedAsync(
+			var (students, totalCount) = await _studentRepo.GetPagedAsync(
 				filter: filter,
 				include: q => q.Include(s => s.Class).Include(s => s.Parent),
 				pageNumber: request.PageNumber,
@@ -205,19 +200,15 @@ namespace EduConnect.Application.Services
 				asNoTracking: true
 			);
 
-			var dtoList = _mapper.Map<List<StudentDto>>(result);
+			var dtoList = _mapper.Map<List<StudentDto>>(students);
 
 			if (!dtoList.Any())
 			{
 				return PagedResponse<StudentDto>.Fail("No students found", request.PageNumber, request.PageSize);
 			}
 
-			return PagedResponse<StudentDto>.Ok(
-				data: dtoList,
-				total: result.TotalCount,
-				page: request.PageNumber,
-				pageSize: request.PageSize
-			);
+			return PagedResponse<StudentDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
+
 		}
 
 		public async Task<BaseResponse<int>> CountStudentsAsync()
