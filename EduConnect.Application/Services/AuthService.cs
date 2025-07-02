@@ -44,15 +44,16 @@ namespace EduConnect.Application.Services
 		public async Task<BaseResponse<TokenResponse>> LoginWithGoogleAsync(GoogleLoginRequest request)
 		{
 			// Step 1: Validate Google ID token
-			var settings = new GoogleJsonWebSignature.ValidationSettings
-			{
-				Audience = new[] { config["Authentication:Google:ClientId"]! }
-			};
+			//var settings = new GoogleJsonWebSignature.ValidationSettings
+			//{
+			//	Audience = new[] { config["Authentication:Google:ClientId"]! }
+			//};
 
 			GoogleJsonWebSignature.Payload payload;
 			try
 			{
-				payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+				//payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+				payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
 			}
 			catch
 			{
