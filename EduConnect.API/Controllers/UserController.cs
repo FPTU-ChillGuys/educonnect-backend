@@ -16,7 +16,7 @@ namespace EduConnect.API.Controllers
 			_userService = userService;
 		}
 
-		[HttpGet("count")]
+		[HttpGet("count/teachers")]
 		[Authorize(Roles = "admin,teacher,parent")]
 		public async Task<IActionResult> CountUsers()
 		{
