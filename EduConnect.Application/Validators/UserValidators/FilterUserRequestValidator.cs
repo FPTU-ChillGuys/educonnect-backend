@@ -8,7 +8,9 @@ namespace EduConnect.Application.Validators.UserValidators
 		public FilterUserRequestValidator()
 		{
 			RuleFor(x => x.Keyword).MaximumLength(100);
-			RuleFor(x => x.Role).Must(r => r == "Teacher" || r == "Admin" || r == "Parent").WithMessage("Invalid role name");
+			RuleFor(x => x.Role)
+				.Must(role => string.IsNullOrEmpty(role) || role == "Teacher" || role == "Admin" || role == "Parent")
+				.WithMessage("Invalid role name"); 
 			RuleFor(x => x.Subject).MaximumLength(50);
 		}
 	}
