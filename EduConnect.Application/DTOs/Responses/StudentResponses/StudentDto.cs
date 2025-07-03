@@ -10,5 +10,6 @@
 		public string? ClassName { get; set; }
 		public string? ParentEmail { get; set; }
 		public string? ParentPhoneNumber { get; set; }
+		public string? Status { get; set; }
 	}
 }

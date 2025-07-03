@@ -115,6 +115,11 @@ namespace EduConnect.Application.Services
 					s.FullName.Contains(request.Keyword) || s.StudentCode!.Contains(request.Keyword));
 			}
 
+			if (classId != Guid.Empty)
+			{
+				filter = filter.AndAlso(s => s.ClassId == classId);
+			}
+
 			if (!string.IsNullOrWhiteSpace(request.Status))
 			{
 				filter = filter.AndAlso(s => s.Status == request.Status);
