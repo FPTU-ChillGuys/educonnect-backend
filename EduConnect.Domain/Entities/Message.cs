@@ -6,10 +6,10 @@ namespace EduConnect.Domain.Entities
 {
 	public class Message
 	{
-		[Key]
+        [Key]
 		public Guid MessageId { get; set; }
 
-		public Guid ConversationId { get; set; }
+		public Guid? ConversationId { get; set; }
 
         [Required]
         public string? Content { get; set; }

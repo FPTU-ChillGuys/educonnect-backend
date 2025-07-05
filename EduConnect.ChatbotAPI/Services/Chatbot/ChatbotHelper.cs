@@ -43,7 +43,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             //    };
             //}
 
-            chatHistory = await _chatbotStorage.GetChatHistory(conversationId);
+            //chatHistory = await _chatbotStorage.GetChatHistory(conversationId);
             IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             string response = string.Empty; 
 

@@ -16,7 +16,7 @@ namespace EduConnect.Application.Interfaces.Services
 
         Task<BaseResponse<object>> CreateConversation(Conversation conversation);
 
-        Task<BaseResponse<object>> UpdateConversation(Conversation conversation);
+        Task<BaseResponse<object>> UpdateConversation(Guid conversationId, List<Message> messages, Guid userId);
 
         Task<BaseResponse<object>> DeleteConversation(Guid conversationId);
 

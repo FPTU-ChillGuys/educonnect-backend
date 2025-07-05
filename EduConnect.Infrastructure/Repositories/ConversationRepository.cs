@@ -25,6 +25,7 @@ namespace EduConnect.Infrastructure.Repositories
                 .Where(c => c.ParentId == userId)
                 .Include(c => c.Parent)
                 .Include(c => c.Messages)
+                .OrderBy(c => c.CreatedAt)
                 .ToListAsync();
             return conversations;
         }
@@ -35,6 +36,7 @@ namespace EduConnect.Infrastructure.Repositories
                 .Where(c => c.ConversationId == conversationId)
                 .Include(c => c.Parent)
                 .Include(c => c.Messages)
+                .OrderBy(c => c.CreatedAt)
                 .FirstOrDefaultAsync();
             return conversationQuery;
         }

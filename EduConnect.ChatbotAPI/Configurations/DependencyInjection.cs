@@ -27,9 +27,11 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             //Add Repositories
             services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
 
             //Add Services
             services.AddScoped<IConversationService, ConversationService>();
+            services.AddScoped<IMessageService, MessageService>();
 
             //Add Chatbot Services
             services.AddScoped<ChatbotStorage>();
@@ -41,6 +43,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             //Add other services
             services.AddSingleton<HttpClient>();
             services.AddSignalR();
+            services.AddLogging();
 
             services.AddDistributedMemoryCache();
             services.AddSingleton<Kernel>(AddKernal());

@@ -13,15 +13,15 @@ namespace EduConnect.Domain.Entities
     {
         [Key]
         public Guid ConversationId { get; set; }
-        public Guid ParentId { get; set; } 
+        public Guid? ParentId { get; set; } 
         public string? Title { get; set; } = "New Conversation";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<Message> Messages { get; set; } = new List<Message>();
-        [ForeignKey(nameof(ParentId))]
 
+        [ForeignKey(nameof(ParentId))]
         [JsonIgnore]
-        public User Parent { get; set; }
+        public User? Parent { get; set; }
 
     }
 }
