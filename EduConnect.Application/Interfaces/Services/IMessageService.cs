@@ -10,9 +10,9 @@ namespace EduConnect.Application.Interfaces.Services
 {
     public interface IMessageService
     {
-        Task<BaseResponse<IEnumerable<Conversation>>> GetAllMessagesByConversationId(Guid conversationId);
+        Task<BaseResponse<IEnumerable<Message>>> GetAllMessagesByConversationId(Guid conversationId);
 
-        Task<BaseResponse<Conversation>> GetMessageById(Guid messageId);
+        Task<BaseResponse<Message>> GetMessageById(Guid messageId);
 
         Task<BaseResponse<object>> CreateMessage( Message message);
 

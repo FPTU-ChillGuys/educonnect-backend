@@ -56,12 +56,13 @@ namespace EduConnect.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task<BaseResponse<IEnumerable<Conversation>>> GetAllMessagesByConversationId(Guid userId)
+        public async Task<BaseResponse<IEnumerable<Message>>> GetAllMessagesByConversationId(Guid conversationId)
         {
-            throw new NotImplementedException();
+            var messages = await messageRepo.GetAllMessagesByConversationIdAsync(conversationId);
+            return BaseResponse<IEnumerable<Message>>.Ok(messages);
         }
 
-        public Task<BaseResponse<Conversation>> GetMessageById(Guid messageId)
+        public Task<BaseResponse<Message>> GetMessageById(Guid messageId)
         {
             throw new NotImplementedException();
         }

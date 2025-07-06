@@ -11,7 +11,12 @@ namespace EduConnect.ChatbotAPI.Controllers
         ) : ControllerBase
     {
 
-
+        [HttpGet("conversation/{conversationId}")]
+        public async Task<IActionResult> GetAllMessagesByConversationId(Guid conversationId)
+        {
+            var result = await messageService.GetAllMessagesByConversationId(conversationId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
 
     }
 }
