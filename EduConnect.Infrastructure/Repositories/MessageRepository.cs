@@ -25,7 +25,7 @@ namespace EduConnect.Infrastructure.Repositories
         {
             var messageQuery = await _context.Messages
                 .Where(m => m.ConversationId == conversationId)
-                .OrderBy(m => m.CreatedAt)
+                .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
             return messageQuery;
         }
