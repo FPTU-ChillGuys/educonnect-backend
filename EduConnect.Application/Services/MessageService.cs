@@ -23,7 +23,7 @@ namespace EduConnect.Application.Services
             throw new NotImplementedException();
         }
 
-        public async Task<BaseResponse<object>> CreateRangeMessages(List<Message> messages)
+        public async Task<BaseResponse<object>> CreateRangeMessages(List<Message> messages, Guid userId)
         {
 
             if (messages == null)
@@ -34,16 +34,15 @@ namespace EduConnect.Application.Services
             if (messages.Count == 0)
             {
                 return BaseResponse<object>.Fail("Message list cannot be empty.");
-            }   
+            }
 
             foreach (var message in messages)
             {
                 message.CreatedAt = DateTime.Now;
                 await messageRepo.AddAsync(message);
-               
             }
 
-            
+
             var result = await messageRepo.SaveChangesAsync();
             if (!result)
             {

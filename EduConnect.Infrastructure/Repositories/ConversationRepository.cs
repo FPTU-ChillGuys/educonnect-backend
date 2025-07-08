@@ -23,6 +23,7 @@ namespace EduConnect.Infrastructure.Repositories
         {
             return await _context.Conversations
                 .Where(c => c.ParentId == userId)
+                .OrderByDescending(c => c.CreatedAt)
                 .Select(c => c.ConversationId)
                 .ToListAsync();
         }
@@ -47,6 +48,12 @@ namespace EduConnect.Infrastructure.Repositories
                 .OrderBy(c => c.CreatedAt)
                 .FirstOrDefaultAsync();
             return conversationQuery;
+        }
+
+        public async Task<bool> CheckConversationExistsAsync(Guid conversationId)
+        {
+            return await _context.Conversations
+                .AnyAsync(c => c.ConversationId == conversationId);
         }
 
     }

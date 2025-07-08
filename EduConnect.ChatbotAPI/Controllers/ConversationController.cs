@@ -27,6 +27,13 @@ namespace EduConnect.API.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("check/{id}")]
+        public async Task<IActionResult> CheckConversationExists(Guid id)
+        {
+            var result = await _conversationService.CheckConversationExists(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
         [HttpGet("user/{id}")]
         public async Task<IActionResult> GetConversationByUserId(Guid id)
         {

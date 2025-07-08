@@ -16,5 +16,7 @@ namespace EduConnect.Application.Interfaces.Repositories
         //Task<bool> IsUserInConversationAsync(Guid userId, Guid conversationId);
         //Task AddMessageToConversationAsync(Guid conversationId, Message message);
         //Task<IEnumerable<Message>> GetMessagesByConversationIdAsync(Guid conversationId, int skip = 0, int take = 50, bool asNoTracking = false);
+
+        Task<bool> CheckConversationExistsAsync(Guid conversationId);
     }
 }

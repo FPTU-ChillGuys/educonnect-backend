@@ -99,5 +99,15 @@ namespace EduConnect.Application.Services
                 return BaseResponse<object>.Fail("Failed to update conversation.");
             }
         }
+
+        public async Task<BaseResponse<bool>> CheckConversationExists(Guid conversationId)
+        {
+            var conversation = await conversationRepo.CheckConversationExistsAsync(conversationId);
+            if (conversation == false)
+            {
+                return BaseResponse<bool>.Fail("Conversation does not exist.");
+            }
+            return BaseResponse<bool>.Ok(conversation);
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace EduConnect.Application.Interfaces.Services
 
         Task<BaseResponse<object>> CreateMessage( Message message);
 
-        Task<BaseResponse<object>> CreateRangeMessages(List<Message> messages);   
+        Task<BaseResponse<object>> CreateRangeMessages(List<Message> messages, Guid userId);   
 
         Task<BaseResponse<object>> UpdateMessage(Message messages);
 

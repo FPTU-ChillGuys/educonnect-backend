@@ -23,5 +23,7 @@ namespace EduConnect.Application.Interfaces.Services
 
         Task<BaseResponse<IEnumerable<Guid>>> GetAllConversationIdByUserIdAsync(Guid userId);
 
+        Task<BaseResponse<bool>> CheckConversationExists(Guid conversationId);
+
     }
 }
