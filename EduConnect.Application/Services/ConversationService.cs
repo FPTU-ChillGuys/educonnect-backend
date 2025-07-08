@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EduConnect.Application.Commons;
+using EduConnect.Application.Commons.Dtos;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Domain.Entities;
@@ -33,6 +34,12 @@ namespace EduConnect.Application.Services
         public Task<BaseResponse<object>> DeleteConversation(Guid conversationId)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<BaseResponse<IEnumerable<Guid>>> GetAllConversationIdByUserIdAsync(Guid userId)
+        {
+            var conversationIds = await conversationRepo.GetAllConversationIdByUserIdAsync(userId);
+            return BaseResponse<IEnumerable<Guid>>.Ok(conversationIds);
         }
 
         public async Task<BaseResponse<IEnumerable<Conversation>>> GetAllConversationsByUserId(Guid userId)

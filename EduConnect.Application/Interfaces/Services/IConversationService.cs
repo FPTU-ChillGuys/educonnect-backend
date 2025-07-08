@@ -1,4 +1,5 @@
 ﻿using EduConnect.Application.Commons;
+using EduConnect.Application.Commons.Dtos;
 using EduConnect.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,8 @@ namespace EduConnect.Application.Interfaces.Services
         Task<BaseResponse<object>> UpdateConversation(Guid conversationId, List<Message> messages, Guid userId);
 
         Task<BaseResponse<object>> DeleteConversation(Guid conversationId);
+
+        Task<BaseResponse<IEnumerable<Guid>>> GetAllConversationIdByUserIdAsync(Guid userId);
 
     }
 }

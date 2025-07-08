@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EduConnect.Application.Commons;
+using EduConnect.Application.Commons.Dtos;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Domain.Entities;

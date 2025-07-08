@@ -42,6 +42,12 @@ namespace EduConnect.API.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("ids/user/{userId}")]
+        public async Task<IActionResult> GetAllConversationIdsByUserId(Guid userId)
+        {
+            var result = await _conversationService.GetAllConversationIdByUserIdAsync(userId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
 
     }
 }

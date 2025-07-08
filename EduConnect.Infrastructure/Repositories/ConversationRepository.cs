@@ -19,6 +19,14 @@ namespace EduConnect.Infrastructure.Repositories
         {
         }
 
+        public async Task<IEnumerable<Guid>> GetAllConversationIdByUserIdAsync(Guid userId)
+        {
+            return await _context.Conversations
+                .Where(c => c.ParentId == userId)
+                .Select(c => c.ConversationId)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Conversation>> GetAllConversationsByUserIdAsync(Guid userId)
         {
             var conversations = await _context.Conversations
@@ -40,5 +48,6 @@ namespace EduConnect.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
             return conversationQuery;
         }
+
     }
 }

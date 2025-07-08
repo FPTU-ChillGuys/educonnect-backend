@@ -113,11 +113,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-<<<<<<< HEAD
 app.UseGlobalExceptionHandler();
-=======
+
 app.UseHangfireDashboard();
->>>>>>> a94e7d57b7efcab88fc3d69aacd7863cb848aa57
 
 app.MapControllers();
 
