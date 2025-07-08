@@ -1,11 +1,13 @@
-﻿using EduConnect.Application.DTOs.Responses.UserResponses;
+﻿using AutoMapper;
+using EduConnect.Application.Commons.Dtos;
 using EduConnect.Application.DTOs.Requests.UserRequests;
+using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Application.Commons;
-using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 
 namespace EduConnect.Application.Services
@@ -13,21 +15,32 @@ namespace EduConnect.Application.Services
 	public class UserService : IUserService
 	{
 		private readonly IUserRepository _userRepo;
+		private readonly IGenericRepository<User> _genericRepo;
 		private readonly UserManager<User> _userManager;
-		private readonly IValidator<UpdateUserRequest> _validator;
+		private readonly IValidator<UpdateUserRequest> _updateValidator;
+		private readonly IValidator<FilterUserRequest> _filterValidator;
+		private readonly IMapper _mapper;
 
-		public UserService(IUserRepository userRepo, UserManager<User> userManager, IValidator<UpdateUserRequest> validator)
+		public UserService(IUserRepository userRepo,
+			UserManager<User> userManager,
+			IValidator<UpdateUserRequest> updateValidator,
+			IValidator<FilterUserRequest> filterValidator,
+			IGenericRepository<User> genericRepo,
+			IMapper mapper)
 		{
 			_userRepo = userRepo;
 			_userManager = userManager;
-			_validator = validator;
+			_updateValidator = updateValidator;
+			_filterValidator = filterValidator;
+			_genericRepo = genericRepo;
+			_mapper = mapper;
 		}
 
 		public async Task<BaseResponse<int>> CountHomeroomTeachersAsync()
 		{
 			try
 			{
-				var count = await _userRepo.CountHomeroomTeachersAsync();
+				var count = await _genericRepo.CountAsync(u => u.HomeroomClasses.Any() && u.IsActive);
 				return BaseResponse<int>.Ok(count);
 			}
 			catch (Exception ex)
@@ -40,7 +53,7 @@ namespace EduConnect.Application.Services
 		{
 			try
 			{
-				var count = await _userRepo.CountSubjectTeachersAsync();
+				var count = await _genericRepo.CountAsync(u => u.TeachingSessions.Any() && u.IsActive);
 				return BaseResponse<int>.Ok(count);
 			}
 			catch (Exception ex)
@@ -62,48 +75,33 @@ namespace EduConnect.Application.Services
 			}
 		}
 
-		public async Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request)
+		public async Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request)
 		{
-			var validation = await _validator.ValidateAsync(request);
-			if (!validation.IsValid)
-				return BaseResponse<string>.Fail(string.Join(" | ", validation.Errors.Select(e => e.ErrorMessage)));
+			var validationResult = await _filterValidator.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
+				return PagedResponse<UserDto>.Fail(errors, request.PageNumber, request.PageSize);
+			}
 
-			var user = await _userManager.FindByIdAsync(id.ToString());
-			if (user == null)
-				return BaseResponse<string>.Fail("User not found");
-
-			// Apply updates
-			user.PhoneNumber = request.PhoneNumber;
-			user.Address = request.Address;
-			user.IsActive = request.IsActive;
-
-			// You might want to update FullName, but IdentityUser doesn't have it by default.
-			// Consider extending User with a FullName property if not done already
-			user.UserName = request.FullName; // or add user.FullName if you added that field
-			user.NormalizedUserName = request.FullName?.ToUpperInvariant(); // Normalize if needed
-
-			var result = await _userManager.UpdateAsync(user);
-			if (!result.Succeeded)
-				return BaseResponse<string>.Fail("Failed to update user");
-
-			return BaseResponse<string>.Ok("User updated successfully");
-		}
-
-		public async Task<PagedResponse<UserDto>> GetPagedUsersAsync(UserFilterRequest request)
-		{
 			var (items, totalCount) = await _userRepo.GetPagedUsersAsync(request);
 
-			var dtoList = items.Select(u => new UserDto
-			{
-				UserId = u.Id,
-				FullName = u.UserName,
-				Email = u.Email,
-				PhoneNumber = u.PhoneNumber,
-				IsHomeroomTeacher = u.HomeroomClasses.Any(),
-				IsSubjectTeacher = u.TeachingSessions.Any()
-			}).ToList();
+			var dtoList = _mapper.Map<List<UserDto>>(items);
 
 			return PagedResponse<UserDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize);
+		}
+
+		public async Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id)
+		{
+			var user = await _userManager.Users
+				.Include(u => u.HomeroomClasses)
+				.Include(u => u.TeachingSessions)
+				.FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null)
+				return BaseResponse<UserDto>.Fail("User not found");
+			
+			var dto = _mapper.Map<UserDto>(user);
+			return BaseResponse<UserDto>.Ok(dto, "User retrieved successfully");
 		}
 
 		public async Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(ExportUserRequest request)
@@ -144,6 +142,44 @@ namespace EduConnect.Application.Services
 			{
 				return BaseResponse<byte[]>.Fail($"An error occurred during export: {ex.Message}");
 			}
+		}
+
+		public async Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request)
+		{
+			var validation = await _updateValidator.ValidateAsync(request);
+			if (!validation.IsValid)
+				return BaseResponse<string>.Fail(string.Join(" | ", validation.Errors.Select(e => e.ErrorMessage)));
+
+			var user = await _userManager.FindByIdAsync(id.ToString());
+			if (user == null)
+				return BaseResponse<string>.Fail("User not found");
+
+			// Apply updates
+			user.PhoneNumber = request.PhoneNumber;
+			user.Address = request.Address;
+
+			// You might want to update FullName, but IdentityUser doesn't have it by default.
+			// Consider extending User with a FullName property if not done already
+			user.UserName = request.FullName; // or add user.FullName if you added that field
+			user.NormalizedUserName = request.FullName?.ToUpperInvariant(); // Normalize if needed
+
+			var result = await _userManager.UpdateAsync(user);
+			if (!result.Succeeded)
+				return BaseResponse<string>.Fail("Failed to update user");
+
+			return BaseResponse<string>.Ok("User updated successfully");
+		}
+
+		public async Task<BaseResponse<string>> UpdateUserStatsusAsync(Guid id, UpdateUserStatusRequest request)
+		{
+			var user = await _userManager.FindByIdAsync(id.ToString());
+			if (user == null)
+				return BaseResponse<string>.Fail("User not found");
+			user.IsActive = request.IsActive;
+			var result = await _userManager.UpdateAsync(user);
+			if (!result.Succeeded)
+				return BaseResponse<string>.Fail("Failed to update user status");
+			return BaseResponse<string>.Ok("User status updated successfully");
 		}
 	}
 }

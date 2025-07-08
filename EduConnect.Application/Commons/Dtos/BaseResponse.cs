@@ -1,4 +1,4 @@
-﻿namespace EduConnect.Application.Commons
+﻿namespace EduConnect.Application.Commons.Dtos
 {
 	public class BaseResponse
 	{

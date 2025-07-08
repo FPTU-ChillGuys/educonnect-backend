@@ -1,6 +1,6 @@
 ﻿using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.DTOs.Requests.UserRequests;
-using EduConnect.Application.Commons;
+using EduConnect.Application.Commons.Dtos;
 
 namespace EduConnect.Application.Interfaces.Services
 {
@@ -9,8 +9,10 @@ namespace EduConnect.Application.Interfaces.Services
 		Task<BaseResponse<int>> CountTeachersAsync();
 		Task<BaseResponse<int>> CountHomeroomTeachersAsync();
 		Task<BaseResponse<int>> CountSubjectTeachersAsync();
-		Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request);
-		Task<PagedResponse<UserDto>> GetPagedUsersAsync(UserFilterRequest request);
+		Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request);
+		Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id);
 		Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(ExportUserRequest request);
+		Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request);
+		Task<BaseResponse<string>> UpdateUserStatsusAsync(Guid id, UpdateUserStatusRequest request);
 	}
 }

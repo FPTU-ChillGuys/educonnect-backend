@@ -10,5 +10,6 @@
 		public string LessonContent { get; set; } = string.Empty;
 		public int TotalAbsentStudents { get; set; }
 		public string? GeneralBehaviorNote { get; set; }
+		public bool IsDeleted { get; set; } = false;
 	}
 }

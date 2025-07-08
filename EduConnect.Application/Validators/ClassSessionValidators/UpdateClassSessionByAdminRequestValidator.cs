@@ -14,6 +14,8 @@ namespace EduConnect.Application.Validators.ClassSessionValidators
 			RuleFor(x => x.PeriodNumber).GreaterThan(0);
 			RuleFor(x => x.LessonContent).NotEmpty().MaximumLength(500);
 			RuleFor(x => x.TotalAbsentStudents).GreaterThanOrEqualTo(0);
+			RuleFor(x => x.GeneralBehaviorNote).MaximumLength(1000);
+			RuleFor(x => x.IsDeleted).NotNull();
 		}
 	}
 }

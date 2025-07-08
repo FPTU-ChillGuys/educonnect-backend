@@ -10,20 +10,6 @@ namespace EduConnect.Infrastructure.Repositories
 	{
 		public UserRepository(EduConnectDbContext context) : base(context) { }
 
-		public async Task<int> CountHomeroomTeachersAsync()
-		{
-			return await _context.Users
-				.Where(u => u.HomeroomClasses.Any() && u.IsActive)
-				.CountAsync();
-		}
-
-		public async Task<int> CountSubjectTeachersAsync()
-		{
-			return await _context.Users
-				.Where(u => u.TeachingSessions.Any() && u.IsActive)
-				.CountAsync();
-		}
-
 		public async Task<int> CountUsersInRoleAsync(string roleName)
 		{
 			var roleId = await _context.Roles
@@ -38,14 +24,14 @@ namespace EduConnect.Infrastructure.Repositories
 				.CountAsync(ur => ur.RoleId == roleId);
 		}
 
-		public async Task<(IEnumerable<User> Items, int TotalCount)> GetPagedUsersAsync(UserFilterRequest request)
+		public async Task<(IEnumerable<User> Items, int TotalCount)> GetPagedUsersAsync(FilterUserRequest request)
 		{
 			IQueryable<User> query = _context.Users
 				.Include(u => u.HomeroomClasses)
 				.Include(u => u.TeachingSessions)
 				.Where(u => u.IsActive);
 
-			// Filter by Role
+			// Filter by Role (if provided)
 			if (!string.IsNullOrWhiteSpace(request.Role))
 			{
 				var roleId = await _context.Roles
@@ -53,34 +39,42 @@ namespace EduConnect.Infrastructure.Repositories
 					.Select(r => r.Id)
 					.FirstOrDefaultAsync();
 
-				if (roleId != default)
-				{
-					var userIdsInRole = await _context.UserRoles
-						.Where(ur => ur.RoleId == roleId)
-						.Select(ur => ur.UserId)
-						.ToListAsync();
-
-					query = query.Where(u => userIdsInRole.Contains(u.Id));
-				}
-				else
-				{
+				if (roleId == Guid.Empty)
 					return (Enumerable.Empty<User>(), 0);
-				}
+
+				var userIdsInRole = await _context.UserRoles
+					.Where(ur => ur.RoleId == roleId)
+					.Select(ur => ur.UserId)
+					.ToListAsync();
+
+				if (userIdsInRole.Count == 0)
+					return (Enumerable.Empty<User>(), 0);
+
+				query = query.Where(u => userIdsInRole.Contains(u.Id));
 			}
 
-			// Filter by keyword
+			// Filter by Keyword (Username or Email)
 			if (!string.IsNullOrWhiteSpace(request.Keyword))
-				query = query.Where(u => u.UserName.Contains(request.Keyword) || u.Email.Contains(request.Keyword));
+			{
+				query = query.Where(u =>
+					u.UserName.Contains(request.Keyword) ||
+					u.Email.Contains(request.Keyword));
+			}
 
+			// Filter: is Homeroom Teacher
 			if (request.IsHomeroomTeacher == true)
 				query = query.Where(u => u.HomeroomClasses.Any());
 
+			// Filter: is Subject Teacher
 			if (request.IsSubjectTeacher == true)
 				query = query.Where(u => u.TeachingSessions.Any());
 
+			// Filter by Subject name
 			if (!string.IsNullOrWhiteSpace(request.Subject))
-				query = query.Where(u => u.TeachingSessions.Any(s => s.Subject.SubjectName == request.Subject));
+				query = query.Where(u =>
+					u.TeachingSessions.Any(s => s.Subject.SubjectName == request.Subject));
 
+			// Pagination
 			var totalCount = await query.CountAsync();
 			var result = await query
 				.Skip((request.PageNumber - 1) * request.PageSize)

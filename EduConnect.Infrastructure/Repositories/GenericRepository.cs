@@ -1,7 +1,7 @@
 ﻿using EduConnect.Application.Interfaces.Repositories;
-using EduConnect.Persistence.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
+using EduConnect.Persistence.Data;
 using System.Linq.Expressions;
 
 namespace EduConnect.Infrastructure.Repositories
@@ -11,7 +11,7 @@ namespace EduConnect.Infrastructure.Repositories
 		protected readonly EduConnectDbContext _context;
 		private readonly DbSet<T> _dbSet;
 
-		public GenericRepository(EduConnectDbContext context)
+		public GenericRepository(EduConnectDbContext context) : base()
 		{
 			_context = context;
 			_dbSet = _context.Set<T>();
@@ -20,6 +20,7 @@ namespace EduConnect.Infrastructure.Repositories
 		public async Task<IEnumerable<T>> GetAllAsync(
 			Expression<Func<T, bool>>? filter = null,
 			Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null,
+			Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
 			bool asNoTracking = false,
 			int? skip = null,
 			int? take = null)
@@ -31,6 +32,9 @@ namespace EduConnect.Infrastructure.Repositories
 
 			if (include is not null)
 				query = include(query);
+
+			if (orderBy is not null)
+				query = orderBy(query);
 
 			if (asNoTracking)
 				query = query.AsNoTracking();
@@ -47,6 +51,7 @@ namespace EduConnect.Infrastructure.Repositories
 		public async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
 			Expression<Func<T, bool>>? filter = null,
 			Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null,
+			Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
 			int pageNumber = 1,
 			int pageSize = 10,
 			bool asNoTracking = false)
@@ -62,7 +67,11 @@ namespace EduConnect.Infrastructure.Repositories
 			if (asNoTracking)
 				query = query.AsNoTracking();
 
+			if (orderBy is not null)
+				query = orderBy(query); // apply sorting
+
 			int totalCount = await query.CountAsync();
+
 			var items = await query
 				.Skip((pageNumber - 1) * pageSize)
 				.Take(pageSize)
@@ -71,17 +80,12 @@ namespace EduConnect.Infrastructure.Repositories
 			return (items, totalCount);
 		}
 
-		public async Task<T?> GetByIdAsync(Guid id)
-		{
-			return await _dbSet.FindAsync(id);
-		}
-
-		public async Task<T?> FirstOrDefaultAsync(
-			Expression<Func<T, bool>> filter,
+		public async Task<T?> GetByIdAsync(
+			Expression<Func<T, bool>> predicate,
 			Func<IQueryable<T>, IIncludableQueryable<T, object>>? include = null,
 			bool asNoTracking = false)
 		{
-			IQueryable<T> query = _dbSet.Where(filter);
+			IQueryable<T> query = _dbSet;
 
 			if (include is not null)
 				query = include(query);
@@ -89,7 +93,7 @@ namespace EduConnect.Infrastructure.Repositories
 			if (asNoTracking)
 				query = query.AsNoTracking();
 
-			return await query.FirstOrDefaultAsync();
+			return await query.FirstOrDefaultAsync(predicate);
 		}
 
 		public async Task AddAsync(T entity)

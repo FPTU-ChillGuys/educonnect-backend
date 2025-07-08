@@ -2,28 +2,32 @@
 using EduConnect.Application.DTOs.Requests.StudentRequests;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Application.Commons;
+using EduConnect.Application.Commons.Extensions;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.EntityFrameworkCore;
 using EduConnect.Domain.Entities;
 using System.Linq.Expressions;
 using FluentValidation;
-using AutoMapper;
 using OfficeOpenXml;
+using AutoMapper;
 
 namespace EduConnect.Application.Services
 {
 	public class StudentService : IStudentService
 	{
-		private readonly IGenericRepository<Student> _studentRepo;
 		private readonly IMapper _mapper;
+		private readonly IGenericRepository<Student> _studentRepo;
 		private readonly IValidator<CreateStudentRequest> _validatorCreate;
 		private readonly IValidator<UpdateStudentRequest> _validatorUpdate;
+		private readonly IValidator<GetStudentsByClassIdRequest> _validatorGetByClassId;
 
-		public StudentService(IGenericRepository<Student> studentRepo, 
+		public StudentService(IValidator<GetStudentsByClassIdRequest> validatorGetByClassId, 
+			IGenericRepository<Student> studentRepo, 
 			IValidator<CreateStudentRequest> validatorCreate, 
 			IValidator<UpdateStudentRequest> validatorUpdate,
 			IMapper mapper)
 		{
+			_validatorGetByClassId = validatorGetByClassId;
 			_validatorUpdate = validatorUpdate;	
 			_validatorCreate = validatorCreate;
 			_studentRepo = studentRepo;
@@ -32,7 +36,7 @@ namespace EduConnect.Application.Services
 
 		public async Task<BaseResponse<string>> UpdateStudentAsync(Guid id, UpdateStudentRequest request)
 		{
-			var student = await _studentRepo.GetByIdAsync(id);
+			var student = await _studentRepo.GetByIdAsync(s => s.StudentId == id);
 			if (student == null)
 				return BaseResponse<string>.Fail("Student not found");
 
@@ -80,6 +84,79 @@ namespace EduConnect.Application.Services
 				: BaseResponse<string>.Fail("Failed to create student");
 		}
 
+		public async Task<BaseResponse<List<StudentDto>>> GetStudentsByParentIdAsync(Guid parentId)
+		{
+			var students = await _studentRepo.GetAllAsync(
+				filter: s => s.ParentId == parentId,
+				include: q => q.Include(s => s.Class), 
+				asNoTracking: true
+			);
+
+			var dtoList = _mapper.Map<List<StudentDto>>(students);
+			return BaseResponse<List<StudentDto>>.Ok(dtoList);
+		}
+
+		public async Task<PagedResponse<StudentDto>> GetStudentsByClassIdAsync(Guid classId, GetStudentsByClassIdRequest request)
+		{
+			var validationResult = await _validatorGetByClassId.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
+				return PagedResponse<StudentDto>.Fail(errors, request.PageNumber, request.PageSize);
+			}
+
+			// Start with base query
+			Expression<Func<Student, bool>> filter = s => true;
+
+			// Apply keyword filter
+			if (!string.IsNullOrWhiteSpace(request.Keyword))
+			{
+				filter = filter.AndAlso(s =>
+					s.FullName.Contains(request.Keyword) || s.StudentCode!.Contains(request.Keyword));
+			}
+
+			if (classId != Guid.Empty)
+			{
+				filter = filter.AndAlso(s => s.ClassId == classId);
+			}
+
+			if (!string.IsNullOrWhiteSpace(request.Status))
+			{
+				filter = filter.AndAlso(s => s.Status == request.Status);
+			}
+
+			if (!string.IsNullOrWhiteSpace(request.Gender))
+			{
+				filter = filter.AndAlso(s => s.Gender == request.Gender);
+			}
+
+			if (request.FromDate.HasValue)
+			{
+				filter = filter.AndAlso(s => s.DateOfBirth >= request.FromDate.Value);
+			}
+
+			if (request.ToDate.HasValue)
+			{
+				filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
+			}
+
+			var (students, totalCount) = await _studentRepo.GetPagedAsync(
+				filter: filter,
+				include: q => q.Include(s => s.Class),
+				orderBy: q => q.ApplySorting(request.SortBy, request.SortDescending),
+				pageNumber: request.PageNumber,
+				pageSize: request.PageSize,
+				asNoTracking: true
+			);
+
+			var dtoList = _mapper.Map<List<StudentDto>>(students);
+			if (!dtoList.Any())
+			{
+				return PagedResponse<StudentDto>.Fail("No students found for this class", request.PageNumber, request.PageSize);
+			}
+			return PagedResponse<StudentDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
+		}
+
 		public async Task<PagedResponse<StudentDto>> GetPagedStudentsAsync(StudentPagingRequest request)
 		{
 			// Start with base query
@@ -120,7 +197,7 @@ namespace EduConnect.Application.Services
 				filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
 			}
 
-			var result = await _studentRepo.GetPagedAsync(
+			var (students, totalCount) = await _studentRepo.GetPagedAsync(
 				filter: filter,
 				include: q => q.Include(s => s.Class).Include(s => s.Parent),
 				pageNumber: request.PageNumber,
@@ -128,27 +205,15 @@ namespace EduConnect.Application.Services
 				asNoTracking: true
 			);
 
-			var dtoList = result.Items.Select(s => new StudentDto
-			{
-				StudentId = s.StudentId,
-				FullName = s.FullName,
-				StudentCode = s.StudentCode,
-				ClassName = s.Class?.ClassName,
-				ParentEmail = s.Parent?.Email,
-				Gender = s.Gender
-			}).ToList();
+			var dtoList = _mapper.Map<List<StudentDto>>(students);
 
 			if (!dtoList.Any())
 			{
 				return PagedResponse<StudentDto>.Fail("No students found", request.PageNumber, request.PageSize);
 			}
 
-			return PagedResponse<StudentDto>.Ok(
-				data: dtoList,
-				total: result.TotalCount,
-				page: request.PageNumber,
-				pageSize: request.PageSize
-			);
+			return PagedResponse<StudentDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
+
 		}
 
 		public async Task<BaseResponse<int>> CountStudentsAsync()

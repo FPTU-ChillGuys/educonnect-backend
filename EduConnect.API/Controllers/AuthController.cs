@@ -1,8 +1,8 @@
-﻿using EduConnect.Application.DTOs.Requests.AuthRequests;
-using EduConnect.Application.DTOs.Responses.AuthResponses;
+﻿using EduConnect.Application.DTOs.Responses.AuthResponses;
+using EduConnect.Application.DTOs.Requests.AuthRequests;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.AspNetCore.Authorization;
-using EduConnect.Application.Commons;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EduConnect.API.Controllers
@@ -11,7 +11,7 @@ namespace EduConnect.API.Controllers
 	[Route("api/[controller]")]
 	public class AuthController(IAuthService _authService) : ControllerBase
 	{
-		[HttpPost("register-for-admin")]
+		[HttpPost("register")]
 		[AllowAnonymous]
 		public async Task<ActionResult<BaseResponse<string>>> Register([FromBody] Register request, [FromQuery] string role)
 		{
@@ -35,6 +35,13 @@ namespace EduConnect.API.Controllers
 			return result.Success ? Ok(result) : Unauthorized(result);
 		}
 
+		[HttpPost("google-login")]
+		public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+		{
+			var result = await _authService.LoginWithGoogleAsync(request);
+			return result.Success? Ok(result): BadRequest(result);
+		}
+
 		[HttpPost("refresh-token")]
 		[Authorize]
 		public async Task<ActionResult<BaseResponse<TokenResponse>>> RefreshToken([FromBody] RefreshTokenRequest request)
@@ -43,7 +50,7 @@ namespace EduConnect.API.Controllers
 			return result.Success ? Ok(result) : Unauthorized(result);
 		}
 
-		[HttpPost("forgotpassword")]
+		[HttpPost("forgot-password")]
 		[AllowAnonymous]
 		public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
 		{
@@ -54,7 +61,7 @@ namespace EduConnect.API.Controllers
 			return result.Success ? Ok(result) : NotFound(result);
 		}
 
-		[HttpPost("resetpassword")]
+		[HttpPost("reset-password")]
 		[AllowAnonymous]
 		public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
 		{

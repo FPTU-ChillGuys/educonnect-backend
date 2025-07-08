@@ -13,17 +13,51 @@ namespace EduConnect.API.Controllers
 
 		public StudentController(IStudentService studentService)
 		{
-			_studentService = studentService ?? throw new ArgumentNullException(nameof(studentService));
+			_studentService = studentService;
 		}
 
-		[HttpGet("total")]
+		[HttpGet("count")]
+		[Authorize(Roles = "admin,teacher,parent")]
 		public async Task<IActionResult> CountStudents()
 		{
 			var result = await _studentService.CountStudentsAsync();
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
+		[HttpGet("class/{classId}")]
+		[Authorize(Roles = "admin,teacher,parent")]
+		public async Task<IActionResult> GetStudentsByClass(Guid classId, [FromQuery] GetStudentsByClassIdRequest request)
+		{
+			var result = await _studentService.GetStudentsByClassIdAsync(classId, request);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
+		[HttpGet("parent/{parentId}/childrens")]
+		[Authorize(Roles = "admin,teacher,parent")]
+		public async Task<IActionResult> GetStudentsByParent(Guid parentId)
+		{
+			var result = await _studentService.GetStudentsByParentIdAsync(parentId);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
+		[HttpGet]
+		[Authorize(Roles = "admin")]
+		public async Task<IActionResult> GetPaged([FromQuery] StudentPagingRequest request)
+		{
+			var result = await _studentService.GetPagedStudentsAsync(request);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
+		[HttpPost]
+		[Authorize(Roles = "admin")]
+		public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request)
+		{
+			var result = await _studentService.CreateStudentAsync(request);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
 		[HttpPost("export")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> ExportStudentsToExcel([FromBody] ExportStudentRequest request)
 		{
 			var result = await _studentService.ExportStudentsToExcelAsync(request);
@@ -32,22 +66,8 @@ namespace EduConnect.API.Controllers
 				: BadRequest(result);
 		}
 
-		[HttpGet("paged")]
-		public async Task<IActionResult> GetPaged([FromQuery] StudentPagingRequest request)
-		{
-			var result = await _studentService.GetPagedStudentsAsync(request);
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
-		[HttpPost]
-		public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request)
-		{
-			var result = await _studentService.CreateStudentAsync(request);
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
-		[Authorize(Roles = "admin")]
 		[HttpPut("{id}")]
+		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> UpdateStudent(Guid id, [FromBody] UpdateStudentRequest request)
 		{
 			var result = await _studentService.UpdateStudentAsync(id, request);
