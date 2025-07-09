@@ -37,7 +37,7 @@ namespace EduConnect.Infrastructure.Repositories
                 .OrderBy(m => m.CreatedAt)
                 .Select(m => m.Content)
                 .FirstOrDefaultAsync();
-            return firstMessage == null ? string.Empty : firstMessage?.Substring(0, Math.Min(firstMessage.Length, 10)) + "...";
+            return firstMessage == null ? string.Empty : firstMessage?.Substring(0, Math.Min(firstMessage.Length, 30)) + "...";
         }
     }
 }
