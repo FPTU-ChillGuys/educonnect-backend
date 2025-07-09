@@ -15,5 +15,7 @@ namespace EduConnect.Application.Interfaces.Repositories
         //Task<int> GetMessageCountByConversationIdAsync(Guid conversationId);
         Task<Message?> GetMessageByIdAsync(Guid messageId);
         //Task<IEnumerable<Message>> GetMessagesByUserIdAsync(Guid userId, int skip = 0, int take = 50, bool asNoTracking = false);
+
+        Task<string> GetFirstMessageAsTitleByConversationIdAsync(Guid conversationId);
     }
 }

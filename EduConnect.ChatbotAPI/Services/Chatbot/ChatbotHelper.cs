@@ -24,6 +24,11 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
         }
 
+        //public async Task<string> SummaryChatbotHistoryAsync(Guid conversationId, CancellationToken ct = default)
+        //{
+            
+        //}
+
 
         public async IAsyncEnumerable<string> ChatbotResponseAsync(string userPrompt, Guid conversationId, [EnumeratorCancellation] CancellationToken ct = default)
         {
@@ -53,7 +58,8 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             #pragma warning disable SKEXP0070
             OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
             {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                ModelId = "qwen3:0.6b",
             };
 
             await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct))

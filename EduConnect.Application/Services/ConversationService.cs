@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EduConnect.Application.Commons;
 using EduConnect.Application.Commons.Dtos;
+using EduConnect.Application.DTOs.Responses.ConversationResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Domain.Entities;
@@ -15,9 +16,13 @@ namespace EduConnect.Application.Services
 {
     public class ConversationService(
             IConversationRepository conversationRepo,
+            IMessageRepository messageRepo,
             IMapper mapper
         ) : IConversationService
     {
+
+        
+
         public async Task<BaseResponse<object>> CreateConversation(Conversation conversation)
         {
             await conversationRepo.AddAsync(conversation);
@@ -36,10 +41,23 @@ namespace EduConnect.Application.Services
             throw new NotImplementedException();
         }
 
-        public async Task<BaseResponse<IEnumerable<Guid>>> GetAllConversationIdByUserIdAsync(Guid userId)
+        public async Task<BaseResponse<IEnumerable<ConversationIdWithTitleDto>>> GetAllConversationIdByUserIdAsync(Guid userId)
         {
             var conversationIds = await conversationRepo.GetAllConversationIdByUserIdAsync(userId);
-            return BaseResponse<IEnumerable<Guid>>.Ok(conversationIds);
+
+            var conversationIdWithTitleList = new List<ConversationIdWithTitleDto>();
+
+            foreach (var conversationId in conversationIds)
+            {
+                var title = await messageRepo.GetFirstMessageAsTitleByConversationIdAsync(conversationId);
+                conversationIdWithTitleList.Add(new ConversationIdWithTitleDto
+                {
+                    ConversationId = conversationId,
+                    Title = title ?? "No Title"
+                });
+            }
+
+            return BaseResponse<IEnumerable<ConversationIdWithTitleDto>>.Ok(conversationIdWithTitleList);
         }
 
         public async Task<BaseResponse<IEnumerable<Conversation>>> GetAllConversationsByUserId(Guid userId)

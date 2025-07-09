@@ -1,5 +1,6 @@
 ﻿using EduConnect.Application.Commons;
 using EduConnect.Application.Commons.Dtos;
+using EduConnect.Application.DTOs.Responses.ConversationResponses;
 using EduConnect.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace EduConnect.Application.Interfaces.Services
 
         Task<BaseResponse<object>> DeleteConversation(Guid conversationId);
 
-        Task<BaseResponse<IEnumerable<Guid>>> GetAllConversationIdByUserIdAsync(Guid userId);
+        Task<BaseResponse<IEnumerable<ConversationIdWithTitleDto>>> GetAllConversationIdByUserIdAsync(Guid userId);
 
         Task<BaseResponse<bool>> CheckConversationExists(Guid conversationId);
 

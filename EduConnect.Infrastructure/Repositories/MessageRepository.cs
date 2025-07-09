@@ -29,5 +29,15 @@ namespace EduConnect.Infrastructure.Repositories
                 .ToListAsync();
             return messageQuery;
         }
+
+        public async Task<string> GetFirstMessageAsTitleByConversationIdAsync(Guid conversationId)
+        {
+            var firstMessage = await _context.Messages
+                .Where(m => m.ConversationId == conversationId)
+                .OrderBy(m => m.CreatedAt)
+                .Select(m => m.Content)
+                .FirstOrDefaultAsync();
+            return firstMessage == null ? string.Empty : firstMessage?.Substring(0, Math.Min(firstMessage.Length, 10)) + "...";
+        }
     }
 }
