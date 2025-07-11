@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduConnect.Persistence.Migrations
 {
     [DbContext(typeof(EduConnectDbContext))]
-    [Migration("20250628171935_UpdateDB2")]
-    partial class UpdateDB2
+    [Migration("20250709052355_AddDB")]
+    partial class AddDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -129,8 +129,14 @@ namespace EduConnect.Persistence.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("GeneralBehaviorNote")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LessonContent")
                         .IsRequired()
@@ -168,7 +174,7 @@ namespace EduConnect.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("ParentId")
+                    b.Property<Guid?>("ParentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Title")
@@ -194,7 +200,7 @@ namespace EduConnect.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("ConversationId")
+                    b.Property<Guid?>("ConversationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -382,6 +388,9 @@ namespace EduConnect.Persistence.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DeviceToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -456,10 +465,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAENcJ4QRSgJlZqjzIjwMYSbsZz0trx13sBHBX2c0srYmLmk03AtUYotA3hqRQUWDFUA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEwq5RDptqvKHdXfOfAOZCu/aV+uzE4UNLK7aTQpy+rkxkUDleDkdiV7Sd+KLTigVQ==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 5, 17, 19, 34, 855, DateTimeKind.Utc).AddTicks(5815),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 16, 5, 23, 54, 477, DateTimeKind.Utc).AddTicks(2562),
                             SecurityStamp = "seed-4",
                             TwoFactorEnabled = false,
                             UserName = "admin"
@@ -475,10 +484,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "TEACHER@EXAMPLE.COM",
                             NormalizedUserName = "TEACHER",
-                            PasswordHash = "AQAAAAIAAYagAAAAELoWRpUQ1Jt7IQgCSTtj4ze/IySNXpMFhL8R8VwrvDrl2nDrdcGwkVju9kMTvIu/9g==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFpsZAUR0SUWSVwxTbB79Yv9gLG2KXPP6V+42d9TZTtfArLSGNeq4EWxWTW1aNCd5w==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 5, 17, 19, 34, 918, DateTimeKind.Utc).AddTicks(2334),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 16, 5, 23, 54, 539, DateTimeKind.Utc).AddTicks(3316),
                             SecurityStamp = "seed-6",
                             TwoFactorEnabled = false,
                             UserName = "teacher"
@@ -494,10 +503,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "PARENT@EXAMPLE.COM",
                             NormalizedUserName = "PARENT",
-                            PasswordHash = "AQAAAAIAAYagAAAAECNIIq5wyj5xtdL0OhWZnrUW7FqGsWDHf/YyeRaO+2DZG8L7efr5izktScUQ+aTpkA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEL1mdrnJdvVCnWJM97RV7JkgzbTb2Kj0ZiJYmIC/TB7bRIqBa3Cdj5xJZG3/LpPxrA==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 5, 17, 19, 34, 981, DateTimeKind.Utc).AddTicks(5748),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 16, 5, 23, 54, 604, DateTimeKind.Utc).AddTicks(7824),
                             SecurityStamp = "seed-8",
                             TwoFactorEnabled = false,
                             UserName = "parent"
@@ -740,8 +749,7 @@ namespace EduConnect.Persistence.Migrations
                     b.HasOne("EduConnect.Domain.Entities.User", "Parent")
                         .WithMany("Conversations")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Parent");
                 });
@@ -751,8 +759,7 @@ namespace EduConnect.Persistence.Migrations
                     b.HasOne("EduConnect.Domain.Entities.Conversation", "Conversation")
                         .WithMany("Messages")
                         .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Conversation");
                 });

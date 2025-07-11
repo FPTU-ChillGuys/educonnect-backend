@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EduConnect.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class RefactorEntities : Migration
+    public partial class AddDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,8 +32,10 @@ namespace EduConnect.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeviceToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -179,6 +181,7 @@ namespace EduConnect.Persistence.Migrations
                 columns: table => new
                 {
                     ClassId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GradeLevel = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ClassName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     HomeroomTeacherId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
@@ -195,20 +198,20 @@ namespace EduConnect.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Messages",
+                name: "Conversations",
                 columns: table => new
                 {
-                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AIResponse = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Messages", x => x.MessageId);
+                    table.PrimaryKey("PK_Conversations", x => x.ConversationId);
                     table.ForeignKey(
-                        name: "FK_Messages_AspNetUsers_ParentId",
+                        name: "FK_Conversations_AspNetUsers_ParentId",
                         column: x => x.ParentId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -252,7 +255,9 @@ namespace EduConnect.Persistence.Migrations
                     LessonContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TotalAbsentStudents = table.Column<int>(type: "int", nullable: false),
                     GeneralBehaviorNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeleteAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -282,9 +287,11 @@ namespace EduConnect.Persistence.Migrations
                 columns: table => new
                 {
                     StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StudentCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ClassId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
@@ -302,6 +309,27 @@ namespace EduConnect.Persistence.Migrations
                         column: x => x.ClassId,
                         principalTable: "Classes",
                         principalColumn: "ClassId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.MessageId);
+                    table.ForeignKey(
+                        name: "FK_Messages_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "ConversationId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -424,12 +452,12 @@ namespace EduConnect.Persistence.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "Address", "ConcurrencyStamp", "DeviceToken", "Email", "EmailConfirmed", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, "seed-7", "teacher@example.com", true, true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAEK5c7xvibhC9Fj0xMjlClW9IwB8CqzMgiMy6ZHkgQy8Vxxr5YQtpyOf4WBSurHfzpQ==", null, false, "", new DateTime(2025, 6, 18, 4, 43, 22, 133, DateTimeKind.Utc).AddTicks(596), "seed-6", false, "teacher" },
-                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, "seed-5", "admin@example.com", true, true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEM0ccD8R4Fbb8gJIcf2b8IwVGJScNUsi60XOG7Fqu7awtys2bSJjoXlTJvnoBms29Q==", null, false, "", new DateTime(2025, 6, 18, 4, 43, 22, 79, DateTimeKind.Utc).AddTicks(5086), "seed-4", false, "admin" },
-                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, "seed-9", "parent@example.com", true, true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAEAWRg2ecDKSBvn96uLvkXJgGlKAFtTPMBpb4K1fXPAROBjOs9Xr2PD0dwgoknVNVCQ==", null, false, "", new DateTime(2025, 6, 18, 4, 43, 22, 189, DateTimeKind.Utc).AddTicks(1581), "seed-8", false, "parent" }
+                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, null, "seed-7", null, "teacher@example.com", true, true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAEFpsZAUR0SUWSVwxTbB79Yv9gLG2KXPP6V+42d9TZTtfArLSGNeq4EWxWTW1aNCd5w==", null, false, "", new DateTime(2025, 7, 16, 5, 23, 54, 539, DateTimeKind.Utc).AddTicks(3316), "seed-6", false, "teacher" },
+                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, null, "seed-5", null, "admin@example.com", true, true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEEwq5RDptqvKHdXfOfAOZCu/aV+uzE4UNLK7aTQpy+rkxkUDleDkdiV7Sd+KLTigVQ==", null, false, "", new DateTime(2025, 7, 16, 5, 23, 54, 477, DateTimeKind.Utc).AddTicks(2562), "seed-4", false, "admin" },
+                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, null, "seed-9", null, "parent@example.com", true, true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAEL1mdrnJdvVCnWJM97RV7JkgzbTb2Kj0ZiJYmIC/TB7bRIqBa3Cdj5xJZG3/LpPxrA==", null, false, "", new DateTime(2025, 7, 16, 5, 23, 54, 604, DateTimeKind.Utc).AddTicks(7824), "seed-8", false, "parent" }
                 });
 
             migrationBuilder.InsertData(
@@ -512,9 +540,14 @@ namespace EduConnect.Persistence.Migrations
                 column: "TeacherId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_ParentId",
-                table: "Messages",
+                name: "IX_Conversations_ParentId",
+                table: "Conversations",
                 column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ConversationId",
+                table: "Messages",
+                column: "ConversationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_ClassReportId",
@@ -589,6 +622,9 @@ namespace EduConnect.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Conversations");
 
             migrationBuilder.DropTable(
                 name: "ClassReports");
