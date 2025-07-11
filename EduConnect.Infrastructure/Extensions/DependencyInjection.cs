@@ -45,9 +45,11 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
 			services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
 			services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
+			services.AddScoped<IMessageRepository, MessageRepository>();	
+			services.AddScoped<IConversationRepository, ConversationRepository>();
 
-			// Authorization Handlers
-			services.AddScoped<IAuthorizationHandler, ClassAccessHandler>();
+            // Authorization Handlers
+            services.AddScoped<IAuthorizationHandler, ClassAccessHandler>();
 
 			// - DBContext
 			var connectionString = config["DATABASE_CONNECTION_STRING"];

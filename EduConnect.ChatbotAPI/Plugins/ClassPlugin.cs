@@ -1,4 +1,5 @@
-﻿using EduConnect.Application.DTOs.Requests.ClassRequests;
+﻿using EduConnect.Application.Commons.Dtos;
+using EduConnect.Application.DTOs.Requests.ClassRequests;
 using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
 using EduConnect.Application.DTOs.Responses.ClassResponses;
 using EduConnect.Application.Interfaces.Services;
@@ -26,6 +27,50 @@ namespace EduConnect.ChatbotAPI.Plugins
 
             return classes.Data ?? new List<ClassDto>();
         }
+
+        [KernelFunction("GetClassByName")]
+        [Description("Retrieves detailed information about a specific class by class name.")]
+        public async Task<List<ClassDto>> GetClassByName(string name)
+        {
+            var classes = await classService.GetPagedClassesAsync(
+                    new ClassPagingRequest
+                    {
+                        PageSize = 100,
+                        Keyword = name
+                    }
+                );
+
+            if (classes.Data == null || classes.Data.Count == 0)
+            {
+                return new List<ClassDto>();
+            }
+            return classes.Data.Where(c => c.ClassName.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+
+
+        }
+
+        [KernelFunction("GetClassesByTeacherName")]
+        [Description("Retrieves a list of classes assigned to a specific teacher by their name.")]
+        public async Task<List<ClassDto>> GetClassesByTeacherName(string teacherName)
+        {
+            var classes = await classService.GetPagedClassesAsync(
+                    new ClassPagingRequest
+                    {
+                        PageSize = 100,
+                        Keyword = teacherName
+                    }
+                );
+            if (classes.Data == null || classes.Data.Count == 0)
+            {
+                return new List<ClassDto>();
+            }
+            return classes.Data.Where(c => c.HomeroomTeacherName?.Contains(teacherName, StringComparison.OrdinalIgnoreCase) ?? false).ToList();
+        }
+
+     
+
+
+
 
 
 
