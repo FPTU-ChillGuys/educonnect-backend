@@ -46,7 +46,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         }
 
-        [KernelFunction("GetPagedStudents")]
+        [KernelFunction("GetStudents")]
         [Description("Retrieves all students")]
         public async Task<List<StudentDto>> GetPagedStudents()
         {

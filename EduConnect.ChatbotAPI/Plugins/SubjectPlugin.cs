@@ -12,7 +12,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
         [KernelFunction("GetPagedSubjects")]
-        [Description("Retrieves a paginated list of subjects.")]
+        [Description("Retrieves a list of subjects.")]
         public async Task<List<SubjectDto>> GetSubjects()
         {
             
@@ -27,7 +27,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         }
 
         [KernelFunction("GetSubjectById")]
-        [Description("Retrieves detailed information about a subject using its ID.")]
+        [Description("Retrieves detailed information about a subject using its name.")]
         public async Task<List<SubjectDto>> GetSubjectByName(string subjectName)
         {
             var subjects = await subjectService.GetPagedSubjectsAsync(

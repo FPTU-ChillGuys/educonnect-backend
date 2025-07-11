@@ -15,18 +15,20 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
 
-        [KernelFunction("GetPagedClassSessions")]
-        [Description("Retrieves a paginated list of class sessions based on filters such as class ID or date range.")]
-        public async Task<List<ClassSessionDto>> GetClassSessions()
+        [KernelFunction("GetClassSessions")]
+        [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
+        public async Task<List<ClassSessionDto>> GetClassSessionsByNameAndDate(string name, DateTime from, DateTime to)
         {
            
             var classSessions = await classSessionService.GetPagedClassSessionsAsync(
                 new ClassSessionPagingRequest
                 {
-                    PageSize = 100
+                    PageSize = 100,
+                    FromDate = from,
+                    ToDate = to,
                 }
             );
-            return classSessions!.Data!.ToList();
+            return classSessions!.Data!.Where(classService => classService.ClassName!.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
 
         }
 
