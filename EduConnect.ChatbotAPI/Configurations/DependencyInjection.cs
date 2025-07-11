@@ -110,6 +110,10 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             //Add plugins or additional services if needed
             kernelBuilder.Plugins.AddFromType<ClassPlugin>("Class");
+            kernelBuilder.Plugins.AddFromType<StudentPlugin>("Student");
+            kernelBuilder.Plugins.AddFromType<SubjectPlugin>("Subject");
+            kernelBuilder.Plugins.AddFromType<BehaviorPlugin>("Behavior");
+            kernelBuilder.Plugins.AddFromType<ClassSessionPlugin>("ClassSession");
 
             //Add other service
             kernelBuilder.Services.AddScoped<ChatbotStorage>();

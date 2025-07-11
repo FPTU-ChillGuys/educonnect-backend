@@ -14,8 +14,8 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
 
-        [KernelFunction("GetClassInfo")]
-        [Description("Retrieves a list of classes with basic information such as class name, grade level, academic year, and homeroom teacher.")]
+        [KernelFunction("GetAllClassInfoExceptID")]
+        [Description("Retrieves a list of classes with basic information such as class name, grade level, academic year, and homeroom teacher")]
         public async Task<List<ClassDto>> GetClassInfo()
         {
             var classes = await classService.GetPagedClassesAsync(
@@ -28,7 +28,7 @@ namespace EduConnect.ChatbotAPI.Plugins
             return classes.Data ?? new List<ClassDto>();
         }
 
-        [KernelFunction("GetClassByName")]
+        [KernelFunction("GetClassByNameExceptID")]
         [Description("Retrieves detailed information about a specific class by class name.")]
         public async Task<List<ClassDto>> GetClassByName(string name)
         {
@@ -49,7 +49,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         }
 
-        [KernelFunction("GetClassesByTeacherName")]
+        [KernelFunction("GetClassesByTeacherNameExceptID")]
         [Description("Retrieves a list of classes assigned to a specific teacher by their name.")]
         public async Task<List<ClassDto>> GetClassesByTeacherName(string teacherName)
         {
@@ -57,7 +57,6 @@ namespace EduConnect.ChatbotAPI.Plugins
                     new ClassPagingRequest
                     {
                         PageSize = 100,
-                        Keyword = teacherName
                     }
                 );
             if (classes.Data == null || classes.Data.Count == 0)

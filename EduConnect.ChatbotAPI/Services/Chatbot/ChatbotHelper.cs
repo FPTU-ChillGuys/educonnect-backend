@@ -58,15 +58,18 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             #pragma warning disable SKEXP0070
             OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
             {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-                ModelId = "qwen3:0.6b",
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
+
 
             await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct))
             {
-                response += item;
-                yield return response;
+                    response += item;
+                    yield return response;
             }
+
+           
+
 
             ////Them phan hoi cua chatbot vao lich su
             //chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, response));

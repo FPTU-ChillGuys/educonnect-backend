@@ -19,34 +19,31 @@ namespace EduConnect.ChatbotAPI.Plugins
         //    // To be implemented
         //}
 
-        [KernelFunction("GetStudentsByClass")]
-        [Description("Retrieves a paginated list of students enrolled in a specific class.")]
+        [KernelFunction("GetAllStudentsByClassName")]
+        [Description("Retrieves a list of students enrolled in a specific class.")]
         public async Task<List<StudentDto>> GetStudentsByClassName(string className)
         {
             var students = await studentService.GetPagedStudentsAsync(new StudentPagingRequest
             {
                 PageNumber = 100,
-                Keyword = className
             });
 
             return students!.Data!.Where(s => s.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase)).ToList();
 
         }
 
-        [KernelFunction("GetStudentsByParent")]
+        [KernelFunction("GetStudentsByParentName")]
         [Description("Retrieves a list of students linked to a parent by their name.")]
         public async Task<List<StudentDto>> GetStudentsByParent(string parentName)
         {
             var students = await studentService.GetPagedStudentsAsync(new StudentPagingRequest
             {
                 PageNumber = 100,
-                Keyword = parentName
             });
             return students!.Data!.ToList();
-
         }
 
-        [KernelFunction("GetStudents")]
+        [KernelFunction("GetAllStudents")]
         [Description("Retrieves all students")]
         public async Task<List<StudentDto>> GetPagedStudents()
         {
