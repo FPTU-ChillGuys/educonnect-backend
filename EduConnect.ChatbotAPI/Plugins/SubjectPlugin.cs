@@ -11,7 +11,7 @@ namespace EduConnect.ChatbotAPI.Plugins
             ISubjectService subjectService
         )
     {
-        [KernelFunction("GetAllSubjects")]
+        [KernelFunction("get_subjects")]
         [Description("Retrieves a list of subjects.")]
         public async Task<List<SubjectDto>> GetSubjects()
         {
@@ -26,7 +26,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         }
 
-        [KernelFunction("GetSubjectByName")]
+        [KernelFunction("get_subjects_by_teacher_name")]
         [Description("Retrieves detailed information about a subject using its name.")]
         public async Task<List<SubjectDto>> GetSubjectByName(string subjectName)
         {

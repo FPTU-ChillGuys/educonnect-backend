@@ -15,7 +15,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
 
-        [KernelFunction("GetClassBehaviorLogsByClassName")]
+        [KernelFunction("get_class_behavior_logs_by_class_name")]
         [Description("Retrieves a list of class behavior logs for a specific session.")]
         public async Task<List<ClassBehaviorLogDto>> GetClassBehaviorLogs(string className)
         {
@@ -44,7 +44,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         }
 
-        [KernelFunction("GetStudentBehaviorNotesByStudentName")]
+        [KernelFunction("get_student_behavior_notes_by_student_name")]
         [Description("Retrieves a list of student behavior notes for a specific session.")]
         public async Task<List<StudentBehaviorNoteDto>> GetStudentBehaviorNotes(string studentName)
         {

@@ -15,7 +15,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
 
-        [KernelFunction("GetClassSessionsByClassName")]
+        [KernelFunction("get_class_sessions_by_class_name")]
         [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
         public async Task<List<ClassSessionDto>> GetClassSessionsByNameAndDate(string name, DateTime from, DateTime to)
         {
@@ -32,7 +32,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         }
 
-        [KernelFunction("GetClassTimetableByClassName")]
+        [KernelFunction("get_class_sessions_by_class_name_and_date")]
         [Description("Retrieves the class timetable for a given class within a date range.")]
         public async Task<List<TimetableViewDto>> GetClassTimetable(string className, DateTime from, DateTime to)
         {

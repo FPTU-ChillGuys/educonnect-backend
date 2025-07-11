@@ -19,37 +19,39 @@ namespace EduConnect.ChatbotAPI.Plugins
         //    // To be implemented
         //}
 
-        [KernelFunction("GetAllStudentsByClassName")]
+        [KernelFunction("get_students_by_class_name")]
         [Description("Retrieves a list of students enrolled in a specific class.")]
         public async Task<List<StudentDto>> GetStudentsByClassName(string className)
         {
             var students = await studentService.GetPagedStudentsAsync(new StudentPagingRequest
             {
-                PageNumber = 100,
+                PageSize = 100,
             });
 
             return students!.Data!.Where(s => s.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase)).ToList();
+            //return students!.Data!.ToList();
 
         }
 
-        [KernelFunction("GetStudentsByParentName")]
-        [Description("Retrieves a list of students linked to a parent by their name.")]
-        public async Task<List<StudentDto>> GetStudentsByParent(string parentName)
-        {
-            var students = await studentService.GetPagedStudentsAsync(new StudentPagingRequest
-            {
-                PageNumber = 100,
-            });
-            return students!.Data!.ToList();
-        }
+        //[KernelFunction("GetAllStudentsFromParent")]
+        //[Description("Retrieves a list of students linked to a parent by their name.")]
+        //public async Task<List<StudentDto>> GetStudentsByParent(Guid parentId)
+        //{
+        //    var students = await studentService.GetPagedStudentsAsync(new StudentPagingRequest
+        //    {
+        //        PageNumber = 100,
 
-        [KernelFunction("GetAllStudents")]
+        //    });
+        //    return students!.Data!.ToList();
+        //}
+
+        [KernelFunction("get_all_students")]
         [Description("Retrieves all students")]
         public async Task<List<StudentDto>> GetPagedStudents()
         {
             var students = await studentService.GetPagedStudentsAsync(new StudentPagingRequest
             {
-                PageNumber = 100
+                PageSize = 100
             });
             return students!.Data!.ToList();
 
