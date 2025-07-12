@@ -9,5 +9,7 @@ namespace EduConnect.Application.DTOs.Requests.UserRequests
 		public bool? IsHomeroomTeacher { get; set; }
 		public bool? IsSubjectTeacher { get; set; }
 		public string? Subject { get; set; }
+		public bool? IsActive { get; set; }
+		public string? Address { get; set; }
 	}
 }
