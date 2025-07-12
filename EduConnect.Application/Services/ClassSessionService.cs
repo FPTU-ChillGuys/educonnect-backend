@@ -7,6 +7,7 @@ using EduConnect.Application.Commons.Dtos;
 using Microsoft.EntityFrameworkCore;
 using EduConnect.Domain.Entities;
 using System.Linq.Expressions;
+using System.Globalization;
 using FluentValidation;
 using OfficeOpenXml;
 using AutoMapper;
@@ -64,21 +65,22 @@ namespace EduConnect.Application.Services
 					return BaseResponse<List<TimetableViewDto>>.Fail("No class sessions found");
 
 				var grouped = sessions
-					.GroupBy(cs => cs.Date.Date)
-					.OrderBy(g => g.Key)
-					.Select(g => new TimetableViewDto
-					{
-						Date = g.Key,
-						Periods = g.OrderBy(cs => cs.PeriodNumber)
-							.Select(cs => new PeriodSlotDto
-							{
-								PeriodNumber = cs.PeriodNumber,
-								ClassName = cs.Class?.ClassName ?? "N/A",
-								SubjectName = cs.Subject?.SubjectName ?? "N/A",
-								TeacherName = cs.Teacher?.UserName ?? "N/A",
-								LessonContent = cs.LessonContent
-							}).ToList()
-					}).ToList();
+						.GroupBy(cs => cs.Date.Date)
+						.OrderBy(g => g.Key)
+						.Select(g => new TimetableViewDto
+						{
+							Date = g.Key,
+							DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
+							Periods = g.OrderBy(cs => cs.PeriodNumber)
+								.Select(cs => new PeriodSlotDto
+								{
+									PeriodNumber = cs.PeriodNumber,
+									ClassName = cs.Class?.ClassName ?? "N/A",
+									SubjectName = cs.Subject?.SubjectName ?? "N/A",
+									TeacherName = cs.Teacher?.UserName ?? "N/A",
+									LessonContent = cs.LessonContent
+								}).ToList()
+						}).ToList();
 
 				return BaseResponse<List<TimetableViewDto>>.Ok(grouped);
 			}
@@ -119,21 +121,22 @@ namespace EduConnect.Application.Services
 					return BaseResponse<List<TimetableViewDto>>.Fail("No sessions found for this teacher");
 
 				var grouped = sessions
-					.GroupBy(cs => cs.Date.Date)
-					.OrderBy(g => g.Key)
-					.Select(g => new TimetableViewDto
-					{
-						Date = g.Key,
-						Periods = g.OrderBy(cs => cs.PeriodNumber)
-							.Select(cs => new PeriodSlotDto
-							{
-								PeriodNumber = cs.PeriodNumber,
-								ClassName = cs.Class?.ClassName ?? "N/A",
-								SubjectName = cs.Subject?.SubjectName ?? "N/A",
-								TeacherName = cs.Teacher?.UserName ?? "N/A", // could be skipped since it's teacher-specific
-								LessonContent = cs.LessonContent
-							}).ToList()
-					}).ToList();
+						.GroupBy(cs => cs.Date.Date)
+						.OrderBy(g => g.Key)
+						.Select(g => new TimetableViewDto
+						{
+							Date = g.Key,
+							DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
+							Periods = g.OrderBy(cs => cs.PeriodNumber)
+								.Select(cs => new PeriodSlotDto
+								{
+									PeriodNumber = cs.PeriodNumber,
+									ClassName = cs.Class?.ClassName ?? "N/A",
+									SubjectName = cs.Subject?.SubjectName ?? "N/A",
+									TeacherName = cs.Teacher?.UserName ?? "N/A",
+									LessonContent = cs.LessonContent
+								}).ToList()
+						}).ToList();
 
 				return BaseResponse<List<TimetableViewDto>>.Ok(grouped, "Teacher timetable loaded successfully");
 			}
@@ -205,21 +208,25 @@ namespace EduConnect.Application.Services
 
 				// Headers
 				worksheet.Cells[1, 1].Value = "Date";
-				worksheet.Cells[1, 2].Value = "Period";
-				worksheet.Cells[1, 3].Value = "Class";
-				worksheet.Cells[1, 4].Value = "Subject";
-				worksheet.Cells[1, 5].Value = "Teacher";
-				worksheet.Cells[1, 6].Value = "Lesson Content";
+				worksheet.Cells[1, 2].Value = "Day"; 
+				worksheet.Cells[1, 3].Value = "Period";
+				worksheet.Cells[1, 4].Value = "Class";
+				worksheet.Cells[1, 5].Value = "Subject";
+				worksheet.Cells[1, 6].Value = "Teacher";
+				worksheet.Cells[1, 7].Value = "Lesson Content";
 
 				int row = 2;
 				foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.PeriodNumber))
 				{
+					var dayOfWeek = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
+
 					worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
-					worksheet.Cells[row, 2].Value = session.PeriodNumber;
-					worksheet.Cells[row, 3].Value = session.Class?.ClassName;
-					worksheet.Cells[row, 4].Value = session.Subject?.SubjectName;
-					worksheet.Cells[row, 5].Value = session.Teacher?.UserName;
-					worksheet.Cells[row, 6].Value = session.LessonContent;
+					worksheet.Cells[row, 2].Value = dayOfWeek;
+					worksheet.Cells[row, 3].Value = session.PeriodNumber;
+					worksheet.Cells[row, 4].Value = session.Class?.ClassName;
+					worksheet.Cells[row, 5].Value = session.Subject?.SubjectName;
+					worksheet.Cells[row, 6].Value = session.Teacher?.UserName;
+					worksheet.Cells[row, 7].Value = session.LessonContent;
 					row++;
 				}
 
@@ -258,19 +265,23 @@ namespace EduConnect.Application.Services
 
 				// Headers
 				worksheet.Cells[1, 1].Value = "Date";
-				worksheet.Cells[1, 2].Value = "Period";
-				worksheet.Cells[1, 3].Value = "Class";
-				worksheet.Cells[1, 4].Value = "Subject";
-				worksheet.Cells[1, 5].Value = "Lesson Content";
+				worksheet.Cells[1, 2].Value = "Day";
+				worksheet.Cells[1, 3].Value = "Period";
+				worksheet.Cells[1, 4].Value = "Class";
+				worksheet.Cells[1, 5].Value = "Subject";
+				worksheet.Cells[1, 6].Value = "Lesson Content";
 
 				int row = 2;
 				foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.PeriodNumber))
 				{
+					var dayOfWeek = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
+
 					worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
-					worksheet.Cells[row, 2].Value = session.PeriodNumber;
-					worksheet.Cells[row, 3].Value = session.Class?.ClassName;
-					worksheet.Cells[row, 4].Value = session.Subject?.SubjectName;
-					worksheet.Cells[row, 5].Value = session.LessonContent;
+					worksheet.Cells[row, 2].Value = dayOfWeek;
+					worksheet.Cells[row, 3].Value = session.PeriodNumber;
+					worksheet.Cells[row, 4].Value = session.Class?.ClassName;
+					worksheet.Cells[row, 5].Value = session.Subject?.SubjectName;
+					worksheet.Cells[row, 6].Value = session.LessonContent;
 					row++;
 				}
 

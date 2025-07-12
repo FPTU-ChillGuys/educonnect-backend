@@ -3,6 +3,7 @@
 	public class TimetableViewDto
 	{
 		public DateTime Date { get; set; }
+		public string DayOfWeek { get; set; } = string.Empty;
 		public List<PeriodSlotDto> Periods { get; set; } = new();
 	}
 
