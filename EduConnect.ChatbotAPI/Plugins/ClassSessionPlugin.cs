@@ -76,7 +76,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         //[KernelFunction("ExportTeacherTimetableToExcel")]
         //[Description("Exports the teacher's timetable to Excel for a given date range.")]
-        //public async Task<BaseResponse<byte[]>> ExportTeacherTimetableToExcel(Guid teacherId, DateTime from, DateTime to)
+        //public async Task<BaseResponse<byte[]>> ExportTeacherTimetableToExcel(Guid teache     rId, DateTime from, DateTime to)
         //{
         //    // To be implemented
         //}

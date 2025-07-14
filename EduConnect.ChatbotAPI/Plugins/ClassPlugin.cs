@@ -66,12 +66,5 @@ namespace EduConnect.ChatbotAPI.Plugins
             return classes.Data.Where(c => c.HomeroomTeacherName?.Contains(teacherName, StringComparison.OrdinalIgnoreCase) ?? false).ToList();
         }
 
-     
-
-
-
-
-
-
     }
 }
