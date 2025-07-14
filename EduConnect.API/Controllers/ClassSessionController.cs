@@ -23,7 +23,7 @@ namespace EduConnect.API.Controllers
 			var response = await _classSessionService.GetPagedClassSessionsAsync(request);
 			return response.Success
 				? Ok(response)
-				: BadRequest(response.Errors);
+				: NotFound(response);
 		}
 
 		[HttpGet("timetable/class/{classId}")]
@@ -31,7 +31,7 @@ namespace EduConnect.API.Controllers
 		public async Task<IActionResult> GetClassTimetable(Guid classId, [FromQuery] DateTime from, [FromQuery] DateTime to)
 		{
 			var timetable = await _classSessionService.GetClassTimetableAsync(classId, from, to);
-			return timetable.Success ? Ok(timetable) : BadRequest(timetable.Errors);
+			return timetable.Success ? Ok(timetable) : NotFound(timetable);
 		}
 
 		[HttpGet("timetable/teacher/{teacherId}")]
@@ -41,7 +41,7 @@ namespace EduConnect.API.Controllers
 			if (teacherId == Guid.Empty)
 				return BadRequest("Invalid teacher ID");
 			var timetable = await _classSessionService.GetClassTimetableAsync(teacherId, from, to);
-			return timetable.Success ? Ok(timetable) : BadRequest(timetable.Errors);
+			return timetable.Success ? Ok(timetable) : NotFound(timetable);
 		}
 
 		[HttpGet("export/class/{classId}")]

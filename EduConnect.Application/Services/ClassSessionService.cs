@@ -160,14 +160,20 @@ namespace EduConnect.Application.Services
 				filter = filter.AndAlso(s => s.TeacherId == request.TeacherId.Value);
 
 			if (request.FromDate.HasValue)
-				filter = filter.AndAlso(s => s.Date >= request.FromDate.Value);
+			{
+				var corrected = Utils.FixWronglyParsedDate(request.FromDate.Value);
+				filter = filter.AndAlso(s => s.Date >= corrected);
+			}
 
 			if (request.ToDate.HasValue)
-				filter = filter.AndAlso(s => s.Date <= request.ToDate.Value);
+			{
+				var corrected = Utils.FixWronglyParsedDate(request.ToDate.Value);
+				filter = filter.AndAlso(s => s.Date <= corrected);
+			}
 
 			filter = filter.AndAlso(s => !s.IsDeleted); 
 
-			var result = await _classSessionRepo.GetPagedAsync(
+			var (items, total) = await _classSessionRepo.GetPagedAsync(
 				filter: filter,
 				include: q => q.Include(c => c.Class).Include(c => c.Subject).Include(c => c.Teacher),
 				orderBy: q => q.OrderByDescending(c => c.Date).ThenBy(c => c.PeriodNumber),
@@ -176,11 +182,11 @@ namespace EduConnect.Application.Services
 				asNoTracking: true
 			);
 
-			var dtoList = _mapper.Map<List<ClassSessionDto>>(result.Items);
-			if (dtoList == null || !dtoList.Any())
+			var dtoList = _mapper.Map<List<ClassSessionDto>>(items);
+			if (dtoList == null || dtoList.Count == 0)
 				return PagedResponse<ClassSessionDto>.Fail("No class sessions found", request.PageNumber, request.PageSize);
 
-			return PagedResponse<ClassSessionDto>.Ok(dtoList, result.TotalCount, request.PageNumber, request.PageSize);
+			return PagedResponse<ClassSessionDto>.Ok(dtoList, total, request.PageNumber, request.PageSize);
 		}
 
 		public async Task<BaseResponse<byte[]>> ExportClassTimetableToExcelAsync(Guid classId, DateTime from, DateTime to)
