@@ -26,41 +26,21 @@ namespace EduConnect.API.Controllers
 				: NotFound(response);
 		}
 
-		[HttpGet("timetable/class/{classId}")]
+		[HttpGet("timetable")]
 		[Authorize(Roles = "admin,teacher,parent")]
-		public async Task<IActionResult> GetClassTimetable(Guid classId, [FromQuery] DateTime from, [FromQuery] DateTime to)
+		public async Task<IActionResult> GetTimetable([FromQuery] TimetableRequest request)
 		{
-			var timetable = await _classSessionService.GetClassTimetableAsync(classId, from, to);
-			return timetable.Success ? Ok(timetable) : NotFound(timetable);
+			var result = await _classSessionService.GetTimetableAsync(request);
+			return result.Success ? Ok(result) : NotFound(result);
 		}
 
-		[HttpGet("timetable/teacher/{teacherId}")]
+		[HttpPost("export/timetable")]
 		[Authorize(Roles = "admin,teacher")]
-		public async Task<IActionResult> GetTeacherTimetable(Guid teacherId, [FromQuery] DateTime from, [FromQuery] DateTime to)
+		public async Task<IActionResult> ExportTeacherTimetable([FromQuery] TimetableRequest request)
 		{
-			if (teacherId == Guid.Empty)
-				return BadRequest("Invalid teacher ID");
-			var timetable = await _classSessionService.GetClassTimetableAsync(teacherId, from, to);
-			return timetable.Success ? Ok(timetable) : NotFound(timetable);
-		}
-
-		[HttpGet("export/class/{classId}")]
-		[Authorize(Roles = "admin,teacher")]
-		public async Task<IActionResult> ExportClassTimetable(Guid classId, DateTime from, DateTime to)
-		{
-			var result = await _classSessionService.ExportClassTimetableToExcelAsync(classId, from, to);
+			var result = await _classSessionService.ExportTimetableToExcelAsync(request);
 			return result.Success
-				? File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ClassTimetable.xlsx")
-				: BadRequest(result);
-		}
-
-		[HttpGet("export/teacher/{teacherId}")]
-		[Authorize(Roles = "admin,teacher")]
-		public async Task<IActionResult> ExportTeacherTimetable(Guid teacherId, DateTime from, DateTime to)
-		{
-			var result = await _classSessionService.ExportTeacherTimetableToExcelAsync(teacherId, from, to);
-			return result.Success
-				? File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "TeacherTimetable.xlsx")
+				? File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Timetable.xlsx")
 				: BadRequest(result);
 		}
 

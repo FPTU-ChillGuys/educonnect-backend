@@ -16,35 +16,19 @@ namespace EduConnect.API.Controllers
 			_userService = userService;
 		}
 
-		[HttpGet("count/teachers")]
-		[Authorize(Roles = "admin,teacher,parent")]
-		public async Task<IActionResult> CountUsers()
-		{
-			var result = await _userService.CountTeachersAsync();
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
-		[HttpGet("count/homeroom-teachers")]
-		[Authorize(Roles = "admin,teacher,parent")]
-		public async Task<IActionResult> CountHomeroomTeachers()
-		{
-			var result = await _userService.CountHomeroomTeachersAsync();
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
-		[HttpGet("count/subject-teachers")]
-		[Authorize(Roles = "admin,teacher,parent")]
-		public async Task<IActionResult> CountSubjectTeachers()
-		{
-			var result = await _userService.CountSubjectTeachersAsync();
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
 		[HttpGet]
 		[Authorize(Roles = "admin")]
 		public async Task<IActionResult> GetUsers([FromQuery] FilterUserRequest request)
 		{
 			var result = await _userService.GetPagedUsersAsync(request);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
+		[HttpGet("lookup")]
+		[Authorize(Roles = "admin,teacher,parent")]
+		public async Task<IActionResult> GetUsersForSelectBox([FromQuery] FilterUserRequest request)
+		{
+			var result = await _userService.GetUserLookupAsync(request);
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
@@ -56,9 +40,9 @@ namespace EduConnect.API.Controllers
 			return result.Success ? Ok(result) : NotFound(result);
 		}
 
-		[HttpGet("export")]
+		[HttpPost("export")]
 		[Authorize(Roles = "admin")]
-		public async Task<IActionResult> ExportTeachersToExcel([FromQuery] ExportUserRequest request)
+		public async Task<IActionResult> ExportTeachersToExcel([FromQuery] FilterUserRequest request)
 		{
 			var result = await _userService.ExportUsersToExcelAsync(request);
 			if (!result.Success)

@@ -16,8 +16,7 @@ namespace EduConnect.Application.Services
 								UserManager<User> _userManager,
 								IAuthRepository _authRepository,
 								IEmailService _emailService,
-								IEmailTemplateProvider _templateProvider,
-								IConfiguration config
+								IEmailTemplateProvider _templateProvider
 							) : IAuthService
 	{
 		public async Task<BaseResponse<TokenResponse>> LoginAsync(Login login)
@@ -183,7 +182,7 @@ namespace EduConnect.Application.Services
 			var emailContent = _templateProvider.GetForgotPasswordTemplate(user.UserName ?? "User", callback);
 
 			await _emailService.SendEmailAsync(user.Email!, "Reset Password", emailContent);
-			return BaseResponse<string>.Ok("Reset password email sent successfully");
+			return BaseResponse<string>.Ok(token);
 		}
 
 		public async Task<BaseResponse<string>> ResetPasswordAsync(ResetPasswordRequest request)

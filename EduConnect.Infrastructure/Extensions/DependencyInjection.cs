@@ -40,6 +40,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
 			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
+			services.AddScoped<IGenericRepository<Period>, GenericRepository<Period>>();
 			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
 			services.AddScoped<IGenericRepository<Subject>, GenericRepository<Subject>>();
 			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
@@ -120,11 +121,12 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IUserService, UserService>();
 			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IClassService, ClassService>();
+			services.AddScoped<IPeriodService, PeriodService>();
 			services.AddScoped<ISubjectService, SubjectService>();
 			services.AddScoped<IStudentService, StudentService>();
 			services.AddScoped<IBehaviorService, BehaviorService>();
-			services.AddScoped<INotificationJobService, NotificationJobService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
+			services.AddScoped<INotificationJobService, NotificationJobService>();
 
 			// AutoMapper
 			services.AddAutoMapper(typeof(UserProfile).Assembly);
@@ -135,6 +137,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
 			// FluentValidation
+			services.AddScoped<IValidator<TimetableRequest>, TimetableRequestValidator>();	
 			services.AddScoped<IValidator<FilterUserRequest>, FilterUserRequestValidator>();
 			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
 			services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
@@ -143,10 +146,10 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
 			services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
 			services.AddScoped<IValidator<CreateSubjectRequest>, CreateSubjectRequestValidator>();
+			services.AddScoped<IValidator<StudentPagingRequest>, StudentPagingRequestValidator>();
 			services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
 			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
-			services.AddScoped<IValidator<GetStudentsByClassIdRequest>, GetStudentsByClassIdRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassBehaviorLogRequest>, UpdateClassBehaviorLogRequestValidator>();
 			services.AddScoped<IValidator<CreateClassBehaviorLogRequest>, CreateClassBehaviorLogRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionByAdminRequest>, UpdateClassSessionByAdminRequestValidator>();

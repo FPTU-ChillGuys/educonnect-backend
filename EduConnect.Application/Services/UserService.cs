@@ -1,14 +1,13 @@
-﻿using AutoMapper;
-using EduConnect.Application.Commons.Dtos;
+﻿using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.DTOs.Requests.UserRequests;
-using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Dtos;
+using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using AutoMapper;
 
 namespace EduConnect.Application.Services
 {
@@ -36,45 +35,6 @@ namespace EduConnect.Application.Services
 			_mapper = mapper;
 		}
 
-		public async Task<BaseResponse<int>> CountHomeroomTeachersAsync()
-		{
-			try
-			{
-				var count = await _genericRepo.CountAsync(u => u.HomeroomClasses.Any() && u.IsActive);
-				return BaseResponse<int>.Ok(count);
-			}
-			catch (Exception ex)
-			{
-				return BaseResponse<int>.Fail($"Failed to count homeroom teachers: {ex.Message}");
-			}
-		}
-
-		public async Task<BaseResponse<int>> CountSubjectTeachersAsync()
-		{
-			try
-			{
-				var count = await _genericRepo.CountAsync(u => u.TeachingSessions.Any() && u.IsActive);
-				return BaseResponse<int>.Ok(count);
-			}
-			catch (Exception ex)
-			{
-				return BaseResponse<int>.Fail($"Failed to count subject teachers: {ex.Message}");
-			}
-		}
-
-		public async Task<BaseResponse<int>> CountTeachersAsync()
-		{
-			try
-			{
-				var count = await _userRepo.CountUsersInRoleAsync("Teacher");
-				return BaseResponse<int>.Ok(count);
-			}
-			catch
-			{
-				return BaseResponse<int>.Fail("Failed to retrieve teacher count");
-			}
-		}
-
 		public async Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request)
 		{
 			var validationResult = await _filterValidator.ValidateAsync(request);
@@ -86,9 +46,18 @@ namespace EduConnect.Application.Services
 
 			var (items, totalCount) = await _userRepo.GetPagedUsersAsync(request);
 
-			var dtoList = _mapper.Map<List<UserDto>>(items);
+			return totalCount == 0
+				? PagedResponse<UserDto>.Fail("No users found", request.PageNumber, request.PageSize)
+				: PagedResponse<UserDto>.Ok(items, totalCount, request.PageNumber, request.PageSize, "Users retrieved successfully");
+		}
 
-			return PagedResponse<UserDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize);
+		public async Task<BaseResponse<List<UserLookupDto>>> GetUserLookupAsync(FilterUserRequest request)
+		{
+			var users = await _userRepo.GetUserLookupAsync(request); // Updated to use the new centralized repo method
+
+			return users.Any()
+				? BaseResponse<List<UserLookupDto>>.Ok(users, "Users loaded successfully")
+				: BaseResponse<List<UserLookupDto>>.Fail("No users found");
 		}
 
 		public async Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id)
@@ -104,11 +73,11 @@ namespace EduConnect.Application.Services
 			return BaseResponse<UserDto>.Ok(dto, "User retrieved successfully");
 		}
 
-		public async Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(ExportUserRequest request)
+		public async Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(FilterUserRequest request)
 		{
 			try
 			{
-				var users = await _userRepo.GetUsersForExportAsync(request); // returns List<UserDto>
+				var users = await _userRepo.GetUsersForExportAsync(request);
 
 				if (!users.Any())
 					return BaseResponse<byte[]>.Fail("No users found to export");
@@ -151,7 +120,6 @@ namespace EduConnect.Application.Services
 			}
 		}
 
-
 		public async Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request)
 		{
 			var validation = await _updateValidator.ValidateAsync(request);
@@ -166,11 +134,11 @@ namespace EduConnect.Application.Services
 			user.PhoneNumber = request.PhoneNumber;
 			user.Address = request.Address;
 
-			// You might want to update FullName, but IdentityUser doesn't have it by default.
-			// Consider extending User with a FullName property if not done already
-			user.UserName = request.FullName; // or add user.FullName if you added that field
-			user.NormalizedUserName = request.FullName?.ToUpperInvariant(); // Normalize if needed
-
+			if (!string.IsNullOrEmpty(request.FullName))
+			{
+				user.FullName = request.FullName;
+			}
+			
 			var result = await _userManager.UpdateAsync(user);
 			if (!result.Succeeded)
 				return BaseResponse<string>.Fail("Failed to update user");

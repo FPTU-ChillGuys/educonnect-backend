@@ -19,4 +19,8 @@
     <ProjectReference Include="..\EduConnect.Domain\EduConnect.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\Requests\PeriodRequests\" />
+  </ItemGroup>
+
 </Project>

@@ -7,9 +7,13 @@ namespace EduConnect.Application.Validators.ClassValidators
 	{
 		public ClassPagingRequestValidator()
 		{
-			RuleFor(x => x.PageNumber).GreaterThan(0);
-			RuleFor(x => x.PageSize).InclusiveBetween(1, 100);
-			RuleFor(x => x.SortBy).Must(BeAValidSortField).When(x => !string.IsNullOrWhiteSpace(x.SortBy));
+			RuleFor(x => x.SortBy)
+				.Must(BeAValidSortField)
+				.When(x => !string.IsNullOrWhiteSpace(x.SortBy));
+
+			RuleFor(x => x)
+				.Must(x => !(x.TeacherId.HasValue && x.StudentId.HasValue))
+				.WithMessage("You can filter by either TeacherId or StudentId, not both.");
 		}
 
 		private bool BeAValidSortField(string? field)

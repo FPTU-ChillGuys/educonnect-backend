@@ -15,7 +15,9 @@ namespace EduConnect.Application.Mappings
 			CreateMap<UpdateClassRequest, Class>();
 
 			CreateMap<Class, ClassDto>()
-			.ForMember(dest => dest.HomeroomTeacherName, opt => opt.MapFrom(src => src.HomeroomTeacher.UserName));
+			.ForMember(dest => dest.HomeroomTeacherName, opt => opt.MapFrom(src => src.HomeroomTeacher.FullName));
+
+			CreateMap<Class, ClassLookupDto>();
 		}
 	}
 }

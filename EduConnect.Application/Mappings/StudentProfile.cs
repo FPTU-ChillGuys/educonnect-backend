@@ -12,6 +12,7 @@ namespace EduConnect.Application.Mappings
 			CreateMap<Student, StudentDto>()
 				.ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.Class.ClassName))
 				.ForMember(dest => dest.ParentEmail, opt => opt.MapFrom(src => src.Parent.Email))
+				.ForMember(dest => dest.ParentFullName, opt => opt.MapFrom(src => src.Parent.FullName))
 				.ForMember(dest => dest.ParentPhoneNumber, opt => opt.MapFrom(src => src.Parent.PhoneNumber));
 
 			CreateMap<CreateStudentRequest, Student>();

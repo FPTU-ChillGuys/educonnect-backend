@@ -23,6 +23,13 @@ namespace EduConnect.API.Controllers
 			return response.Success ? Ok(response) : BadRequest(response);
 		}
 
+		[HttpGet("lookup")]
+		[Authorize(Roles = "admin,teacher,parent")]
+		public async Task<IActionResult> GetSubjectLookup([FromQuery] SubjectPagingRequest request) {
+			var response = await _service.GetSubjectLookupAsync(request);
+			return response.Success ? Ok(response) : BadRequest(response);
+		}
+
 		[HttpGet("{id}")]
 		[Authorize(Roles = "admin,teacher,parent")]
 		public async Task<IActionResult> GetById(Guid id) {

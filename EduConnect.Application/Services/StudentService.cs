@@ -19,15 +19,15 @@ namespace EduConnect.Application.Services
 		private readonly IGenericRepository<Student> _studentRepo;
 		private readonly IValidator<CreateStudentRequest> _validatorCreate;
 		private readonly IValidator<UpdateStudentRequest> _validatorUpdate;
-		private readonly IValidator<GetStudentsByClassIdRequest> _validatorGetByClassId;
+		private readonly IValidator<StudentPagingRequest> _studentPagingValidator;
 
-		public StudentService(IValidator<GetStudentsByClassIdRequest> validatorGetByClassId, 
+		public StudentService(IValidator<StudentPagingRequest> studentPagingValidator, 
 			IGenericRepository<Student> studentRepo, 
 			IValidator<CreateStudentRequest> validatorCreate, 
 			IValidator<UpdateStudentRequest> validatorUpdate,
 			IMapper mapper)
 		{
-			_validatorGetByClassId = validatorGetByClassId;
+			_studentPagingValidator = studentPagingValidator;
 			_validatorUpdate = validatorUpdate;	
 			_validatorCreate = validatorCreate;
 			_studentRepo = studentRepo;
@@ -46,15 +46,6 @@ namespace EduConnect.Application.Services
 				var errors = validationResult.Errors.Select(e => e.ErrorMessage);
 				return BaseResponse<string>.Fail(string.Join(" | ", errors));
 			}
-
-			// Additional validation here
-			//var classExists = await _classRepo.GetByIdAsync(request.ClassId) is not null;
-			//var parentExists = await _userRepo.GetByIdAsync(request.ParentId) is not null;
-
-			//if (!classExists)
-			//	return BaseResponse<string>.Fail("Class not found");
-			//if (!parentExists)
-			//	return BaseResponse<string>.Fail("Parent not found");
 
 			_mapper.Map(request, student);
 			_studentRepo.Update(student);
@@ -84,114 +75,49 @@ namespace EduConnect.Application.Services
 				: BaseResponse<string>.Fail("Failed to create student");
 		}
 
-		public async Task<BaseResponse<List<StudentDto>>> GetStudentsByParentIdAsync(Guid parentId)
+		public async Task<PagedResponse<StudentDto>> GetPagedStudentsAsync(StudentPagingRequest request)
 		{
-			var students = await _studentRepo.GetAllAsync(
-				filter: s => s.ParentId == parentId,
-				include: q => q.Include(s => s.Class), 
-				asNoTracking: true
-			);
-
-			var dtoList = _mapper.Map<List<StudentDto>>(students);
-			return BaseResponse<List<StudentDto>>.Ok(dtoList);
-		}
-
-		public async Task<PagedResponse<StudentDto>> GetStudentsByClassIdAsync(Guid classId, GetStudentsByClassIdRequest request)
-		{
-			var validationResult = await _validatorGetByClassId.ValidateAsync(request);
+			var validationResult = await _studentPagingValidator.ValidateAsync(request);
 			if (!validationResult.IsValid)
 			{
 				var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
 				return PagedResponse<StudentDto>.Fail(errors, request.PageNumber, request.PageSize);
 			}
 
-			// Start with base query
 			Expression<Func<Student, bool>> filter = s => true;
 
-			// Apply keyword filter
 			if (!string.IsNullOrWhiteSpace(request.Keyword))
 			{
 				filter = filter.AndAlso(s =>
-					s.FullName.Contains(request.Keyword) || s.StudentCode!.Contains(request.Keyword));
+					s.FullName.Contains(request.Keyword) ||
+					s.StudentCode!.Contains(request.Keyword));
 			}
 
-			if (classId != Guid.Empty)
-			{
-				filter = filter.AndAlso(s => s.ClassId == classId);
-			}
-
-			if (!string.IsNullOrWhiteSpace(request.Status))
-			{
-				filter = filter.AndAlso(s => s.Status == request.Status);
-			}
-
-			if (!string.IsNullOrWhiteSpace(request.Gender))
-			{
-				filter = filter.AndAlso(s => s.Gender == request.Gender);
-			}
-
-			if (request.FromDate.HasValue)
-			{
-				filter = filter.AndAlso(s => s.DateOfBirth >= request.FromDate.Value);
-			}
-
-			if (request.ToDate.HasValue)
-			{
-				filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
-			}
-
-			var (students, totalCount) = await _studentRepo.GetPagedAsync(
-				filter: filter,
-				include: q => q.Include(s => s.Class),
-				orderBy: q => q.ApplySorting(request.SortBy, request.SortDescending),
-				pageNumber: request.PageNumber,
-				pageSize: request.PageSize,
-				asNoTracking: true
-			);
-
-			var dtoList = _mapper.Map<List<StudentDto>>(students);
-			if (!dtoList.Any())
-			{
-				return PagedResponse<StudentDto>.Fail("No students found for this class", request.PageNumber, request.PageSize);
-			}
-			return PagedResponse<StudentDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
-		}
-
-		public async Task<PagedResponse<StudentDto>> GetPagedStudentsAsync(StudentPagingRequest request)
-		{
-			// Start with base query
-			Expression<Func<Student, bool>> filter = s => true;
-
-			// Apply keyword filter
-			if (!string.IsNullOrWhiteSpace(request.Keyword))
-			{
-				filter = filter.AndAlso(s =>
-					s.FullName.Contains(request.Keyword) || s.StudentCode!.Contains(request.Keyword));
-			}
-
-			// Filter by ClassId
 			if (request.ClassId.HasValue)
 			{
 				filter = filter.AndAlso(s => s.ClassId == request.ClassId.Value);
 			}
 
-			// Filter by Status
+			if (request.ParentId.HasValue)
+			{
+				filter = filter.AndAlso(s => s.ParentId == request.ParentId.Value);
+			}
+
 			if (!string.IsNullOrWhiteSpace(request.Status))
 			{
 				filter = filter.AndAlso(s => s.Status == request.Status);
 			}
 
-			// Filter by Gender
 			if (!string.IsNullOrWhiteSpace(request.Gender))
 			{
 				filter = filter.AndAlso(s => s.Gender == request.Gender);
 			}
 
-			// Filter by DOB range
 			if (request.FromDate.HasValue)
 			{
 				filter = filter.AndAlso(s => s.DateOfBirth >= request.FromDate.Value);
 			}
+
 			if (request.ToDate.HasValue)
 			{
 				filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
@@ -200,6 +126,7 @@ namespace EduConnect.Application.Services
 			var (students, totalCount) = await _studentRepo.GetPagedAsync(
 				filter: filter,
 				include: q => q.Include(s => s.Class).Include(s => s.Parent),
+				orderBy: q => q.ApplySorting(request.SortBy, request.SortDescending),
 				pageNumber: request.PageNumber,
 				pageSize: request.PageSize,
 				asNoTracking: true
@@ -213,21 +140,13 @@ namespace EduConnect.Application.Services
 			}
 
 			return PagedResponse<StudentDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
-
 		}
 
-		public async Task<BaseResponse<int>> CountStudentsAsync()
-		{
-			var result = await _studentRepo.CountAsync();
-			return result >= 0
-				? BaseResponse<int>.Ok(result)
-				: BaseResponse<int>.Fail("Failed to count students");
-		}
-
-		public async Task<BaseResponse<byte[]>> ExportStudentsToExcelAsync(ExportStudentRequest request)
+		public async Task<BaseResponse<byte[]>> ExportStudentsToExcelAsync(StudentPagingRequest request)
 		{
 			try
 			{
+				// Build dynamic filter using unified logic
 				Expression<Func<Student, bool>> filter = s => true;
 
 				if (!string.IsNullOrWhiteSpace(request.Keyword))
@@ -235,6 +154,9 @@ namespace EduConnect.Application.Services
 
 				if (request.ClassId.HasValue)
 					filter = filter.AndAlso(s => s.ClassId == request.ClassId.Value);
+
+				if (request.ParentId.HasValue)
+					filter = filter.AndAlso(s => s.ParentId == request.ParentId.Value);
 
 				if (!string.IsNullOrWhiteSpace(request.Status))
 					filter = filter.AndAlso(s => s.Status == request.Status);
@@ -257,6 +179,7 @@ namespace EduConnect.Application.Services
 				if (!students.Any())
 					return BaseResponse<byte[]>.Fail("No students found to export");
 
+				// Excel export using EPPlus
 				ExcelPackage.License.SetNonCommercialOrganization("EduConnect");
 				using var package = new ExcelPackage();
 				var worksheet = package.Workbook.Worksheets.Add("Students");
@@ -269,17 +192,21 @@ namespace EduConnect.Application.Services
 				worksheet.Cells[1, 5].Value = "Status";
 				worksheet.Cells[1, 6].Value = "Class";
 				worksheet.Cells[1, 7].Value = "Parent Email";
+				worksheet.Cells[1, 8].Value = "Parent Name";
+				worksheet.Cells[1, 9].Value = "Parent Phone";
 
 				int row = 2;
 				foreach (var s in students)
 				{
 					worksheet.Cells[row, 1].Value = s.StudentCode;
 					worksheet.Cells[row, 2].Value = s.FullName;
-					worksheet.Cells[row, 3].Value = s.DateOfBirth.ToShortDateString();
+					worksheet.Cells[row, 3].Value = s.DateOfBirth.ToString("yyyy-MM-dd");
 					worksheet.Cells[row, 4].Value = s.Gender;
 					worksheet.Cells[row, 5].Value = s.Status;
 					worksheet.Cells[row, 6].Value = s.Class?.ClassName;
 					worksheet.Cells[row, 7].Value = s.Parent?.Email;
+					worksheet.Cells[row, 8].Value = s.Parent?.FullName;
+					worksheet.Cells[row, 9].Value = s.Parent?.PhoneNumber;
 					row++;
 				}
 
@@ -289,6 +216,7 @@ namespace EduConnect.Application.Services
 			}
 			catch (Exception ex)
 			{
+				// Log exception if needed
 				return BaseResponse<byte[]>.Fail("An error occurred while exporting: " + ex.Message);
 			}
 		}

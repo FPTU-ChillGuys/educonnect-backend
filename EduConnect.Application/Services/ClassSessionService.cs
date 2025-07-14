@@ -17,6 +17,7 @@ namespace EduConnect.Application.Services
 	public class ClassSessionService : IClassSessionService
 	{
 		private readonly IGenericRepository<ClassSession> _classSessionRepo;
+		private readonly IValidator<TimetableRequest> _timetableValidator;
 		private readonly IValidator<CreateClassSessionRequest> _validatorCreate;
 		private readonly IValidator<UpdateClassSessionRequest> _validatorUpdate;
 		private readonly IValidator<UpdateClassSessionByAdminRequest> _validatorUpdateByAdmin;
@@ -25,6 +26,7 @@ namespace EduConnect.Application.Services
 			IValidator<CreateClassSessionRequest> validatorCreate,
 			IValidator<UpdateClassSessionRequest> validatorUpdate,
 			IValidator<UpdateClassSessionByAdminRequest> validatorUpdateByAdmin,
+			IValidator<TimetableRequest> timetableValidator,
 			IMapper mapper)
 		{
 			_classSessionRepo = classSessionRepo;
@@ -32,113 +34,64 @@ namespace EduConnect.Application.Services
 			_validatorUpdate = validatorUpdate;
 			_validatorUpdateByAdmin = validatorUpdateByAdmin;
 			_mapper = mapper;
+			_timetableValidator = timetableValidator;
 		}
 
-		public async Task<BaseResponse<List<TimetableViewDto>>> GetClassTimetableAsync(Guid classId, DateTime from, DateTime to)
+		public async Task<BaseResponse<List<TimetableViewDto>>> GetTimetableAsync(TimetableRequest request)
 		{
+			var validationResult = await _timetableValidator.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
+				return BaseResponse<List<TimetableViewDto>>.Fail(errors);
+			}
+
 			try
 			{
-				if (classId == Guid.Empty)
-					return BaseResponse<List<TimetableViewDto>>.Fail("Invalid class ID");
+				Expression<Func<ClassSession, bool>> filter = cs => !cs.IsDeleted;
 
-				// If no date range provided, fetch all sessions for the class
-				bool hasDateRange = from != default && to != default;
-				if (hasDateRange && from > to)
-					return BaseResponse<List<TimetableViewDto>>.Fail("From date must be earlier than To date");
+				if (request.Mode == "Class")
+					filter = filter.AndAlso(cs => cs.ClassId == request.TargetId);
+				else
+					filter = filter.AndAlso(cs => cs.TeacherId == request.TargetId);
 
-				Expression<Func<ClassSession, bool>> filter = cs => cs.ClassId == classId;
-				if (hasDateRange)
-					filter = filter.AndAlso(cs => cs.Date >= from && cs.Date <= to);
-
-				filter = filter.AndAlso(cs => !cs.IsDeleted);
-
-				var sessions = await _classSessionRepo.GetAllAsync(
-					filter: filter,
-					include: q => q
-						.Include(cs => cs.Subject)
-						.Include(cs => cs.Teacher)
-						.Include(cs => cs.Class),
-					asNoTracking: true
-				);
-
-				if (!sessions.Any())
-					return BaseResponse<List<TimetableViewDto>>.Fail("No class sessions found");
-
-				var grouped = sessions
-						.GroupBy(cs => cs.Date.Date)
-						.OrderBy(g => g.Key)
-						.Select(g => new TimetableViewDto
-						{
-							Date = g.Key,
-							DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
-							Periods = g.OrderBy(cs => cs.PeriodNumber)
-								.Select(cs => new PeriodSlotDto
-								{
-									PeriodNumber = cs.PeriodNumber,
-									ClassName = cs.Class?.ClassName ?? "N/A",
-									SubjectName = cs.Subject?.SubjectName ?? "N/A",
-									TeacherName = cs.Teacher?.UserName ?? "N/A",
-									LessonContent = cs.LessonContent
-								}).ToList()
-						}).ToList();
-
-				return BaseResponse<List<TimetableViewDto>>.Ok(grouped);
-			}
-			catch (Exception ex)
-			{
-				return BaseResponse<List<TimetableViewDto>>.Fail($"An error occurred while retrieving timetable: {ex.Message}");
-			}
-		}
-
-		public async Task<BaseResponse<List<TimetableViewDto>>> GetTeacherTimetableAsync(Guid teacherId, DateTime from, DateTime to)
-		{
-			try
-			{
-				if (teacherId == Guid.Empty)
-					return BaseResponse<List<TimetableViewDto>>.Fail("Invalid teacher ID");
-
-				// Optional date range handling
-				bool hasDateRange = from != default && to != default;
-				if (hasDateRange && from > to)
-					return BaseResponse<List<TimetableViewDto>>.Fail("From date must be earlier than To date");
-
-				Expression<Func<ClassSession, bool>> filter = cs => cs.TeacherId == teacherId;
-				if (hasDateRange)
-					filter = filter.AndAlso(cs => cs.Date >= from && cs.Date <= to);
-
-				filter = filter.AndAlso(cs => !cs.IsDeleted);
+				if (request.From != default && request.To != default)
+					filter = filter.AndAlso(cs => cs.Date >= request.From && cs.Date <= request.To);
 
 				var sessions = await _classSessionRepo.GetAllAsync(
 					filter: filter,
 					include: q => q
 						.Include(cs => cs.Subject)
 						.Include(cs => cs.Class)
-						.Include(cs => cs.Teacher),
+						.Include(cs => cs.Teacher)
+						.Include(cs => cs.Period),
 					asNoTracking: true
 				);
 
 				if (!sessions.Any())
-					return BaseResponse<List<TimetableViewDto>>.Fail("No sessions found for this teacher");
+					return BaseResponse<List<TimetableViewDto>>.Fail("No timetable sessions found");
 
 				var grouped = sessions
-						.GroupBy(cs => cs.Date.Date)
-						.OrderBy(g => g.Key)
-						.Select(g => new TimetableViewDto
-						{
-							Date = g.Key,
-							DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
-							Periods = g.OrderBy(cs => cs.PeriodNumber)
-								.Select(cs => new PeriodSlotDto
-								{
-									PeriodNumber = cs.PeriodNumber,
-									ClassName = cs.Class?.ClassName ?? "N/A",
-									SubjectName = cs.Subject?.SubjectName ?? "N/A",
-									TeacherName = cs.Teacher?.UserName ?? "N/A",
-									LessonContent = cs.LessonContent
-								}).ToList()
-						}).ToList();
+					.GroupBy(cs => cs.Date.Date)
+					.OrderBy(g => g.Key)
+					.Select(g => new TimetableViewDto
+					{
+						Date = g.Key,
+						DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
+						Periods = g.OrderBy(cs => cs.Period.PeriodNumber)
+							.Select(cs => new PeriodSlotDto
+							{
+								PeriodNumber = cs.Period.PeriodNumber,
+								ClassName = cs.Class?.ClassName ?? "N/A",
+								SubjectName = cs.Subject?.SubjectName ?? "N/A",
+								TeacherName = cs.Teacher?.FullName ?? "N/A",
+								LessonContent = cs.LessonContent
+							}).ToList()
+					}).ToList();
 
-				return BaseResponse<List<TimetableViewDto>>.Ok(grouped, "Teacher timetable loaded successfully");
+				var label = request.Mode == "Class" ? "Class" : "Teacher";
+
+				return BaseResponse<List<TimetableViewDto>>.Ok(grouped, $"{label} timetable loaded successfully");
 			}
 			catch (Exception ex)
 			{
@@ -175,8 +128,8 @@ namespace EduConnect.Application.Services
 
 			var (items, total) = await _classSessionRepo.GetPagedAsync(
 				filter: filter,
-				include: q => q.Include(c => c.Class).Include(c => c.Subject).Include(c => c.Teacher),
-				orderBy: q => q.OrderByDescending(c => c.Date).ThenBy(c => c.PeriodNumber),
+				include: q => q.Include(c => c.Class).Include(c => c.Subject).Include(c => c.Period).Include(c => c.Teacher),
+				orderBy: q => q.OrderByDescending(c => c.Date).ThenBy(c => c.Period.PeriodNumber),
 				pageNumber: request.PageNumber,
 				pageSize: request.PageSize,
 				asNoTracking: true
@@ -189,115 +142,90 @@ namespace EduConnect.Application.Services
 			return PagedResponse<ClassSessionDto>.Ok(dtoList, total, request.PageNumber, request.PageSize);
 		}
 
-		public async Task<BaseResponse<byte[]>> ExportClassTimetableToExcelAsync(Guid classId, DateTime from, DateTime to)
+		public async Task<BaseResponse<byte[]>> ExportTimetableToExcelAsync(TimetableRequest request)
 		{
 			try
 			{
-				if (classId == Guid.Empty)
-					return BaseResponse<byte[]>.Fail("Invalid class ID");
+				if (request.TargetId == Guid.Empty)
+					return BaseResponse<byte[]>.Fail("Invalid target ID");
 
-				if (from == default || to == default || from > to)
+				if (request.From == default || request.To == default || request.From > request.To)
 					return BaseResponse<byte[]>.Fail("Invalid date range");
 
+				Expression<Func<ClassSession, bool>> filter = cs => !cs.IsDeleted;
+
+				if (request.Mode == "Class")
+					filter = filter.AndAlso(cs => cs.ClassId == request.TargetId);
+				else if (request.Mode == "Teacher")
+					filter = filter.AndAlso(cs => cs.TeacherId == request.TargetId);
+				else
+					return BaseResponse<byte[]>.Fail("Invalid mode. Expected 'Class' or 'Teacher'");
+
+				filter = filter.AndAlso(cs => cs.Date >= request.From && cs.Date <= request.To);
+
 				var sessions = await _classSessionRepo.GetAllAsync(
-					filter: cs => cs.ClassId == classId && cs.Date >= from && cs.Date <= to && !cs.IsDeleted,
-					include: q => q.Include(cs => cs.Subject).Include(cs => cs.Teacher).Include(cs => cs.Class),
+					filter: filter,
+					include: q => q.Include(cs => cs.Subject)
+						.Include(cs => cs.Teacher)
+						.Include(cs => cs.Period)
+						.Include(cs => cs.Class),
 					asNoTracking: true
 				);
 
 				if (!sessions.Any())
-					return BaseResponse<byte[]>.Fail("No sessions found for this class");
+					return BaseResponse<byte[]>.Fail("No sessions found for export");
 
 				ExcelPackage.License.SetNonCommercialOrganization("EduConnect");
 				using var package = new ExcelPackage();
-				var worksheet = package.Workbook.Worksheets.Add("Class Timetable");
+				var worksheetName = request.Mode == "Class" ? "Class Timetable" : "Teacher Timetable";
+				var worksheet = package.Workbook.Worksheets.Add(worksheetName);
 
-				// Headers
-				worksheet.Cells[1, 1].Value = "Date";
-				worksheet.Cells[1, 2].Value = "Day"; 
-				worksheet.Cells[1, 3].Value = "Period";
-				worksheet.Cells[1, 4].Value = "Class";
-				worksheet.Cells[1, 5].Value = "Subject";
-				worksheet.Cells[1, 6].Value = "Teacher";
-				worksheet.Cells[1, 7].Value = "Lesson Content";
-
-				int row = 2;
-				foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.PeriodNumber))
-				{
-					var dayOfWeek = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
-
-					worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
-					worksheet.Cells[row, 2].Value = dayOfWeek;
-					worksheet.Cells[row, 3].Value = session.PeriodNumber;
-					worksheet.Cells[row, 4].Value = session.Class?.ClassName;
-					worksheet.Cells[row, 5].Value = session.Subject?.SubjectName;
-					worksheet.Cells[row, 6].Value = session.Teacher?.UserName;
-					worksheet.Cells[row, 7].Value = session.LessonContent;
-					row++;
-				}
-
-				worksheet.Cells.AutoFitColumns();
-
-				return BaseResponse<byte[]>.Ok(package.GetAsByteArray(), "Class timetable exported successfully");
-			}
-			catch (Exception ex)
-			{
-				return BaseResponse<byte[]>.Fail("An error occurred while exporting class timetable: " + ex.Message);
-			}
-		}
-
-		public async Task<BaseResponse<byte[]>> ExportTeacherTimetableToExcelAsync(Guid teacherId, DateTime from, DateTime to)
-		{
-			try
-			{
-				if (teacherId == Guid.Empty)
-					return BaseResponse<byte[]>.Fail("Invalid teacher ID");
-
-				if (from == default || to == default || from > to)
-					return BaseResponse<byte[]>.Fail("Invalid date range");
-
-				var sessions = await _classSessionRepo.GetAllAsync(
-					filter: cs => cs.TeacherId == teacherId && cs.Date >= from && cs.Date <= to && !cs.IsDeleted,
-					include: q => q.Include(cs => cs.Subject).Include(cs => cs.Class).Include(cs => cs.Teacher),
-					asNoTracking: true
-				);
-
-				if (!sessions.Any())
-					return BaseResponse<byte[]>.Fail("No sessions found for this teacher");
-
-				ExcelPackage.License.SetNonCommercialOrganization("EduConnect");
-				using var package = new ExcelPackage();
-				var worksheet = package.Workbook.Worksheets.Add("Teacher Timetable");
-
-				// Headers
+				// Set headers
 				worksheet.Cells[1, 1].Value = "Date";
 				worksheet.Cells[1, 2].Value = "Day";
 				worksheet.Cells[1, 3].Value = "Period";
 				worksheet.Cells[1, 4].Value = "Class";
 				worksheet.Cells[1, 5].Value = "Subject";
-				worksheet.Cells[1, 6].Value = "Lesson Content";
 
 				int row = 2;
-				foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.PeriodNumber))
+				if (request.Mode == "Class")
 				{
-					var dayOfWeek = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
-
-					worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
-					worksheet.Cells[row, 2].Value = dayOfWeek;
-					worksheet.Cells[row, 3].Value = session.PeriodNumber;
-					worksheet.Cells[row, 4].Value = session.Class?.ClassName;
-					worksheet.Cells[row, 5].Value = session.Subject?.SubjectName;
-					worksheet.Cells[row, 6].Value = session.LessonContent;
-					row++;
+					worksheet.Cells[1, 6].Value = "Teacher";
+					worksheet.Cells[1, 7].Value = "Lesson Content";
+					foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.Period.PeriodNumber))
+					{
+						worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
+						worksheet.Cells[row, 2].Value = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
+						worksheet.Cells[row, 3].Value = session.Period.PeriodNumber;
+						worksheet.Cells[row, 4].Value = session.Class?.ClassName;
+						worksheet.Cells[row, 5].Value = session.Subject?.SubjectName;
+						worksheet.Cells[row, 6].Value = session.Teacher?.UserName;
+						worksheet.Cells[row, 7].Value = session.LessonContent;
+						row++;
+					}
+				}
+				else // Teacher
+				{
+					worksheet.Cells[1, 6].Value = "Lesson Content";
+					foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.Period.PeriodNumber))
+					{
+						worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
+						worksheet.Cells[row, 2].Value = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
+						worksheet.Cells[row, 3].Value = session.Period.PeriodNumber;
+						worksheet.Cells[row, 4].Value = session.Class?.ClassName;
+						worksheet.Cells[row, 5].Value = session.Subject?.SubjectName;
+						worksheet.Cells[row, 6].Value = session.LessonContent;
+						row++;
+					}
 				}
 
 				worksheet.Cells.AutoFitColumns();
 
-				return BaseResponse<byte[]>.Ok(package.GetAsByteArray(), "Teacher timetable exported successfully");
+				return BaseResponse<byte[]>.Ok(package.GetAsByteArray(), "Timetable exported successfully");
 			}
 			catch (Exception ex)
 			{
-				return BaseResponse<byte[]>.Fail("An error occurred while exporting teacher timetable: " + ex.Message);
+				return BaseResponse<byte[]>.Fail("An error occurred during export: " + ex.Message);
 			}
 		}
 
@@ -310,11 +238,10 @@ namespace EduConnect.Application.Services
 				return BaseResponse<string>.Fail(string.Join(" | ", errors));
 			}
 
-			// Optional: prevent duplicates
 			var isDuplicate = await _classSessionRepo.AnyAsync(cs =>
 				cs.ClassId == request.ClassId &&
 				cs.Date == request.Date &&
-				cs.PeriodNumber == request.PeriodNumber);
+				cs.PeriodId == request.PeriodId); 
 			if (isDuplicate)
 				return BaseResponse<string>.Fail("A session already exists at this date and period for this class.");
 
@@ -322,9 +249,9 @@ namespace EduConnect.Application.Services
 			await _classSessionRepo.AddAsync(entity);
 			var saved = await _classSessionRepo.SaveChangesAsync();
 
-			return saved 
-				? BaseResponse<string>.Ok("Class session created successfully") 
-				: BaseResponse<string>.Fail("Fail to create Class session");
+			return saved
+				? BaseResponse<string>.Ok("Class session created successfully")
+				: BaseResponse<string>.Fail("Failed to create class session");
 		}
 
 		public async Task<BaseResponse<string>> UpdateClassSessionAsync(UpdateClassSessionRequest request, Guid currentTeacherId, Guid classSessionId)
@@ -360,6 +287,13 @@ namespace EduConnect.Application.Services
 			var session = await _classSessionRepo.GetByIdAsync(s => s.ClassSessionId == classSessionId);
 			if (session == null)
 				return BaseResponse<string>.Fail("Class session not found");
+
+			var isDuplicate = await _classSessionRepo.AnyAsync(cs =>
+				cs.ClassId == request.ClassId &&
+				cs.Date == request.Date &&
+				cs.PeriodId == request.PeriodId);
+			if (isDuplicate)
+				return BaseResponse<string>.Fail("A session already exists at this date and period for this class.");
 
 			_mapper.Map(request, session);
 

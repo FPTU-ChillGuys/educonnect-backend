@@ -33,14 +33,6 @@ namespace EduConnect.Application.Services
 			_mapper = mapper;
 		}
 
-		public async Task<BaseResponse<int>> CountClassesAsync()
-		{
-			return await _classRepo.CountAsync()
-				.ContinueWith(task => task.IsCompletedSuccessfully
-					? BaseResponse<int>.Ok(task.Result)
-					: BaseResponse<int>.Fail("Failed to retrieve class count"));
-		}
-
 		public async Task<PagedResponse<ClassDto>> GetPagedClassesAsync(ClassPagingRequest request)
 		{
 			var validationResult = await _pagingValidator.ValidateAsync(request);
@@ -52,6 +44,7 @@ namespace EduConnect.Application.Services
 
 			Expression<Func<Class, bool>> filter = c => true;
 
+			// Filter by keyword
 			if (!string.IsNullOrWhiteSpace(request.Keyword))
 			{
 				filter = filter.AndAlso(c =>
@@ -60,9 +53,21 @@ namespace EduConnect.Application.Services
 					c.AcademicYear.Contains(request.Keyword));
 			}
 
+			// Filter by TeacherId
+			if (request.TeacherId.HasValue)
+			{
+				filter = filter.AndAlso(c => c.HomeroomTeacherId == request.TeacherId);
+			}
+
+			// Filter by StudentId
+			if (request.StudentId.HasValue)
+			{
+				filter = filter.AndAlso(c => c.Students.Any(s => s.StudentId == request.StudentId));
+			}
+
 			var (classes, totalCount) = await _classRepo.GetPagedAsync(
 				filter: filter,
-				include: q => q.Include(c => c.HomeroomTeacher),
+				include: q => q.Include(c => c.HomeroomTeacher).Include(c => c.Students),
 				orderBy: q => q.ApplySorting(request.SortBy, request.SortDescending),
 				pageNumber: request.PageNumber,
 				pageSize: request.PageSize,
@@ -74,6 +79,56 @@ namespace EduConnect.Application.Services
 			return PagedResponse<ClassDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize);
 		}
 
+		public async Task<BaseResponse<List<ClassLookupDto>>> GetClassLookupAsync(ClassPagingRequest request)
+		{
+			Expression<Func<Class, bool>> filter = c => true;
+
+			if (!string.IsNullOrWhiteSpace(request.Keyword))
+			{
+				filter = filter.AndAlso(c =>
+					c.ClassName.Contains(request.Keyword) ||
+					c.GradeLevel.Contains(request.Keyword) ||
+					c.AcademicYear.Contains(request.Keyword));
+			}
+
+			if (request.TeacherId.HasValue)
+			{
+				filter = filter.AndAlso(c => c.HomeroomTeacherId == request.TeacherId.Value);
+			}
+
+			if (request.StudentId.HasValue)
+			{
+				filter = filter.AndAlso(c => c.Students.Any(s => s.StudentId == request.StudentId.Value));
+			}
+
+			var classes = await _classRepo.GetAllAsync(
+				filter: filter,
+				orderBy: q => q.OrderBy(c => c.ClassName),
+				asNoTracking: true
+			);
+
+			var dtoList = _mapper.Map<List<ClassLookupDto>>(classes);
+
+			if (dtoList.Count == 0)
+				return BaseResponse<List<ClassLookupDto>>.Fail("No classes found");
+
+			return BaseResponse<List<ClassLookupDto>>.Ok(dtoList, "Classes retrieved successfully");
+		}
+
+		public async Task<BaseResponse<ClassDto>> GetClassByIdAsync(Guid classId)
+		{
+			var classEntity = await _classRepo.GetByIdAsync(
+				c => c.ClassId == classId,
+				include: q => q.Include(c => c.HomeroomTeacher),
+				asNoTracking: true
+			);
+
+			if (classEntity is null)
+				return BaseResponse<ClassDto>.Fail("Class not found");
+
+			var dto = _mapper.Map<ClassDto>(classEntity);
+			return BaseResponse<ClassDto>.Ok(dto);
+		}
 
 		public async Task<BaseResponse<string>> CreateClassAsync(CreateClassRequest request)
 		{
@@ -130,46 +185,6 @@ namespace EduConnect.Application.Services
 			return saved
 				? BaseResponse<string>.Ok("Class deleted successfully")
 				: BaseResponse<string>.Fail("Failed to delete class");
-		}
-
-		public async Task<BaseResponse<ClassDto>> GetClassByIdAsync(Guid classId)
-		{
-			var classEntity = await _classRepo.GetByIdAsync(
-				c => c.ClassId == classId,
-				include: q => q.Include(c => c.HomeroomTeacher),
-				asNoTracking: true
-			);
-
-			if (classEntity is null)
-				return BaseResponse<ClassDto>.Fail("Class not found");
-
-			var dto = _mapper.Map<ClassDto>(classEntity);
-			return BaseResponse<ClassDto>.Ok(dto);
-		}
-
-		public async Task<BaseResponse<List<ClassDto>>> GetClassesByTeacherIdAsync(Guid teacherId)
-		{
-			var classList = await _classRepo.GetAllAsync(
-				filter: c => c.HomeroomTeacherId == teacherId,
-				include: q => q.Include(c => c.HomeroomTeacher),
-				asNoTracking: true
-			);
-
-			var dtoList = _mapper.Map<List<ClassDto>>(classList);
-			return BaseResponse<List<ClassDto>>.Ok(dtoList);
-		}
-
-		public async Task<BaseResponse<List<ClassDto>>> GetClassesByStudentIdAsync(Guid studentId)
-		{
-			var classList = await _classRepo.GetAllAsync(
-				filter: c => c.Students.Any(s => s.StudentId == studentId),
-				include: q => q.Include(c => c.Students).Include(c => c.HomeroomTeacher),
-				orderBy: q => q.OrderByDescending(c => c.AcademicYear).ThenBy(c => c.ClassName),
-				asNoTracking: true
-			);
-
-			var dtoList = _mapper.Map<List<ClassDto>>(classList);
-			return BaseResponse<List<ClassDto>>.Ok(dtoList);
 		}
 	}
 }
