@@ -15,10 +15,13 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
 
-        [KernelFunction("get_class_sessions_by_class_name")]
+        [KernelFunction("get_class_sessions_from_class_name")]
         [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
-        public async Task<List<ClassSessionDto>> GetClassSessionsByNameAndDate(string name, DateTime from, DateTime to)
+        public async Task<List<ClassSessionDto>> GetClassSessionsByNameAndDate(string className, string fromDate, string toDate)
         {
+
+            DateTime.TryParse(fromDate, out DateTime from);
+            DateTime.TryParse(toDate, out DateTime to);
            
             var classSessions = await classSessionService.GetPagedClassSessionsAsync(
                 new ClassSessionPagingRequest
@@ -28,13 +31,13 @@ namespace EduConnect.ChatbotAPI.Plugins
                     ToDate = to,
                 }
             );
-            return classSessions!.Data!.Where(classService => classService.ClassName!.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+            return classSessions!.Data!.Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase)).ToList();
 
         }
 
-        [KernelFunction("get_class_sessions_by_class_name_and_date")]
+        [KernelFunction("get_class_sessions_from_class_name_and_date")]
         [Description("Retrieves the class timetable for a given class within a date range.")]
-        public async Task<List<TimetableViewDto>> GetClassTimetable(string className, DateTime from, DateTime to)
+        public async Task<List<TimetableViewDto>> GetClassTimetable(string className, string fromDate, string toDate)
         {
             var result = await classService.GetPagedClassesAsync(
                    new ClassPagingRequest
@@ -48,6 +51,10 @@ namespace EduConnect.ChatbotAPI.Plugins
                 .ToList();
 
             var timeTableView = new List<TimetableViewDto>();
+
+            DateTime.TryParse(fromDate, out DateTime from);
+            DateTime.TryParse(toDate, out DateTime to);
+
 
             for ( int i = 0; i < classes.Count; i++ )
             {
