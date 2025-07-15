@@ -58,10 +58,12 @@ namespace EduConnect.ChatbotAPI.Plugins
 
             for ( int i = 0; i < classes.Count; i++ )
             {
-                var timetableView = await classSessionService.GetClassTimetableAsync(
-                    classes[i].ClassId,
-                    from,
-                    to
+                var timetableView = await classSessionService.GetTimetableAsync(
+                    new TimetableRequest
+                    {
+                        From = from,
+                        To = to,
+                    }
                 );
 
                 if ( timetableView.Success && timetableView.Data != null )

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EduConnect.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDB : Migration
+    public partial class UpdateDB1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,6 +32,7 @@ namespace EduConnect.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -55,6 +56,20 @@ namespace EduConnect.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Periods",
+                columns: table => new
+                {
+                    PeriodId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PeriodNumber = table.Column<int>(type: "int", nullable: false),
+                    StartTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    EndTime = table.Column<TimeSpan>(type: "time", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Periods", x => x.PeriodId);
                 });
 
             migrationBuilder.CreateTable(
@@ -251,7 +266,7 @@ namespace EduConnect.Persistence.Migrations
                     SubjectId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TeacherId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PeriodNumber = table.Column<int>(type: "int", nullable: false),
+                    PeriodId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     LessonContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TotalAbsentStudents = table.Column<int>(type: "int", nullable: false),
                     GeneralBehaviorNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -274,6 +289,12 @@ namespace EduConnect.Persistence.Migrations
                         principalTable: "Classes",
                         principalColumn: "ClassId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ClassSessions_Periods_PeriodId",
+                        column: x => x.PeriodId,
+                        principalTable: "Periods",
+                        principalColumn: "PeriodId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ClassSessions_Subjects_SubjectId",
                         column: x => x.SubjectId,
@@ -452,12 +473,12 @@ namespace EduConnect.Persistence.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "Address", "ConcurrencyStamp", "DeviceToken", "Email", "EmailConfirmed", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "Address", "ConcurrencyStamp", "DeviceToken", "Email", "EmailConfirmed", "FullName", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, null, "seed-7", null, "teacher@example.com", true, true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAEFpsZAUR0SUWSVwxTbB79Yv9gLG2KXPP6V+42d9TZTtfArLSGNeq4EWxWTW1aNCd5w==", null, false, "", new DateTime(2025, 7, 16, 5, 23, 54, 539, DateTimeKind.Utc).AddTicks(3316), "seed-6", false, "teacher" },
-                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, null, "seed-5", null, "admin@example.com", true, true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEEwq5RDptqvKHdXfOfAOZCu/aV+uzE4UNLK7aTQpy+rkxkUDleDkdiV7Sd+KLTigVQ==", null, false, "", new DateTime(2025, 7, 16, 5, 23, 54, 477, DateTimeKind.Utc).AddTicks(2562), "seed-4", false, "admin" },
-                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, null, "seed-9", null, "parent@example.com", true, true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAEL1mdrnJdvVCnWJM97RV7JkgzbTb2Kj0ZiJYmIC/TB7bRIqBa3Cdj5xJZG3/LpPxrA==", null, false, "", new DateTime(2025, 7, 16, 5, 23, 54, 604, DateTimeKind.Utc).AddTicks(7824), "seed-8", false, "parent" }
+                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, null, "seed-7", null, "teacher@example.com", true, "", true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAEPPI+G2GEgSnIKlK0UHvbnBURvm7qhvxoCEH9Mzn+PCppdTska/Hgsz1mzD+gP7NfQ==", null, false, "", new DateTime(2025, 7, 22, 8, 58, 7, 315, DateTimeKind.Utc).AddTicks(7967), "seed-6", false, "teacher" },
+                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, null, "seed-5", null, "admin@example.com", true, "", true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEH2hKGNXccvfcAt40qjXAn55FxC9uyi1nOC2t56Thh/OGbC4fJq2mH1W64D5lupuUA==", null, false, "", new DateTime(2025, 7, 22, 8, 58, 7, 257, DateTimeKind.Utc).AddTicks(4082), "seed-4", false, "admin" },
+                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, null, "seed-9", null, "parent@example.com", true, "", true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAEL2rtEo81EmW+r+aZanHiyUgxMIfatwyz7J9a/KPvyKxbN1obYPsJIJSNOtbKqnpMQ==", null, false, "", new DateTime(2025, 7, 22, 8, 58, 7, 372, DateTimeKind.Utc).AddTicks(9150), "seed-8", false, "parent" }
                 });
 
             migrationBuilder.InsertData(
@@ -530,6 +551,11 @@ namespace EduConnect.Persistence.Migrations
                 column: "ClassId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ClassSessions_PeriodId",
+                table: "ClassSessions",
+                column: "PeriodId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ClassSessions_SubjectId",
                 table: "ClassSessions",
                 column: "SubjectId");
@@ -563,6 +589,12 @@ namespace EduConnect.Persistence.Migrations
                 name: "IX_Notifications_StudentReportId",
                 table: "Notifications",
                 column: "StudentReportId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Periods_PeriodNumber",
+                table: "Periods",
+                column: "PeriodNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentBehaviorNotes_ClassSessionId",
@@ -637,6 +669,9 @@ namespace EduConnect.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Students");
+
+            migrationBuilder.DropTable(
+                name: "Periods");
 
             migrationBuilder.DropTable(
                 name: "Subjects");

@@ -139,8 +139,8 @@ namespace EduConnect.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PeriodNumber")
-                        .HasColumnType("int");
+                    b.Property<Guid>("PeriodId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("uniqueidentifier");
@@ -154,6 +154,8 @@ namespace EduConnect.Persistence.Migrations
                     b.HasKey("ClassSessionId");
 
                     b.HasIndex("ClassId");
+
+                    b.HasIndex("PeriodId");
 
                     b.HasIndex("SubjectId");
 
@@ -244,6 +246,29 @@ namespace EduConnect.Persistence.Migrations
                     b.HasIndex("StudentReportId");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.Period", b =>
+                {
+                    b.Property<Guid>("PeriodId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("PeriodNumber")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("PeriodId");
+
+                    b.HasIndex("PeriodNumber")
+                        .IsUnique();
+
+                    b.ToTable("Periods");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Student", b =>
@@ -395,6 +420,10 @@ namespace EduConnect.Persistence.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -458,14 +487,15 @@ namespace EduConnect.Persistence.Migrations
                             ConcurrencyStamp = "seed-5",
                             Email = "admin@example.com",
                             EmailConfirmed = true,
+                            FullName = "",
                             IsActive = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEwq5RDptqvKHdXfOfAOZCu/aV+uzE4UNLK7aTQpy+rkxkUDleDkdiV7Sd+KLTigVQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH2hKGNXccvfcAt40qjXAn55FxC9uyi1nOC2t56Thh/OGbC4fJq2mH1W64D5lupuUA==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 16, 5, 23, 54, 477, DateTimeKind.Utc).AddTicks(2562),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 22, 8, 58, 7, 257, DateTimeKind.Utc).AddTicks(4082),
                             SecurityStamp = "seed-4",
                             TwoFactorEnabled = false,
                             UserName = "admin"
@@ -477,14 +507,15 @@ namespace EduConnect.Persistence.Migrations
                             ConcurrencyStamp = "seed-7",
                             Email = "teacher@example.com",
                             EmailConfirmed = true,
+                            FullName = "",
                             IsActive = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "TEACHER@EXAMPLE.COM",
                             NormalizedUserName = "TEACHER",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFpsZAUR0SUWSVwxTbB79Yv9gLG2KXPP6V+42d9TZTtfArLSGNeq4EWxWTW1aNCd5w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPPI+G2GEgSnIKlK0UHvbnBURvm7qhvxoCEH9Mzn+PCppdTska/Hgsz1mzD+gP7NfQ==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 16, 5, 23, 54, 539, DateTimeKind.Utc).AddTicks(3316),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 22, 8, 58, 7, 315, DateTimeKind.Utc).AddTicks(7967),
                             SecurityStamp = "seed-6",
                             TwoFactorEnabled = false,
                             UserName = "teacher"
@@ -496,14 +527,15 @@ namespace EduConnect.Persistence.Migrations
                             ConcurrencyStamp = "seed-9",
                             Email = "parent@example.com",
                             EmailConfirmed = true,
+                            FullName = "",
                             IsActive = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "PARENT@EXAMPLE.COM",
                             NormalizedUserName = "PARENT",
-                            PasswordHash = "AQAAAAIAAYagAAAAEL1mdrnJdvVCnWJM97RV7JkgzbTb2Kj0ZiJYmIC/TB7bRIqBa3Cdj5xJZG3/LpPxrA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEL2rtEo81EmW+r+aZanHiyUgxMIfatwyz7J9a/KPvyKxbN1obYPsJIJSNOtbKqnpMQ==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 16, 5, 23, 54, 604, DateTimeKind.Utc).AddTicks(7824),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 22, 8, 58, 7, 372, DateTimeKind.Utc).AddTicks(9150),
                             SecurityStamp = "seed-8",
                             TwoFactorEnabled = false,
                             UserName = "parent"
@@ -722,6 +754,12 @@ namespace EduConnect.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EduConnect.Domain.Entities.Period", "Period")
+                        .WithMany("ClassSessions")
+                        .HasForeignKey("PeriodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EduConnect.Domain.Entities.Subject", "Subject")
                         .WithMany("ClassSessions")
                         .HasForeignKey("SubjectId")
@@ -735,6 +773,8 @@ namespace EduConnect.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Class");
+
+                    b.Navigation("Period");
 
                     b.Navigation("Subject");
 
@@ -910,6 +950,11 @@ namespace EduConnect.Persistence.Migrations
             modelBuilder.Entity("EduConnect.Domain.Entities.Conversation", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.Period", b =>
+                {
+                    b.Navigation("ClassSessions");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Student", b =>
