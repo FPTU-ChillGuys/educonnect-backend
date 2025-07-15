@@ -5,6 +5,10 @@ namespace EduConnect.ChatbotAPI.Plugins
 {
     public class ClassReportPlugin
     {
+
        
+
+
+
     }
 }

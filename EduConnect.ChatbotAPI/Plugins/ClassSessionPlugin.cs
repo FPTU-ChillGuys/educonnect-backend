@@ -35,9 +35,9 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         }
 
-        [KernelFunction("get_class_sessions_from_class_name_and_date")]
+        [KernelFunction("get_class_sessions_from_class_name_or_teacher_name")]
         [Description("Retrieves the class timetable for a given class within a date range.")]
-        public async Task<List<TimetableViewDto>> GetClassTimetable(string className, string fromDate, string toDate)
+        public async Task<List<TimetableViewDto>> GetClassTimetable(string name, string fromDate, string toDate, Mode mode)
         {
             var result = await classService.GetPagedClassesAsync(
                    new ClassPagingRequest
@@ -47,7 +47,7 @@ namespace EduConnect.ChatbotAPI.Plugins
                );
 
             var classes = result.Data!
-                .Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .Where(cs => cs.ClassName!.Contains(name, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             var timeTableView = new List<TimetableViewDto>();
@@ -63,6 +63,7 @@ namespace EduConnect.ChatbotAPI.Plugins
                     {
                         From = from,
                         To = to,
+                        Mode = mode.ToString(),
                     }
                 );
 
@@ -92,4 +93,11 @@ namespace EduConnect.ChatbotAPI.Plugins
 
 
     }
+
+    public enum Mode
+    {
+      Class,
+      Teacher,
+    }
+
 }
