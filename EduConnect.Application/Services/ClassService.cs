@@ -186,5 +186,23 @@ namespace EduConnect.Application.Services
 				? BaseResponse<string>.Ok("Class deleted successfully")
 				: BaseResponse<string>.Fail("Failed to delete class");
 		}
-	}
+
+        public async Task<BaseResponse<List<ClassDto>>> GetClassesBySearchAsync(string? search)
+        {
+			
+			Expression<Func<Class, bool>> filter = c => c.ClassName.Contains(search) ||
+														c.GradeLevel.Contains(search) ||
+														c.AcademicYear.Contains(search);
+			var classes = await _classRepo.GetAllAsync(
+				filter: filter,
+				include: q => q.Include(c => c.HomeroomTeacher).Include(c => c.Students),
+				orderBy: q => q.OrderBy(c => c.ClassName),
+				asNoTracking: true
+			);
+
+			var dtoList = _mapper.Map<List<ClassDto>>(classes);
+			return BaseResponse<List<ClassDto>>.Ok(dtoList, "Classes retrieved successfully");
+
+        }
+    }
 }

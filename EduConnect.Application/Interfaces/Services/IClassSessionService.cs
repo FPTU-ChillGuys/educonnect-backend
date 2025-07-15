@@ -14,5 +14,8 @@ namespace EduConnect.Application.Interfaces.Services
 		Task<BaseResponse<string>> UpdateClassSessionByAdminAsync(UpdateClassSessionByAdminRequest request, Guid classSessionId);
 		Task<BaseResponse<string>> SoftDeleteClassSessionAsync(Guid id);
 		Task<BaseResponse<string>> DeleteClassSessionAsync(Guid id);
-	}
+
+        //Get from name
+		Task<BaseResponse<List<ClassSessionDto>>> GetClassSessionsByNameAsync(string name);
+    }
 }

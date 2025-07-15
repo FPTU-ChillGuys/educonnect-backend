@@ -12,5 +12,8 @@ namespace EduConnect.Application.Interfaces.Services
 		Task<BaseResponse<string>> CreateClassAsync(CreateClassRequest request);
 		Task<BaseResponse<string>> UpdateClassAsync(Guid id, UpdateClassRequest request);
 		Task<BaseResponse<string>> DeleteClassAsync(Guid classId);
-	}
+
+        //Get by search 
+		Task<BaseResponse<List<ClassDto>>> GetClassesBySearchAsync(string search);
+    }
 }
