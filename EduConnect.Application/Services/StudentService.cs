@@ -15,64 +15,26 @@ namespace EduConnect.Application.Services
 {
 	public class StudentService : IStudentService
 	{
-		private readonly IMapper _mapper;
-		private readonly IGenericRepository<Student> _studentRepo;
+		private readonly IValidator<StudentPagingRequest> _studentPagingValidator;
 		private readonly IValidator<CreateStudentRequest> _validatorCreate;
 		private readonly IValidator<UpdateStudentRequest> _validatorUpdate;
-		private readonly IValidator<StudentPagingRequest> _studentPagingValidator;
+		private readonly ISupabaseStorageService _supabaseStorageService;
+		private readonly IGenericRepository<Student> _studentRepo;
+		private readonly IMapper _mapper;
 
-		public StudentService(IValidator<StudentPagingRequest> studentPagingValidator, 
-			IGenericRepository<Student> studentRepo, 
-			IValidator<CreateStudentRequest> validatorCreate, 
+		public StudentService(IValidator<StudentPagingRequest> studentPagingValidator,
+			IValidator<CreateStudentRequest> validatorCreate,
 			IValidator<UpdateStudentRequest> validatorUpdate,
+			ISupabaseStorageService supabaseStorageService,
+			IGenericRepository<Student> studentRepo,
 			IMapper mapper)
 		{
+			_supabaseStorageService = supabaseStorageService;
 			_studentPagingValidator = studentPagingValidator;
-			_validatorUpdate = validatorUpdate;	
+			_validatorUpdate = validatorUpdate;
 			_validatorCreate = validatorCreate;
 			_studentRepo = studentRepo;
 			_mapper = mapper;
-		}
-
-		public async Task<BaseResponse<string>> UpdateStudentAsync(Guid id, UpdateStudentRequest request)
-		{
-			var student = await _studentRepo.GetByIdAsync(s => s.StudentId == id);
-			if (student == null)
-				return BaseResponse<string>.Fail("Student not found");
-
-			var validationResult = await _validatorUpdate.ValidateAsync(request);
-			if (!validationResult.IsValid)
-			{
-				var errors = validationResult.Errors.Select(e => e.ErrorMessage);
-				return BaseResponse<string>.Fail(string.Join(" | ", errors));
-			}
-
-			_mapper.Map(request, student);
-			_studentRepo.Update(student);
-
-			var saved = await _studentRepo.SaveChangesAsync();
-			return saved
-				? BaseResponse<string>.Ok("Student updated successfully")
-				: BaseResponse<string>.Fail("Failed to update student");
-		}
-
-		public async Task<BaseResponse<string>> CreateStudentAsync(CreateStudentRequest request)
-		{
-			var validationResult = await _validatorCreate.ValidateAsync(request);
-			if (!validationResult.IsValid)
-			{
-				var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-				return BaseResponse<string>.Fail(string.Join(" | ", errors));
-			}
-
-			var student = _mapper.Map<Student>(request);
-			student.Status = "Active";
-			await _studentRepo.AddAsync(student);
-			var saved = await _studentRepo.SaveChangesAsync();
-
-			return saved
-				? BaseResponse<string>.Ok("Student created successfully")
-				: BaseResponse<string>.Fail("Failed to create student");
 		}
 
 		public async Task<PagedResponse<StudentDto>> GetPagedStudentsAsync(StudentPagingRequest request)
@@ -142,6 +104,78 @@ namespace EduConnect.Application.Services
 			}
 
 			return PagedResponse<StudentDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize, "Students retrieved successfully");
+		}
+
+		public async Task<BaseResponse<string>> UpdateStudentAsync(Guid id, UpdateStudentRequest request)
+		{
+			var student = await _studentRepo.GetByIdAsync(s => s.StudentId == id);
+			if (student == null)
+				return BaseResponse<string>.Fail("Student not found");
+
+			var validationResult = await _validatorUpdate.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = validationResult.Errors.Select(e => e.ErrorMessage);
+				return BaseResponse<string>.Fail(string.Join(" | ", errors));
+			}
+
+			_mapper.Map(request, student);
+			_studentRepo.Update(student);
+			var saved = await _studentRepo.SaveChangesAsync();
+
+			// Upload avatar if provided
+			if (saved && request.Avatar != null)
+			{
+				using var stream = request.Avatar.OpenReadStream();
+				var fileExt = Path.GetExtension(request.Avatar.FileName);
+				var avatarUrl = await _supabaseStorageService.UploadStudentAvatarAsync(student.StudentId, stream, fileExt);
+
+				if (avatarUrl != null)
+				{
+					student.AvatarUrl = avatarUrl;
+					_studentRepo.Update(student);
+					await _studentRepo.SaveChangesAsync();
+				}
+			}
+
+			return saved
+				? BaseResponse<string>.Ok("Student updated successfully")
+				: BaseResponse<string>.Fail("Failed to update student");
+		}
+
+		public async Task<BaseResponse<string>> CreateStudentAsync(CreateStudentRequest request)
+		{
+			var validationResult = await _validatorCreate.ValidateAsync(request);
+			if (!validationResult.IsValid)
+			{
+				var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+				return BaseResponse<string>.Fail(string.Join(" | ", errors));
+			}
+
+			var student = _mapper.Map<Student>(request);
+			student.Status = "Active";
+
+			await _studentRepo.AddAsync(student);
+			var saved = await _studentRepo.SaveChangesAsync();
+
+			// Upload avatar if provided
+			if (saved && request.Avatar != null)
+			{
+				using var stream = request.Avatar.OpenReadStream();
+				var fileExt = Path.GetExtension(request.Avatar.FileName);
+				var avatarUrl = await _supabaseStorageService.UploadStudentAvatarAsync(student.StudentId, stream, fileExt);
+
+				if (avatarUrl != null)
+				{
+					student.AvatarUrl = avatarUrl;
+					_studentRepo.Update(student);
+					await _studentRepo.SaveChangesAsync();
+				}
+			}
+
+			return saved
+				? BaseResponse<string>.Ok("Student created successfully")
+				: BaseResponse<string>.Fail("Failed to create student");
 		}
 
 		public async Task<BaseResponse<byte[]>> ExportStudentsToExcelAsync(StudentPagingRequest request)

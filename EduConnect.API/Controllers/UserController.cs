@@ -42,13 +42,14 @@ namespace EduConnect.API.Controllers
 
 		[HttpPost("export")]
 		[Authorize(Roles = "admin")]
-		public async Task<IActionResult> ExportTeachersToExcel([FromQuery] FilterUserRequest request)
+		public async Task<IActionResult> ExportUsersToExcel([FromQuery] FilterUserRequest request)
 		{
 			var result = await _userService.ExportUsersToExcelAsync(request);
 			if (!result.Success)
 				return BadRequest(result);
 
-			return File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Teachers.xlsx");
+			var fileName = request.Role ??  "User";
+			return File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileName}s.xlsx");
 		}
 
 		[HttpPut("{id}")]

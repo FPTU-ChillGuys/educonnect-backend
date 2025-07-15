@@ -26,14 +26,22 @@ namespace EduConnect.API.Controllers
 
 		[HttpPost]
 		[Authorize(Roles = "admin")]
-		public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request)
+		public async Task<IActionResult> CreateStudent([FromForm] CreateStudentRequest request)
 		{
 			var result = await _studentService.CreateStudentAsync(request);
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
+		[HttpPut("{id}")]
+		[Authorize(Roles = "admin,parent,teacher")]
+		public async Task<IActionResult> UpdateStudent(Guid id, [FromForm] UpdateStudentRequest request)
+		{
+			var result = await _studentService.UpdateStudentAsync(id, request);
+			return result.Success ? Ok(result) : BadRequest(result);
+		}
+
 		[HttpPost("export")]
-		[Authorize(Roles = "admin")]
+		[Authorize(Roles = "admin,teacher")]
 		public async Task<IActionResult> ExportStudentsToExcel([FromQuery] StudentPagingRequest request)
 		{
 			var result = await _studentService.ExportStudentsToExcelAsync(request);
@@ -42,12 +50,5 @@ namespace EduConnect.API.Controllers
 				: BadRequest(result);
 		}
 
-		[HttpPut("{id}")]
-		[Authorize(Roles = "admin")]
-		public async Task<IActionResult> UpdateStudent(Guid id, [FromBody] UpdateStudentRequest request)
-		{
-			var result = await _studentService.UpdateStudentAsync(id, request);
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
 	}
 }

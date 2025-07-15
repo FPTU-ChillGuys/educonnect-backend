@@ -134,6 +134,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IBehaviorService, BehaviorService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 			services.AddScoped<INotificationJobService, NotificationJobService>();
+			services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 
 			// AutoMapper
 			services.AddAutoMapper(typeof(UserProfile).Assembly);

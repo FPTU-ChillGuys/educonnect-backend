@@ -126,6 +126,13 @@ namespace EduConnect.Infrastructure.Repositories
 										select r.Name).FirstOrDefault()
 						};
 
+			if (request.StudentId.HasValue)
+			{
+				query = query.Where(x =>
+					x.RoleName == "Parent" &&
+					x.User.Children.Any(s => s.StudentId == request.StudentId.Value));
+			}
+
 			if (!string.IsNullOrWhiteSpace(request.Role))
 				query = query.Where(x => x.RoleName == request.Role);
 
