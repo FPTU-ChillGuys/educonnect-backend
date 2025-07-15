@@ -55,8 +55,11 @@ namespace EduConnect.Application.Services
 				else
 					filter = filter.AndAlso(cs => cs.TeacherId == request.TargetId);
 
-				if (request.From != default && request.To != default)
-					filter = filter.AndAlso(cs => cs.Date >= request.From && cs.Date <= request.To);
+				DateTime? from = request.From != default ? Utils.FixWronglyParsedDate(request.From) : null;
+				DateTime? to = request.To != default ? Utils.FixWronglyParsedDate(request.To) : null;
+
+				if (from.HasValue && to.HasValue)
+					filter = filter.AndAlso(cs => cs.Date >= from.Value && cs.Date <= to.Value);
 
 				var sessions = await _classSessionRepo.GetAllAsync(
 					filter: filter,
@@ -112,17 +115,14 @@ namespace EduConnect.Application.Services
 			if (request.TeacherId.HasValue)
 				filter = filter.AndAlso(s => s.TeacherId == request.TeacherId.Value);
 
-			if (request.FromDate.HasValue)
-			{
-				var corrected = Utils.FixWronglyParsedDate(request.FromDate.Value);
-				filter = filter.AndAlso(s => s.Date >= corrected);
-			}
+			DateTime? from = request.FromDate.HasValue ? Utils.FixWronglyParsedDate(request.FromDate.Value) : null;
+			DateTime? to = request.ToDate.HasValue ? Utils.FixWronglyParsedDate(request.ToDate.Value) : null;
 
-			if (request.ToDate.HasValue)
-			{
-				var corrected = Utils.FixWronglyParsedDate(request.ToDate.Value);
-				filter = filter.AndAlso(s => s.Date <= corrected);
-			}
+			if (from.HasValue)
+				filter = filter.AndAlso(s => s.Date >= from.Value);
+
+			if (to.HasValue)
+				filter = filter.AndAlso(s => s.Date <= to.Value);
 
 			filter = filter.AndAlso(s => !s.IsDeleted); 
 
@@ -149,7 +149,10 @@ namespace EduConnect.Application.Services
 				if (request.TargetId == Guid.Empty)
 					return BaseResponse<byte[]>.Fail("Invalid target ID");
 
-				if (request.From == default || request.To == default || request.From > request.To)
+				DateTime? from = request.From != default ? Utils.FixWronglyParsedDate(request.From) : null;
+				DateTime? to = request.To != default ? Utils.FixWronglyParsedDate(request.To) : null;
+
+				if (!from.HasValue || !to.HasValue || from > to)
 					return BaseResponse<byte[]>.Fail("Invalid date range");
 
 				Expression<Func<ClassSession, bool>> filter = cs => !cs.IsDeleted;
@@ -161,7 +164,7 @@ namespace EduConnect.Application.Services
 				else
 					return BaseResponse<byte[]>.Fail("Invalid mode. Expected 'Class' or 'Teacher'");
 
-				filter = filter.AndAlso(cs => cs.Date >= request.From && cs.Date <= request.To);
+				filter = filter.AndAlso(cs => cs.Date >= from.Value && cs.Date <= to.Value);
 
 				var sessions = await _classSessionRepo.GetAllAsync(
 					filter: filter,

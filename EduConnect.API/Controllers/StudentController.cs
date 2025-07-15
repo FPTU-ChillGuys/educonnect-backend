@@ -17,7 +17,7 @@ namespace EduConnect.API.Controllers
 		}
 
 		[HttpGet]
-		[Authorize(Roles = "admin")]
+		[Authorize(Roles = "admin,parent,teacher")]
 		public async Task<IActionResult> GetPagedStudents([FromQuery] StudentPagingRequest request)
 		{
 			var result = await _studentService.GetPagedStudentsAsync(request);

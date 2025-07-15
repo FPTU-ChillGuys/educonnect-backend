@@ -115,11 +115,13 @@ namespace EduConnect.Application.Services
 
 			if (request.FromDate.HasValue)
 			{
+				Console.Write(String.Format("dd-mm-yyyy", request.FromDate));
 				filter = filter.AndAlso(s => s.DateOfBirth >= request.FromDate.Value);
 			}
 
 			if (request.ToDate.HasValue)
 			{
+				Console.Write(String.Format("dd-mm-yyyy", request.ToDate));
 				filter = filter.AndAlso(s => s.DateOfBirth <= request.ToDate.Value);
 			}
 
