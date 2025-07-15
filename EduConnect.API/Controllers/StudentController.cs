@@ -16,33 +16,9 @@ namespace EduConnect.API.Controllers
 			_studentService = studentService;
 		}
 
-		[HttpGet("count")]
-		[Authorize(Roles = "admin,teacher,parent")]
-		public async Task<IActionResult> CountStudents()
-		{
-			var result = await _studentService.CountStudentsAsync();
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
-		[HttpGet("class/{classId}")]
-		[Authorize(Roles = "admin,teacher,parent")]
-		public async Task<IActionResult> GetStudentsByClass(Guid classId, [FromQuery] GetStudentsByClassIdRequest request)
-		{
-			var result = await _studentService.GetStudentsByClassIdAsync(classId, request);
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
-		[HttpGet("parent/{parentId}/childrens")]
-		[Authorize(Roles = "admin,teacher,parent")]
-		public async Task<IActionResult> GetStudentsByParent(Guid parentId)
-		{
-			var result = await _studentService.GetStudentsByParentIdAsync(parentId);
-			return result.Success ? Ok(result) : BadRequest(result);
-		}
-
 		[HttpGet]
-		[Authorize(Roles = "admin")]
-		public async Task<IActionResult> GetPaged([FromQuery] StudentPagingRequest request)
+		[Authorize(Roles = "admin,parent,teacher")]
+		public async Task<IActionResult> GetPagedStudents([FromQuery] StudentPagingRequest request)
 		{
 			var result = await _studentService.GetPagedStudentsAsync(request);
 			return result.Success ? Ok(result) : BadRequest(result);
@@ -58,7 +34,7 @@ namespace EduConnect.API.Controllers
 
 		[HttpPost("export")]
 		[Authorize(Roles = "admin")]
-		public async Task<IActionResult> ExportStudentsToExcel([FromBody] ExportStudentRequest request)
+		public async Task<IActionResult> ExportStudentsToExcel([FromQuery] StudentPagingRequest request)
 		{
 			var result = await _studentService.ExportStudentsToExcelAsync(request);
 			return result.Success

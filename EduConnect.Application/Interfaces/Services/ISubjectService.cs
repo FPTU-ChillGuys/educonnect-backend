@@ -7,6 +7,7 @@ namespace EduConnect.Application.Interfaces.Services
 	public interface ISubjectService
 	{
 		Task<PagedResponse<SubjectDto>> GetPagedSubjectsAsync(SubjectPagingRequest request);
+		Task<BaseResponse<List<SubjectLookupDto>>> GetSubjectLookupAsync(SubjectPagingRequest request);
 		Task<BaseResponse<SubjectDto>> GetSubjectByIdAsync(Guid id);
 		Task<BaseResponse<string>> CreateSubjectAsync(CreateSubjectRequest request);
 		Task<BaseResponse<string>> UpdateSubjectAsync(Guid id, UpdateSubjectRequest request);

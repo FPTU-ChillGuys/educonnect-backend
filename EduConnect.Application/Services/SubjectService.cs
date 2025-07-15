@@ -1,13 +1,13 @@
-﻿using EduConnect.Application.Commons.Extensions;
+﻿using EduConnect.Application.DTOs.Responses.SubjectResponses;
 using EduConnect.Application.DTOs.Requests.SubjectRequests;
-using EduConnect.Application.DTOs.Responses.SubjectResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Extensions;
 using EduConnect.Application.Commons.Dtos;
 using EduConnect.Domain.Entities;
 using System.Linq.Expressions;
 using FluentValidation;
-using AutoMapper;
+using AutoMapper; 
 
 namespace EduConnect.Application.Services
 {
@@ -50,6 +50,25 @@ namespace EduConnect.Application.Services
 			return PagedResponse<SubjectDto>.Ok(dtos, totalCount, request.PageNumber, request.PageSize);
 		}
 
+		public async Task<BaseResponse<List<SubjectLookupDto>>> GetSubjectLookupAsync(SubjectPagingRequest request)
+		{
+			{
+				Expression<Func<Subject, bool>> filter = s =>
+					string.IsNullOrEmpty(request.Keyword) || s.SubjectName.Contains(request.Keyword);
+
+				var subjects = await _subjectRepo.GetAllAsync(
+					filter: filter,
+					orderBy: q => q.ApplySorting(request.SortBy, request.SortDescending),
+					asNoTracking: true
+				);
+
+				var dtos = _mapper.Map<List<SubjectLookupDto>>(subjects);
+
+				return dtos.Count == 0
+					? BaseResponse<List<SubjectLookupDto>>.Fail("No subjects found")
+					: BaseResponse<List<SubjectLookupDto>>.Ok(dtos, "Subjects loaded successfully");
+			}
+		}
 
 		public async Task<BaseResponse<SubjectDto>> GetSubjectByIdAsync(Guid id)
 		{

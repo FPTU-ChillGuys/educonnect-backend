@@ -6,12 +6,10 @@ namespace EduConnect.Application.Interfaces.Services
 {
 	public interface IUserService
 	{
-		Task<BaseResponse<int>> CountTeachersAsync();
-		Task<BaseResponse<int>> CountHomeroomTeachersAsync();
-		Task<BaseResponse<int>> CountSubjectTeachersAsync();
 		Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request);
-		Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id);
-		Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(ExportUserRequest request);
+		Task<BaseResponse<List<UserLookupDto>>> GetUserLookupAsync(FilterUserRequest request);
+		Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id); 
+		Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(FilterUserRequest request);
 		Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request);
 		Task<BaseResponse<string>> UpdateUserStatsusAsync(Guid id, UpdateUserStatusRequest request);
 	}

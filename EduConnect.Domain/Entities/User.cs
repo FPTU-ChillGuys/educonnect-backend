@@ -4,6 +4,7 @@ namespace EduConnect.Domain.Entities
 {
 	public class User : IdentityUser<Guid>
 	{
+		public string FullName { get; set; } = string.Empty;
 		public string? Address { get; set; }
 		public string RefreshToken { get; set; } = string.Empty;
 		public DateTime RefreshTokenExpiryTime { get; set; } = DateTime.UtcNow.AddDays(7);

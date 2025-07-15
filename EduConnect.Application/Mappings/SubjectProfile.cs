@@ -10,6 +10,7 @@ namespace EduConnect.Application.Mappings
 		public SubjectProfile()
 		{
 			CreateMap<Subject, SubjectDto>();
+			CreateMap<Subject, SubjectLookupDto>();
 			CreateMap<CreateSubjectRequest, Subject>();
 			CreateMap<UpdateSubjectRequest, Subject>();
 		}

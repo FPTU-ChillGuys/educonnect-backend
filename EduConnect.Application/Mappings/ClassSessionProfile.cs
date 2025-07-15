@@ -17,7 +17,8 @@ namespace EduConnect.Application.Mappings
 			CreateMap<ClassSession, ClassSessionDto>()
 				.ForMember(dest => dest.ClassName, opt => opt.MapFrom(src => src.Class.ClassName))
 				.ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.SubjectName))
-				.ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.UserName));
+				.ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.FullName))
+				.ForMember(dest => dest.PeriodNumber, opt => opt.MapFrom(src => src.Period.PeriodNumber));
 		}
 	}
 }

@@ -11,7 +11,7 @@ namespace EduConnect.Application.Validators.ClassSessionValidators
 			RuleFor(x => x.SubjectId).NotEmpty();
 			RuleFor(x => x.TeacherId).NotEmpty();
 			RuleFor(x => x.Date).GreaterThanOrEqualTo(DateTime.Today.AddDays(-1)); // allow current or past 1 day
-			RuleFor(x => x.PeriodNumber).InclusiveBetween(1, 12).WithMessage("Period number must be between 1 and 12.");
+			RuleFor(x => x.PeriodId).NotEmpty();
 			RuleFor(x => x.LessonContent).NotEmpty().MaximumLength(500);
 		}
 	}

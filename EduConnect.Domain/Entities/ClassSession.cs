@@ -27,7 +27,10 @@ namespace EduConnect.Domain.Entities
 		public DateTime Date { get; set; }
 
 		[Required]
-		public int PeriodNumber { get; set; }
+		public Guid PeriodId { get; set; }
+
+		[ForeignKey(nameof(PeriodId))]
+		public Period Period { get; set; }
 
 		[Required]
 		public string LessonContent { get; set; }

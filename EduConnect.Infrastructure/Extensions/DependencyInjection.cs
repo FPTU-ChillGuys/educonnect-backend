@@ -40,6 +40,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
 			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
+			services.AddScoped<IGenericRepository<Period>, GenericRepository<Period>>();
 			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
 			services.AddScoped<IGenericRepository<Subject>, GenericRepository<Subject>>();
 			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
@@ -48,8 +49,8 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IMessageRepository, MessageRepository>();	
 			services.AddScoped<IConversationRepository, ConversationRepository>();
 
-            // Authorization Handlers
-            services.AddScoped<IAuthorizationHandler, ClassAccessHandler>();
+			// Authorization Handlers
+			services.AddScoped<IAuthorizationHandler, ClassAccessHandler>();
 
 			// - DBContext
 			var connectionString = config["DATABASE_CONNECTION_STRING"];
@@ -122,16 +123,17 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IUserService, UserService>();
 			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IClassService, ClassService>();
+			services.AddScoped<IPeriodService, PeriodService>();
 			services.AddScoped<ISubjectService, SubjectService>();
 			services.AddScoped<IStudentService, StudentService>();
 			services.AddScoped<IBehaviorService, BehaviorService>();
-			services.AddScoped<INotificationJobService, NotificationJobService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
+			services.AddScoped<INotificationJobService, NotificationJobService>();
 			services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IConversationService, ConversationService>();
 
-            // AutoMapper
-            services.AddAutoMapper(typeof(UserProfile).Assembly);
+			// AutoMapper
+			services.AddAutoMapper(typeof(UserProfile).Assembly);
 			services.AddAutoMapper(typeof(ClassProfile).Assembly);
 			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
 			services.AddAutoMapper(typeof(SubjectProfile).Assembly);
@@ -139,6 +141,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
 			// FluentValidation
+			services.AddScoped<IValidator<TimetableRequest>, TimetableRequestValidator>();	
 			services.AddScoped<IValidator<FilterUserRequest>, FilterUserRequestValidator>();
 			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
 			services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
@@ -147,10 +150,10 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
 			services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
 			services.AddScoped<IValidator<CreateSubjectRequest>, CreateSubjectRequestValidator>();
+			services.AddScoped<IValidator<StudentPagingRequest>, StudentPagingRequestValidator>();
 			services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
 			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
-			services.AddScoped<IValidator<GetStudentsByClassIdRequest>, GetStudentsByClassIdRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassBehaviorLogRequest>, UpdateClassBehaviorLogRequestValidator>();
 			services.AddScoped<IValidator<CreateClassBehaviorLogRequest>, CreateClassBehaviorLogRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionByAdminRequest>, UpdateClassSessionByAdminRequestValidator>();

@@ -1,14 +1,13 @@
-﻿using AutoMapper;
-using EduConnect.Application.Commons.Dtos;
+﻿using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.DTOs.Requests.UserRequests;
-using EduConnect.Application.DTOs.Responses.UserResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Dtos;
+using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using AutoMapper;
 
 namespace EduConnect.Application.Services
 {
@@ -36,45 +35,6 @@ namespace EduConnect.Application.Services
 			_mapper = mapper;
 		}
 
-		public async Task<BaseResponse<int>> CountHomeroomTeachersAsync()
-		{
-			try
-			{
-				var count = await _genericRepo.CountAsync(u => u.HomeroomClasses.Any() && u.IsActive);
-				return BaseResponse<int>.Ok(count);
-			}
-			catch (Exception ex)
-			{
-				return BaseResponse<int>.Fail($"Failed to count homeroom teachers: {ex.Message}");
-			}
-		}
-
-		public async Task<BaseResponse<int>> CountSubjectTeachersAsync()
-		{
-			try
-			{
-				var count = await _genericRepo.CountAsync(u => u.TeachingSessions.Any() && u.IsActive);
-				return BaseResponse<int>.Ok(count);
-			}
-			catch (Exception ex)
-			{
-				return BaseResponse<int>.Fail($"Failed to count subject teachers: {ex.Message}");
-			}
-		}
-
-		public async Task<BaseResponse<int>> CountTeachersAsync()
-		{
-			try
-			{
-				var count = await _userRepo.CountUsersInRoleAsync("Teacher");
-				return BaseResponse<int>.Ok(count);
-			}
-			catch
-			{
-				return BaseResponse<int>.Fail("Failed to retrieve teacher count");
-			}
-		}
-
 		public async Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request)
 		{
 			var validationResult = await _filterValidator.ValidateAsync(request);
@@ -86,25 +46,34 @@ namespace EduConnect.Application.Services
 
 			var (items, totalCount) = await _userRepo.GetPagedUsersAsync(request);
 
-			var dtoList = _mapper.Map<List<UserDto>>(items);
+			return totalCount == 0
+				? PagedResponse<UserDto>.Fail("No users found", request.PageNumber, request.PageSize)
+				: PagedResponse<UserDto>.Ok(items, totalCount, request.PageNumber, request.PageSize, "Users retrieved successfully");
+		}
 
-			return PagedResponse<UserDto>.Ok(dtoList, totalCount, request.PageNumber, request.PageSize);
+		public async Task<BaseResponse<List<UserLookupDto>>> GetUserLookupAsync(FilterUserRequest request)
+		{
+			var users = await _userRepo.GetUserLookupAsync(request); // Updated to use the new centralized repo method
+
+			return users.Any()
+				? BaseResponse<List<UserLookupDto>>.Ok(users, "Users loaded successfully")
+				: BaseResponse<List<UserLookupDto>>.Fail("No users found");
 		}
 
 		public async Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id)
 		{
-			var user = await _userManager.Users
-				.Include(u => u.HomeroomClasses)
-				.Include(u => u.TeachingSessions)
-				.FirstOrDefaultAsync(u => u.Id == id);
+			var (user, roleName) = await _userRepo.GetUserWithRoleByIdAsync(id);
+
 			if (user == null)
 				return BaseResponse<UserDto>.Fail("User not found");
-			
+
 			var dto = _mapper.Map<UserDto>(user);
+			dto.RoleName = roleName ?? "Unknown";
+
 			return BaseResponse<UserDto>.Ok(dto, "User retrieved successfully");
 		}
 
-		public async Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(ExportUserRequest request)
+		public async Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(FilterUserRequest request)
 		{
 			try
 			{
@@ -117,25 +86,32 @@ namespace EduConnect.Application.Services
 				using var package = new ExcelPackage();
 				var worksheet = package.Workbook.Worksheets.Add("Users");
 
-				// Header
+				// Header row
 				worksheet.Cells[1, 1].Value = "Full Name";
 				worksheet.Cells[1, 2].Value = "Email";
 				worksheet.Cells[1, 3].Value = "Phone Number";
-				worksheet.Cells[1, 4].Value = "Is Homeroom Teacher";
-				worksheet.Cells[1, 5].Value = "Is Subject Teacher";
+				worksheet.Cells[1, 4].Value = "Address";
+				worksheet.Cells[1, 5].Value = "Role Name";
+				worksheet.Cells[1, 6].Value = "Is Homeroom Teacher";
+				worksheet.Cells[1, 7].Value = "Is Subject Teacher";
+				worksheet.Cells[1, 8].Value = "Status";
 
 				int row = 2;
 				foreach (var u in users)
 				{
-					worksheet.Cells[row, 1].Value = u.UserName;
+					worksheet.Cells[row, 1].Value = u.FullName;
 					worksheet.Cells[row, 2].Value = u.Email;
 					worksheet.Cells[row, 3].Value = u.PhoneNumber;
-					worksheet.Cells[row, 4].Value = u.HomeroomClasses.Any() ? "Yes" : "No";
-					worksheet.Cells[row, 5].Value = u.TeachingSessions.Any() ? "Yes" : "No";
+					worksheet.Cells[row, 4].Value = u.Address;
+					worksheet.Cells[row, 5].Value = u.RoleName;
+					worksheet.Cells[row, 6].Value = u.IsHomeroomTeacher ? "Yes" : "No";
+					worksheet.Cells[row, 7].Value = u.IsSubjectTeacher ? "Yes" : "No";
+					worksheet.Cells[row, 8].Value = u.IsActive ? "Active" : "Inactive";
 					row++;
 				}
 
-				worksheet.Cells.AutoFitColumns();
+				worksheet.Cells[1, 1, row - 1, 8].AutoFitColumns();
+
 				return BaseResponse<byte[]>.Ok(package.GetAsByteArray(), "Users exported successfully");
 			}
 			catch (Exception ex)
@@ -158,11 +134,11 @@ namespace EduConnect.Application.Services
 			user.PhoneNumber = request.PhoneNumber;
 			user.Address = request.Address;
 
-			// You might want to update FullName, but IdentityUser doesn't have it by default.
-			// Consider extending User with a FullName property if not done already
-			user.UserName = request.FullName; // or add user.FullName if you added that field
-			user.NormalizedUserName = request.FullName?.ToUpperInvariant(); // Normalize if needed
-
+			if (!string.IsNullOrEmpty(request.FullName))
+			{
+				user.FullName = request.FullName;
+			}
+			
 			var result = await _userManager.UpdateAsync(user);
 			if (!result.Succeeded)
 				return BaseResponse<string>.Fail("Failed to update user");

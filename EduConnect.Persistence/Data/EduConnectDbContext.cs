@@ -14,6 +14,7 @@ namespace EduConnect.Persistence.Data
 		public DbSet<Class> Classes { get; set; }
 		public DbSet<Subject> Subjects { get; set; }
 		public DbSet<ClassSession> ClassSessions { get; set; }
+		public DbSet<Period> Periods { get; set; }
 		public DbSet<ClassBehaviorLog> ClassBehaviorLogs { get; set; }
 		public DbSet<StudentBehaviorNote> StudentBehaviorNotes { get; set; }
 		public DbSet<ClassReport> ClassReports { get; set; }
@@ -46,7 +47,12 @@ namespace EduConnect.Persistence.Data
 				.HasForeignKey(s => s.ParentId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			// Class Period
+			// Period
+			modelBuilder.Entity<Period>()
+				.HasIndex(p => p.PeriodNumber)
+				.IsUnique();
+
+			// Class Session
 			modelBuilder.Entity<ClassSession>()
 				.HasOne(cs => cs.Subject)
 				.WithMany(s => s.ClassSessions)
@@ -57,6 +63,12 @@ namespace EduConnect.Persistence.Data
 				.HasOne(cs => cs.Teacher)
 				.WithMany(u => u.TeachingSessions)
 				.HasForeignKey(cs => cs.TeacherId)
+				.OnDelete(DeleteBehavior.Restrict);
+
+			modelBuilder.Entity<ClassSession>()
+				.HasOne(cs => cs.Period)
+				.WithMany(p => p.ClassSessions)
+				.HasForeignKey(cs => cs.PeriodId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			// ClassBehaviorLog 
