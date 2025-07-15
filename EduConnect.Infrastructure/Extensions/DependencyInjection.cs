@@ -26,6 +26,8 @@ using EduConnect.Persistence.Data;
 using EduConnect.Domain.Entities;
 using FluentValidation;
 using Hangfire;
+using EduConnect.Application.DTOs.Requests.ReportRequests;
+using EduConnect.Application.Validators.ReportValidators;
 
 namespace EduConnect.Infrastructure.Extensions
 {
@@ -38,12 +40,16 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IUserRepository, UserRepository>();
 			services.AddScoped<IClassRepository, ClassRepository>();
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
+			services.AddScoped<IClassReportRepository, ClassReportRepository>();
 			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+			services.AddScoped<IStudentReportRepository, StudentReportRepository>();
 			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
 			services.AddScoped<IGenericRepository<Period>, GenericRepository<Period>>();
 			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
 			services.AddScoped<IGenericRepository<Subject>, GenericRepository<Subject>>();
+			services.AddScoped<IGenericRepository<ClassReport>, GenericRepository<ClassReport>>();	
 			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
+			services.AddScoped<IGenericRepository<StudentReport>, GenericRepository<StudentReport>>();
 			services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
 			services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
 			services.AddScoped<IMessageRepository, MessageRepository>();	
@@ -124,6 +130,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IClassService, ClassService>();
 			services.AddScoped<IPeriodService, PeriodService>();
+			services.AddScoped<IReportService, ReportService>();
 			services.AddScoped<ISubjectService, SubjectService>();
 			services.AddScoped<IStudentService, StudentService>();
 			services.AddScoped<IBehaviorService, BehaviorService>();
@@ -152,8 +159,10 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IValidator<CreateSubjectRequest>, CreateSubjectRequestValidator>();
 			services.AddScoped<IValidator<StudentPagingRequest>, StudentPagingRequestValidator>();
 			services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
+			services.AddScoped<IValidator<CreateClassReportRequest>, CreateClassReportRequestValidator>();
 			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
+			services.AddScoped<IValidator<CreateStudentReportRequest>, CreateStudentReportRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassBehaviorLogRequest>, UpdateClassBehaviorLogRequestValidator>();
 			services.AddScoped<IValidator<CreateClassBehaviorLogRequest>, CreateClassBehaviorLogRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionByAdminRequest>, UpdateClassSessionByAdminRequestValidator>();
