@@ -19,20 +19,19 @@ namespace EduConnect.ChatbotAPI.Plugins
         //    // To be implemented
         //}
 
-        [KernelFunction("get_students_by_class_name")]
-        [Description("Retrieves a list of students enrolled in a specific class.")]
-        public async Task<List<StudentDto>> GetStudentsByClassName(string className)
+        [KernelFunction("get_all_students_from_class_name"), Description("Retrieves a list of students enrolled in a specific class.")]
+        public async Task<List<StudentDto>> GetStudentsByClassName(string? className)
         {
-            var students = await studentService.GetStudentsBySearchAsync(className);
+            var students = await studentService.GetStudentsBySearchAsync(className!);
 
-            return students!.Data!.Where(s => s.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase)).ToList();
+            return students!.Data!.Where(s => s.ClassName!.Contains(className!, StringComparison.OrdinalIgnoreCase)).ToList();
             //return students!.Data!.ToList();
 
         }
 
-        [KernelFunction("get_students_by_parent_name")]
+        [KernelFunction("get_students_from_parent_name")]
         [Description("Retrieves a list of students linked to a parent by their name.")]
-        public async Task<List<StudentDto>> GetStudentsByParent(string parentName)
+        public async Task<List<StudentDto>> GetStudentsByParent(string parentName)  
         {
             var students = await studentService.GetStudentsBySearchAsync(parentName);
             return students!.Data!.Where(s => s.ParentFullName!.Contains(parentName, StringComparison.OrdinalIgnoreCase)).ToList();

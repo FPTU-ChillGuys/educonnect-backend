@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace EduConnect.ChatbotAPI.Configurations
 {
@@ -68,7 +69,7 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             services.AddDistributedMemoryCache();
             services.AddSingleton<Kernel>(AddKernal(config));
-            return services; 
+            return services;
         }
 
         public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration config)
@@ -102,11 +103,17 @@ namespace EduConnect.ChatbotAPI.Configurations
             return services;
         }
 
-        #pragma warning disable SKEXP0070
+#pragma warning disable SKEXP0070
         public static Kernel AddKernal(IConfiguration config)
         {
             IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.AddOllamaChatCompletion("qwen3:0.6b", new Uri("http://localhost:11434"));
+            //kernelBuilder.AddOllamaChatCompletion("qwen3:0.6b", new Uri("http://localhost:11434"));
+            // Use OpenAI chat completion service
+            kernelBuilder.AddGoogleAIGeminiChatCompletion(
+                 modelId: "gemini-2.5-flash-lite-preview-06-17",
+                 apiKey: config["GOOGLE_AI_API_KEY"] ?? ""
+            );
+
 
             //Add plugins or additional services if needed
             kernelBuilder.Plugins.AddFromType<ClassPlugin>("Class");
@@ -117,6 +124,12 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             //Add other service
             kernelBuilder.Services.AddScoped<ChatbotStorage>();
+            //Add logger
+            kernelBuilder.Services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+            });
 
 
             kernelBuilder.Services.AddApplicationServices();

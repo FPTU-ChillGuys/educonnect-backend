@@ -15,9 +15,9 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
 
-        [KernelFunction("get_class_sessions_from_class_name")]
-        [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
-        public async Task<List<ClassSessionDto>> GetClassSessionsByNameAndDate(string className, string fromDate, string toDate)
+        [KernelFunction("get_class_sessions_from_class_name_and_date")]
+        [Description("Retrieves a list of class sessions based on filters such as class name or date range.")]
+        public async Task<List<ClassSessionDto>> GetClassSessionsByClassName(string className, string fromDate, string toDate)
         {
             DateTime.TryParse(fromDate, out DateTime from);
             DateTime.TryParse(toDate, out DateTime to);
@@ -32,6 +32,26 @@ namespace EduConnect.ChatbotAPI.Plugins
                 .Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+
+        [KernelFunction("get_class_sessions_from_teacher_name_and_date")]
+        [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
+        public async Task<List<ClassSessionDto>> GetClassSessionsByTeacherName(string teacherName, string fromDate, string toDate)
+        {
+            DateTime.TryParse(fromDate, out DateTime from);
+            DateTime.TryParse(toDate, out DateTime to);
+
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(teacherName, from, to);
+
+            if (classSessions.Data == null || classSessions.Data.Count == 0)
+            {
+                return new List<ClassSessionDto>();
+            }
+            return classSessions.Data
+                .Where(cs => cs.TeacherName!.Contains(teacherName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+
 
         [KernelFunction("get_class_sessions_from_class_name")]
         public async Task<List<TimetableViewDto>> GetTimetableByClassName(string className, string fromDate, string toDate)

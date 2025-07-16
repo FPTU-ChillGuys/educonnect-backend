@@ -1,9 +1,12 @@
 ﻿using EduConnect.ChatbotAPI.Utils;
 using EduConnect.Domain.Entities;
+using Hangfire.Logging;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Ollama;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using System.Runtime.CompilerServices;
 
 namespace EduConnect.ChatbotAPI.Services.Chatbot
@@ -15,6 +18,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
         private readonly Kernel _kernel;
         private readonly HttpClient _httpClient;
         private readonly ChatbotStorage _chatbotStorage;
+        private readonly ILogger<ChatbotHelper> _logger;
 
 
         public ChatbotHelper(Kernel kernel, HttpClient httpClient, ChatbotStorage chatbotStorage)
@@ -22,6 +26,8 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             _kernel = kernel;
             _httpClient = httpClient;
             _chatbotStorage = chatbotStorage;
+            _logger = kernel.GetRequiredService<ILogger<ChatbotHelper>>();
+
 
         }
 
@@ -53,17 +59,45 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             string response = string.Empty;
 
+            //Them system prompt
+            chatHistory.AddSystemMessage("If you can't find the answer, try using function calls to locate the information");
+
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
-#pragma warning disable SKEXP0070
-            OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
+            #pragma warning disable SKEXP0070
+            //OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
+            //{
+            //    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            //};
+
+            GeminiPromptExecutionSettings geminiPromptExecutionSettings = new()
             {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                //FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
             };
 
+            //IAsyncEnumerable<StreamingChatMessageContent> streamingEnumerable = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
+            //await using var streamingEnumerator = streamingEnumerable.GetAsyncEnumerator(ct);
 
-            await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct))
+            //for (var more = true; more;)
+            //{
+            //    // Catch exceptions only on executing/resuming the iterator function
+            //    try
+            //    {
+            //        more = await streamingEnumerator.MoveNextAsync();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.LogError(ex, "Error while streaming chat message contents.");
+            //        throw;
+            //    }
+            //    response += streamingEnumerator.Current?.Content ?? string.Empty;
+            //    yield return ChatbotUtils.RemoveThinkTags(response);
+            //}
+
+
+            await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct))
             {
                 response += item;
                 yield return ChatbotUtils.RemoveThinkTags(response);
