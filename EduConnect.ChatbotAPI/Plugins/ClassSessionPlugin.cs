@@ -19,62 +19,51 @@ namespace EduConnect.ChatbotAPI.Plugins
         [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
         public async Task<List<ClassSessionDto>> GetClassSessionsByNameAndDate(string className, string fromDate, string toDate)
         {
-
             DateTime.TryParse(fromDate, out DateTime from);
             DateTime.TryParse(toDate, out DateTime to);
            
-            var classSessions = await classSessionService.GetPagedClassSessionsAsync(
-                new ClassSessionPagingRequest
-                {
-                    PageSize = 100,
-                    FromDate = from,
-                    ToDate = to,
-                }
-            );
-            return classSessions!.Data!.Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase)).ToList();
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync (className, from, to);
 
+            if (classSessions.Data == null || classSessions.Data.Count == 0)
+            {
+                return new List<ClassSessionDto>();
+            }
+            return classSessions.Data
+                .Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
-        [KernelFunction("get_class_sessions_from_class_name_or_teacher_name")]
-        [Description("Retrieves the class timetable for a given class within a date range.")]
-        public async Task<List<TimetableViewDto>> GetClassTimetable(string name, string fromDate, string toDate, Mode mode)
+        [KernelFunction("get_class_sessions_from_class_name")]
+        public async Task<List<TimetableViewDto>> GetTimetableByClassName(string className, string fromDate, string toDate)
         {
-            var result = await classService.GetPagedClassesAsync(
-                   new ClassPagingRequest
-                   {
-                       PageSize = 100
-                   }
-               );
-
-            var classes = result.Data!
-                .Where(cs => cs.ClassName!.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            var timeTableView = new List<TimetableViewDto>();
-
             DateTime.TryParse(fromDate, out DateTime from);
             DateTime.TryParse(toDate, out DateTime to);
 
+            var timetableList = await classSessionService.GetTimetableViewBySearchAsync(className, from, to, Domain.Enums.TimetableSearchType.Class);
 
-            for ( int i = 0; i < classes.Count; i++ )
+            if (timetableList.Data == null || timetableList.Data.Count == 0)
             {
-                var timetableView = await classSessionService.GetTimetableAsync(
-                    new TimetableRequest
-                    {
-                        From = from,
-                        To = to,
-                        Mode = mode.ToString(),
-                    }
-                );
+                return new List<TimetableViewDto>();
+            }
+            
+           return timetableList.Data.ToList();
 
-                if ( timetableView.Success && timetableView.Data != null )
-                {
-                    timeTableView.AddRange(timetableView.Data);
-                }
+        }
+
+        [KernelFunction("get_class_sessions_from_teacher_name")]
+        public async Task<List<TimetableViewDto>> GetTimetableByTeacherName(string className, string fromDate, string toDate)
+        {
+            DateTime.TryParse(fromDate, out DateTime from);
+            DateTime.TryParse(toDate, out DateTime to);
+
+            var timetableList = await classSessionService.GetTimetableViewBySearchAsync(className, from, to, Domain.Enums.TimetableSearchType.Teacher);
+
+            if (timetableList.Data == null || timetableList.Data.Count == 0)
+            {
+                return new List<TimetableViewDto>();
             }
 
-            return timeTableView;
-
+            return timetableList.Data.ToList();
         }
 
         //[KernelFunction("ExportClassTimetableToExcel")]
@@ -94,10 +83,5 @@ namespace EduConnect.ChatbotAPI.Plugins
 
     }
 
-    public enum Mode
-    {
-      Class,
-      Teacher,
-    }
 
 }

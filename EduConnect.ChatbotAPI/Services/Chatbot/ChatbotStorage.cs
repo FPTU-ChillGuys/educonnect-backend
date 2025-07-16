@@ -15,10 +15,13 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
         public async Task SaveConversationToCaching(Guid converstationId, Message message)
         {
+            // Ensure the conversationId is not empty
             var key = converstationId.ToString();
 
-            var conversationJson = await cache.GetStringAsync(key);
-            
+            // Retrieve the existing conversation from cache
+            //var conversationJson = await cache.GetStringAsync(key);
+
+            //  If the conversation does not exist in cache, create a new one
             var conversation = await GetConversation(converstationId) ?? new Conversation
             {
                 ConversationId = converstationId,

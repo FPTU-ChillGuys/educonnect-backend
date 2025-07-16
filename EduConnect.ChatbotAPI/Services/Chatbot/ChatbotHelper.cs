@@ -1,4 +1,5 @@
-﻿using EduConnect.Domain.Entities;
+﻿using EduConnect.ChatbotAPI.Utils;
+using EduConnect.Domain.Entities;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -26,7 +27,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
         //public async Task<string> SummaryChatbotHistoryAsync(Guid conversationId, CancellationToken ct = default)
         //{
-            
+
         //}
 
 
@@ -35,7 +36,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
             ////Lay lich su cuoc hoi thoai tu khoi tao
             //Conversation? conversation = await _chatbotStorage.GetConversation(conversationId);
-            
+
             //if (conversation == null)
             //{
             //    //Neu khong co lich su, khoi tao mot cuoc hoi thoai moi
@@ -50,12 +51,12 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
             //chatHistory = await _chatbotStorage.GetChatHistory(conversationId);
             IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
-            string response = string.Empty; 
+            string response = string.Empty;
 
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
-            #pragma warning disable SKEXP0070
+#pragma warning disable SKEXP0070
             OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
             {
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
@@ -64,18 +65,25 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
             await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct))
             {
-                    response += item;
-                    yield return response;
+                response += item;
+                yield return ChatbotUtils.RemoveThinkTags(response);
             }
-
-           
-
 
             ////Them phan hoi cua chatbot vao lich su
             //chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, response));
 
+        }
 
+        public async Task<string> ChatbotResponseNonStreaming(string userPrompt, Guid conversationId, CancellationToken ct = default)
+        {
+            IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+            //Them prompt nguoi dung vao chat history
+            chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
+            OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new();
+            var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct);
+
+            return ChatbotUtils.RemoveThinkTags(response.ToString()!) ?? string.Empty;
         }
     }
 }

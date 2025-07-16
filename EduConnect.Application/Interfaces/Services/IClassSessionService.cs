@@ -1,6 +1,7 @@
 ﻿using EduConnect.Application.DTOs.Responses.ClassSessionResponses;
 using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
 using EduConnect.Application.Commons.Dtos;
+using EduConnect.Domain.Enums;
 
 namespace EduConnect.Application.Interfaces.Services
 {
@@ -16,6 +17,7 @@ namespace EduConnect.Application.Interfaces.Services
 		Task<BaseResponse<string>> DeleteClassSessionAsync(Guid id);
 
         //Get from name
-		Task<BaseResponse<List<ClassSessionDto>>> GetClassSessionsByNameAsync(string name);
+		Task<BaseResponse<List<ClassSessionDto>>> GetClassSessionsBySearchAsync(string? search, DateTime from, DateTime to);
+		Task<BaseResponse<List<TimetableViewDto>>> GetTimetableViewBySearchAsync(string? search, DateTime from, DateTime to, TimetableSearchType type);
     }
 }

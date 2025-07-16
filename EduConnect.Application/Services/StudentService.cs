@@ -227,8 +227,9 @@ namespace EduConnect.Application.Services
         {
 
 			var students = await _studentRepo.GetAllAsync(
-				filter: s => s.FullName.Contains(search!) || s.StudentCode!.Contains(search!),
-				include: q => q.Include(s => s.Class).Include(s => s.Parent),
+				filter: s => s.FullName.Contains(search!) || s.StudentCode!.Contains(search!) || 
+					s.Class!.ClassName.Contains(search!) || s.Parent!.FullName.Contains(search!) || string.IsNullOrEmpty(search),
+                include: q => q.Include(s => s.Class).Include(s => s.Parent),
 				asNoTracking: true
 			);
 			if (!students.Any())
