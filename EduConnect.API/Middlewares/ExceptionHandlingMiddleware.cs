@@ -1,4 +1,4 @@
-﻿using EduConnect.Application.Commons;
+﻿using EduConnect.Application.Commons.Dtos;
 using System.Text.Json;
 
 namespace EduConnect.API.Middlewares

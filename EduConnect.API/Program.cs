@@ -1,14 +1,42 @@
-﻿using DotNetEnv;
-using EduConnect.API.Configurations;
+﻿using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Authorization;
 using EduConnect.Infrastructure.Extensions;
+using EduConnect.Infrastructure.Services;
+using EduConnect.API.Configurations;
 using Microsoft.OpenApi.Models;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Load.env files BEFORE configuration is built
-string? solutionRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
-string envFile = Path.Combine(solutionRootPath, ".env");
-if (File.Exists(envFile)) Env.Load(envFile);
+// Load .env manually in Development
+if (builder.Environment.IsDevelopment())
+{
+	string solutionRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+	string envFile = Path.Combine(solutionRootPath, ".env");
+
+	if (File.Exists(envFile))
+	{
+		var lines = File.ReadAllLines(envFile);
+
+		foreach (var line in lines)
+		{
+			if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+				continue;
+
+			var split = line.Split('=', 2);
+			if (split.Length != 2)
+				continue;
+
+			var key = split[0].Trim();
+			var value = split[1].Trim();
+
+			if (value.StartsWith("\"") && value.EndsWith("\""))
+				value = value[1..^1];
+
+			Environment.SetEnvironmentVariable(key, value);
+		}
+	}
+}
 
 // Add config sources
 builder.Configuration
@@ -21,6 +49,17 @@ builder.Services.AddInfrastructureService(builder.Configuration);
 builder.Services.AddJWTAuthenticationScheme(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.AddServiceDefaults();
+
+// Policy Authorization
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthorization(options =>
+{
+	options.AddPolicy("ClassAccessPolicy", policy =>
+		policy.Requirements.Add(new ClassAccessRequirement()));
+});
+
+// Add notification service
+builder.Services.AddHttpClient<IFcmNotificationService, FcmNotificationService>();
 
 // Force all routes to be lowercase
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -75,6 +114,8 @@ app.UseGlobalExceptionHandler();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseHangfireDashboard();
 
 app.MapControllers();
 

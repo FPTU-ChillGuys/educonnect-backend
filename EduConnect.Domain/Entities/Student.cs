@@ -9,6 +9,9 @@ namespace EduConnect.Domain.Entities
 		public Guid StudentId { get; set; }
 
 		[Required]
+		public string StudentCode { get; set; }
+
+		[Required]
 		public string FullName { get; set; }
 
 		[Required]
@@ -16,14 +19,19 @@ namespace EduConnect.Domain.Entities
 
 		public string? Gender { get; set; }
 
+		public string? AvatarUrl { get; set; }
+
 		[Required]
-		public Guid ClassroomId { get; set; }
+		public string Status { get; set; } = "Active";
+
+		[Required]
+		public Guid ClassId { get; set; }
 
 		[Required]
 		public Guid ParentId { get; set; }
 
-		[ForeignKey(nameof(ClassroomId))]
-		public Classroom Classroom { get; set; }
+		[ForeignKey(nameof(ClassId))]
+		public Class Class { get; set; }
 
 		[ForeignKey(nameof(ParentId))]
 		public User Parent { get; set; }

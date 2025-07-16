@@ -1,7 +1,7 @@
-﻿using EduConnect.Domain.Entities;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using EduConnect.Domain.Entities;
 
 namespace EduConnect.Persistence.Data
 {
@@ -10,11 +10,11 @@ namespace EduConnect.Persistence.Data
 		public EduConnectDbContext(DbContextOptions<EduConnectDbContext> options)
 			: base(options) { }
 
-		public DbSet<Classroom> Classrooms { get; set; }
 		public DbSet<Student> Students { get; set; }
+		public DbSet<Class> Classes { get; set; }
 		public DbSet<Subject> Subjects { get; set; }
-		public DbSet<ClassPeriod> ClassPeriods { get; set; }
-		public DbSet<ClassNotebook> ClassNotebooks { get; set; }
+		public DbSet<ClassSession> ClassSessions { get; set; }
+		public DbSet<Period> Periods { get; set; }
 		public DbSet<ClassBehaviorLog> ClassBehaviorLogs { get; set; }
 		public DbSet<StudentBehaviorNote> StudentBehaviorNotes { get; set; }
 		public DbSet<ClassReport> ClassReports { get; set; }
@@ -26,8 +26,8 @@ namespace EduConnect.Persistence.Data
 		{
 			base.OnModelCreating(modelBuilder);
 
-			// Classroom
-			modelBuilder.Entity<Classroom>()
+			// Class
+			modelBuilder.Entity<Class>()
 				.HasOne(c => c.HomeroomTeacher)
 				.WithMany(u => u.HomeroomClasses)
 				.HasForeignKey(c => c.HomeroomTeacherId)
@@ -35,9 +35,9 @@ namespace EduConnect.Persistence.Data
 
 			// Student
 			modelBuilder.Entity<Student>()
-				.HasOne(s => s.Classroom)
+				.HasOne(s => s.Class)
 				.WithMany(c => c.Students)
-				.HasForeignKey(s => s.ClassroomId)
+				.HasForeignKey(s => s.ClassId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			modelBuilder.Entity<Student>()
@@ -46,57 +46,55 @@ namespace EduConnect.Persistence.Data
 				.HasForeignKey(s => s.ParentId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			// Class Period
-			modelBuilder.Entity<ClassPeriod>()
-				.HasOne(p => p.Classroom)
-				.WithMany(c => c.ClassPeriods)
-				.HasForeignKey(p => p.ClassroomId)
+			// Period
+			modelBuilder.Entity<Period>()
+				.HasIndex(p => p.PeriodNumber)
+				.IsUnique();
+
+			// Class Session
+			modelBuilder.Entity<ClassSession>()
+				.HasOne(cs => cs.Subject)
+				.WithMany(s => s.ClassSessions)
+				.HasForeignKey(cs => cs.SubjectId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			modelBuilder.Entity<ClassPeriod>()
-				.HasOne(p => p.Subject)
-				.WithMany(s => s.ClassPeriods)
-				.HasForeignKey(p => p.SubjectId)
+			modelBuilder.Entity<ClassSession>()
+				.HasOne(cs => cs.Teacher)
+				.WithMany(u => u.TeachingSessions)
+				.HasForeignKey(cs => cs.TeacherId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			modelBuilder.Entity<ClassPeriod>()
-				.HasOne(p => p.Teacher)
-				.WithMany(u => u.TeachingPeriods)
-				.HasForeignKey(p => p.TeacherId)
+			modelBuilder.Entity<ClassSession>()
+				.HasOne(cs => cs.Period)
+				.WithMany(p => p.ClassSessions)
+				.HasForeignKey(cs => cs.PeriodId)
 				.OnDelete(DeleteBehavior.Restrict);
-
-			// ClassNotebook
-			modelBuilder.Entity<ClassNotebook>()
-				.HasOne(n => n.ClassPeriod)
-				.WithOne(p => p.ClassNotebook)
-				.HasForeignKey<ClassNotebook>(n => n.ClassPeriodId)
-				.OnDelete(DeleteBehavior.Cascade);
 
 			// ClassBehaviorLog 
 			modelBuilder.Entity<ClassBehaviorLog>()
-				.HasOne(l => l.Notebook)
+				.HasOne(l => l.ClassSession)
 				.WithMany(n => n.ClassBehaviorLogs)
-				.HasForeignKey(l => l.NotebookId)
+				.HasForeignKey(l => l.ClassSessionId)
 				.OnDelete(DeleteBehavior.Cascade);
 
 			// StudentBehaviorNote 
 			modelBuilder.Entity<StudentBehaviorNote>()
-				.HasOne(n => n.Notebook)
-				.WithMany(c => c.StudentBehaviorNotes)
-				.HasForeignKey(n => n.NotebookId)
+				.HasOne(note => note.ClassSession)
+				.WithMany(cs => cs.StudentBehaviorNotes)
+				.HasForeignKey(note => note.ClassSessionId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			modelBuilder.Entity<StudentBehaviorNote>()
-				.HasOne(n => n.Student)
+				.HasOne(note => note.Student)
 				.WithMany(s => s.BehaviorNotes)
-				.HasForeignKey(n => n.StudentId)
+				.HasForeignKey(note => note.StudentId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			// Class Reports 
 			modelBuilder.Entity<ClassReport>()
-				.HasOne(r => r.Classroom)
+				.HasOne(r => r.Class)
 				.WithMany(c => c.ClassReports)
-				.HasForeignKey(r => r.ClassroomId)
+				.HasForeignKey(r => r.ClassId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			// Student Reports

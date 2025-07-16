@@ -1,8 +1,7 @@
-﻿using EduConnect.Application.Commons;
-using EduConnect.Application.DTOs.Requests;
-using EduConnect.Application.DTOs.Responses;
-using EduConnect.Application.DTOs.Users;
+﻿using EduConnect.Application.DTOs.Responses.AuthResponses;
+using EduConnect.Application.DTOs.Requests.AuthRequests;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,16 +11,12 @@ namespace EduConnect.API.Controllers
 	[Route("api/[controller]")]
 	public class AuthController(IAuthService _authService) : ControllerBase
 	{
-		[HttpPost("register-for-admin")]
+		[HttpPost("register")]
 		[AllowAnonymous]
 		public async Task<ActionResult<BaseResponse<string>>> Register([FromBody] Register request, [FromQuery] string role)
 		{
 			var result = await _authService.RegisterAsync(request, role);
-
-			if (!result.Success)
-				return BadRequest(result);
-
-			return Ok(result);
+			return result.Success ? Ok(result) : BadRequest(result);
 		}
 
 		[HttpGet("verify-email")]
@@ -29,12 +24,7 @@ namespace EduConnect.API.Controllers
 		public async Task<IActionResult> VerifyEmail([FromQuery] string email, [FromQuery] string token)
 		{
 			var result = await _authService.VerifyEmailAsync(email, token);
-			if (!result.Success)
-			{
-				return NotFound();
-			}
-
-			return Ok(result);
+			return result.Success ? Ok(result) : NotFound(result);
 		}
 
 		[HttpPost("login")]
@@ -42,11 +32,14 @@ namespace EduConnect.API.Controllers
 		public async Task<ActionResult<BaseResponse<TokenResponse>>> Login([FromBody] Login request)
 		{
 			var result = await _authService.LoginAsync(request);
+			return result.Success ? Ok(result) : Unauthorized(result);
+		}
 
-			if (!result.Success)
-				return Unauthorized(result);
-
-			return Ok(result);
+		[HttpPost("google-login")]
+		public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+		{
+			var result = await _authService.LoginWithGoogleAsync(request);
+			return result.Success? Ok(result): BadRequest(result);
 		}
 
 		[HttpPost("refresh-token")]
@@ -54,11 +47,29 @@ namespace EduConnect.API.Controllers
 		public async Task<ActionResult<BaseResponse<TokenResponse>>> RefreshToken([FromBody] RefreshTokenRequest request)
 		{
 			var result = await _authService.RefreshTokenAsync(request);
+			return result.Success ? Ok(result) : Unauthorized(result);
+		}
 
-			if (!result.Success)
-				return Unauthorized(result);
+		[HttpPost("forgot-password")]
+		[AllowAnonymous]
+		public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(BaseResponse<string>.Fail("Invalid request"));
 
-			return Ok(result);
+			var result = await _authService.ForgotPasswordAsync(request);
+			return result.Success ? Ok(result) : NotFound(result);
+		}
+
+		[HttpPost("reset-password")]
+		[AllowAnonymous]
+		public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(BaseResponse<string>.Fail("Invalid request"));
+
+			var result = await _authService.ResetPasswordAsync(request);
+			return result.Success ? Ok(result) : BadRequest(result);
 		}
 	}
 }

@@ -19,6 +19,12 @@ namespace EduConnect.Domain.Entities
 		public DateTime GeneratedDate { get; set; }
 
 		[Required]
+		public DateTime StartDate { get; set; }
+
+		[Required]
+		public DateTime EndDate { get; set; }
+
+		[Required]
 		public ReportType Type { get; set; }
 
 		public string SummaryContent { get; set; }
