@@ -1,11 +1,11 @@
-﻿using AutoMapper;
-using EduConnect.Application.Commons.Dtos;
+﻿using EduConnect.Application.DTOs.Responses.ReportResponses;
 using EduConnect.Application.DTOs.Requests.ReportRequests;
-using EduConnect.Application.DTOs.Responses.ReportResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Commons.Dtos;
 using EduConnect.Domain.Entities;
 using FluentValidation;
+using AutoMapper;
 
 namespace EduConnect.Application.Services
 {

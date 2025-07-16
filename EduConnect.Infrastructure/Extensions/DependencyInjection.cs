@@ -114,8 +114,10 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddHangfire(config => {
 				config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
 			});
-
 			services.AddHangfireServer();
+
+			//Add job schedule for notification
+			services.AddHostedService<StartupNotificationJobScheduler>();
 
 			return services;
 		}

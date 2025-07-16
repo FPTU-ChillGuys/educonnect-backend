@@ -164,5 +164,28 @@ namespace EduConnect.Infrastructure.Repositories
 			public User User { get; set; } = default!;
 			public string? RoleName { get; set; }
 		}
+
+		public async Task<List<(string DeviceToken, Guid StudentId)>> GetAllParentDeviceTokensOfActiveStudentsAsync()
+		{
+			var parentTokens = await (
+				from user in _context.Users
+				join userRole in _context.UserRoles on user.Id equals userRole.UserId
+				join role in _context.Roles on userRole.RoleId equals role.Id
+				where role.Name == "Parent"
+					  && user.DeviceToken != null
+					  && user.IsActive
+				from child in user.Children
+				where child.Status == "Active"
+				select new
+				{
+					user.DeviceToken,
+					StudentId = child.StudentId
+				}
+			).ToListAsync();
+
+			return parentTokens
+				.Select(x => (x.DeviceToken!, x.StudentId))
+				.ToList();
+		}
 	}
 }

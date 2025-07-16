@@ -1,14 +1,15 @@
-﻿using EduConnect.Application.DTOs.Responses.ClassResponses;
+﻿using AutoMapper;
+using Azure.Core;
+using EduConnect.Application.Commons.Dtos;
+using EduConnect.Application.Commons.Extensions;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
+using EduConnect.Application.DTOs.Responses.ClassResponses;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
-using EduConnect.Application.Commons.Extensions;
-using EduConnect.Application.Commons.Dtos;
-using Microsoft.EntityFrameworkCore;
 using EduConnect.Domain.Entities;
-using System.Linq.Expressions;
 using FluentValidation;
-using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace EduConnect.Application.Services
 {
