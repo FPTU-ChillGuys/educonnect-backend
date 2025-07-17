@@ -1,10 +1,11 @@
-﻿using EduConnect.Application.Interfaces.Services;
+﻿using EduConnect.API.Configurations;
 using EduConnect.Application.Authorization;
+using EduConnect.Application.Interfaces.Services;
+using EduConnect.Infrastructure.Authorization.HangfireFilter;
 using EduConnect.Infrastructure.Extensions;
 using EduConnect.Infrastructure.Services;
-using EduConnect.API.Configurations;
-using Microsoft.OpenApi.Models;
 using Hangfire;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -115,7 +116,10 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+	Authorization = new[] { new AllowAllDashboardAuthorizationFilter() }
+});
 
 app.MapControllers();
 
