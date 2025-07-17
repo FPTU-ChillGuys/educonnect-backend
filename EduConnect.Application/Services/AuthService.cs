@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using EduConnect.Domain.Entities;
 using EduConnect.Domain.Enums;
 using Google.Apis.Auth;
+using FluentValidation;
 
 namespace EduConnect.Application.Services
 {
@@ -16,7 +17,8 @@ namespace EduConnect.Application.Services
 								UserManager<User> _userManager,
 								IAuthRepository _authRepository,
 								IEmailService _emailService,
-								IEmailTemplateProvider _templateProvider
+								IEmailTemplateProvider _templateProvider,
+								IValidator<RegisterRequest> _registerValidator
 							) : IAuthService
 	{
 		public async Task<BaseResponse<TokenResponse>> LoginAsync(Login login)
@@ -86,14 +88,22 @@ namespace EduConnect.Application.Services
 			return BaseResponse<TokenResponse>.Ok(tokenResponse, "Google login successful");
 		}
 
-		public async Task<BaseResponse<string>> RegisterAsync(Register register, string role)
+		public async Task<BaseResponse<string>> RegisterAsync(RegisterRequest register, string role)
 		{
+			var validationResult = await _registerValidator.ValidateAsync(register);
+			if (!validationResult.IsValid)
+			{
+				var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
+				return BaseResponse<string>.Fail(errors);
+			}
+
 			if (await CheckEmailExists(register.Email!))
 				return BaseResponse<string>.Fail("Email already exists");
 
 			var user = new User
 			{
 				Email = register.Email,
+				FullName = register.FullName ?? string.Empty,
 				UserName = register.Username,
 				IsActive = true
 			};

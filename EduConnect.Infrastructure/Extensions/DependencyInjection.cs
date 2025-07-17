@@ -28,6 +28,7 @@ using EduConnect.Persistence.Data;
 using EduConnect.Domain.Entities;
 using FluentValidation;
 using Hangfire;
+using EduConnect.Application.DTOs.Requests.AuthRequests;
 
 namespace EduConnect.Infrastructure.Extensions
 {
@@ -147,6 +148,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
 			// FluentValidation
+			services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
 			services.AddScoped<IValidator<TimetableRequest>, TimetableRequestValidator>();	
 			services.AddScoped<IValidator<FilterUserRequest>, FilterUserRequestValidator>();
 			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
