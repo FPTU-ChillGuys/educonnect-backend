@@ -1,7 +1,8 @@
-using Microsoft.Extensions.Caching.Distributed;
-using EduConnect.ChatbotAPI.Configurations;
 using DotNetEnv;
+using EduConnect.ChatbotAPI.Configurations;
 using EduConnect.ChatbotAPI.Hubs;
+using Hangfire;
+using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +50,8 @@ app.Lifetime.ApplicationStarted.Register(() =>
     app.Services.GetService<IDistributedCache>()
                               .Set("cachedTimeUTC", encodedCurrentTimeUTC, options);
 });
+
+app.UseHangfireDashboard();
 
 app.MapHub<ChatbotHub>("/chatbot");
 

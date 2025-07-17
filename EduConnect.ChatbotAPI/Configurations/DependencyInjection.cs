@@ -67,6 +67,13 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddSignalR();
             services.AddLogging();
 
+            // Add hangfire service
+            services.AddHangfire(config => {
+                config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
+            });
+
+            services.AddHangfireServer();
+
             services.AddDistributedMemoryCache();
             services.AddSingleton<Kernel>(AddKernal(config));
             return services;
@@ -83,6 +90,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
             services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
             services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
+            services.AddScoped<IGenericRepository<ClassReport>, GenericRepository<ClassReport>>();
             services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
             services.AddScoped<IGenericRepository<Subject>, GenericRepository<Subject>>();
             services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
@@ -103,7 +111,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             return services;
         }
 
-#pragma warning disable SKEXP0070
+        #pragma warning disable SKEXP0070
         public static Kernel AddKernal(IConfiguration config)
         {
             IKernelBuilder kernelBuilder = Kernel.CreateBuilder();

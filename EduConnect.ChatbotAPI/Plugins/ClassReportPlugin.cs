@@ -1,13 +1,18 @@
-﻿using EduConnect.Application.Services;
+﻿using EduConnect.Application.DTOs.Responses.ReportResponses;
+using EduConnect.Application.Interfaces.Services;
+using EduConnect.Application.Services;
 using EduConnect.ChatbotAPI.Services.Chatbot;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Google;
 using System.ComponentModel;
 
 namespace EduConnect.ChatbotAPI.Plugins
 {
-    public class ClassReportPlugin (
+    public class ClassReportPlugin(
             ChatbotHelper chatbotHelper,
-            ClassSessionService classSessionService,
+            IClassSessionService classSessionService,
+            IClassService classService,
+            IReportService reportService,
             Kernel kernel
         )
     {
@@ -15,12 +20,49 @@ namespace EduConnect.ChatbotAPI.Plugins
         public async Task ClassReportDaily()
         {
 
-            string userPrompt = "Create a daily class report for all classes, including the number of students present, absent, and any notable events or issues that occurred during the day. Date: " + DateTime.Now.ToString("yyyy-MM-dd");
+            // var classess = await classService.GetClassesBySearchAsync(string.Empty);
 
-            //KernelFunction getClassSessionsByClassName = kernel.Plugins.GetFunction("ClassSession", "get_class_sessions_from_class_name_and_date");
-            //KernelFunction getClassSessionsByTeacherName = kernel.Plugins.GetFunction("ClassSession", "get_class_sessions_from_teacher_name_and_date");
-            //KernelFunction getTimetableByClassName = kernel.Plugins.GetFunction("ClassSession", "get_class_sessions_from_class_name");
-            //KernelFunction getTimetableByTeacherName = kernel.Plugins.GetFunction("ClassSession", "get_class_sessions_from_teacher_name");
+            //foreach (var classItem in classess.Data)
+            //{
+            //    // Get class sessions for the class
+            //    string userPrompt = $@"Get class session from class name {classItem.ClassName} and date range from {DateTime.UtcNow.ToString("yyyy-MM-dd")} to {DateTime.UtcNow.ToString("yyyy-MM-dd")}";
+
+            //    GeminiPromptExecutionSettings geminiPromptExecutionSettings = new()
+            //    {
+            //        ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+            //    };
+
+            //    var response = await kernel.InvokePromptAsync(userPrompt, new(geminiPromptExecutionSettings), cancellationToken: default);
+
+            //}
+
+            var className = "10C";
+            var classId = "91F08E76-A26C-4A13-9777-00284FEEEE33";
+            var dailyDate = DateTime.UtcNow;
+
+            //Get class sessions for the class
+            string userPrompt = $@"Get class session from class name {className} and date range from {dailyDate.ToString("yyyy-MM-dd")} to {dailyDate.ToString("yyyy-MM-dd")}";
+
+            GeminiPromptExecutionSettings geminiPromptExecutionSettings = new()
+            {
+                ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+            };
+
+            var response = await kernel.InvokePromptAsync(userPrompt, new(geminiPromptExecutionSettings), cancellationToken: default);
+
+
+            var classReport = new ClassReportDto
+            {
+                ClassId = Guid.Parse(classId),
+                StartDate = dailyDate,
+                EndDate = dailyDate,
+                
+            };
+
+
+            
+
+
 
         }
 
