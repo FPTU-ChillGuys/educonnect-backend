@@ -1,8 +1,11 @@
 using DotNetEnv;
 using EduConnect.ChatbotAPI.Configurations;
+using EduConnect.ChatbotAPI.Extensions;
 using EduConnect.ChatbotAPI.Hubs;
+using EduConnect.ChatbotAPI.Services.Class;
 using Hangfire;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,5 +57,7 @@ app.Lifetime.ApplicationStarted.Register(() =>
 app.UseHangfireDashboard();
 
 app.MapHub<ChatbotHub>("/chatbot");
+
+app.UseRegisteredHangfireJobs(classReportPlugin: app.Services.GetRequiredService<ClassReportService>());
 
 app.Run();

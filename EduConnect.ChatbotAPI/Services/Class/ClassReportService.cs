@@ -6,16 +6,32 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 using System.ComponentModel;
 
-namespace EduConnect.ChatbotAPI.Plugins
+namespace EduConnect.ChatbotAPI.Services.Class
 {
-    public class ClassReportPlugin(
+    public class ClassReportService
+    {
+
+        private readonly ChatbotHelper chatbotHelper;
+        private readonly IClassSessionService classSessionService;
+        private readonly IClassService classService;
+        private readonly IReportService reportService;
+        private readonly Kernel kernel;
+
+        public ClassReportService(
             ChatbotHelper chatbotHelper,
             IClassSessionService classSessionService,
             IClassService classService,
             IReportService reportService,
             Kernel kernel
         )
-    {
+        {
+            this.chatbotHelper = chatbotHelper;
+            this.classSessionService = classSessionService;
+            this.classService = classService;
+            this.reportService = reportService;
+            this.kernel = kernel;
+        }
+
 
         public async Task ClassReportDaily()
         {
@@ -56,14 +72,8 @@ namespace EduConnect.ChatbotAPI.Plugins
                 ClassId = Guid.Parse(classId),
                 StartDate = dailyDate,
                 EndDate = dailyDate,
-                
+
             };
-
-
-            
-
-
-
         }
 
 

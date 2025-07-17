@@ -16,6 +16,7 @@ using EduConnect.Application.Validators.SubjectValidators;
 using EduConnect.Application.Validators.UserValidators;
 using EduConnect.ChatbotAPI.Plugins;
 using EduConnect.ChatbotAPI.Services.Chatbot;
+using EduConnect.ChatbotAPI.Services.Class;
 using EduConnect.Domain.Entities;
 using EduConnect.Infrastructure.Authorization.Handlers;
 using EduConnect.Infrastructure.Extensions;
@@ -66,6 +67,9 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddSingleton<HttpClient>();
             services.AddSignalR();
             services.AddLogging();
+
+            //Add singleton
+            services.AddSingleton<ClassReportService>();
 
             // Add hangfire service
             services.AddHangfire(config => {
