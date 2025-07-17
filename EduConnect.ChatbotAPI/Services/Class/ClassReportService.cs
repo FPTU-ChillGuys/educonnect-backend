@@ -1,7 +1,10 @@
-﻿using EduConnect.Application.DTOs.Responses.ReportResponses;
+﻿using AutoMapper;
+using EduConnect.Application.DTOs.Requests.ReportRequests;
+using EduConnect.Application.DTOs.Responses.ReportResponses;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.Application.Services;
 using EduConnect.ChatbotAPI.Services.Chatbot;
+using EduConnect.Domain.Entities;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
 using System.ComponentModel;
@@ -12,24 +15,19 @@ namespace EduConnect.ChatbotAPI.Services.Class
     {
 
         private readonly ChatbotHelper chatbotHelper;
-        private readonly IClassSessionService classSessionService;
-        private readonly IClassService classService;
-        private readonly IReportService reportService;
         private readonly Kernel kernel;
+        private readonly IReportService reportService;
+        private readonly IMapper mapper;
 
         public ClassReportService(
             ChatbotHelper chatbotHelper,
-            IClassService classService,
             IReportService reportService,
-            IClassSessionService classSessionService,
             Kernel kernel
         )
         {
             this.chatbotHelper = chatbotHelper;
-            this.classSessionService = classSessionService;
-            this.classService = classService;
-            this.reportService = reportService;
             this.kernel = kernel;
+            this.reportService = reportService;
         }
 
 
@@ -61,7 +59,7 @@ namespace EduConnect.ChatbotAPI.Services.Class
 
             var response = await chatbotHelper.ChatbotResponseNonStreaming(userPrompt);
 
-            var classReport = new ClassReportDto
+            var classReport = new CreateClassReportRequest
             {
                 ClassId = Guid.Parse(classId),
                 StartDate = dailyDate,
@@ -69,6 +67,7 @@ namespace EduConnect.ChatbotAPI.Services.Class
                 GeneratedByAI = true,
                 SummaryContent = response,
             };
+            await reportService.CreateClassReportAsync(classReport);
         }
 
 

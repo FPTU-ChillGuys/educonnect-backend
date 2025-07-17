@@ -1,6 +1,7 @@
 ﻿using EduConnect.Application.DTOs.Requests.BehaviorRequests;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
 using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
+using EduConnect.Application.DTOs.Requests.ReportRequests;
 using EduConnect.Application.DTOs.Requests.StudentRequests;
 using EduConnect.Application.DTOs.Requests.SubjectRequests;
 using EduConnect.Application.DTOs.Requests.UserRequests;
@@ -11,6 +12,7 @@ using EduConnect.Application.Services;
 using EduConnect.Application.Validators.BehaviorValidators;
 using EduConnect.Application.Validators.ClassSessionValidators;
 using EduConnect.Application.Validators.ClassValidators;
+using EduConnect.Application.Validators.ReportValidators;
 using EduConnect.Application.Validators.StudentValidators;
 using EduConnect.Application.Validators.SubjectValidators;
 using EduConnect.Application.Validators.UserValidators;
@@ -50,17 +52,41 @@ namespace EduConnect.ChatbotAPI.Configurations
             //Add Repo
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IClassReportRepository, ClassReportRepository>();
+            services.AddScoped<IStudentReportRepository, StudentReportRepository>();
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
 
             //Add Service
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IConversationService, ConversationService>();
+            services.AddScoped<IReportService, ReportService>();
 
             //Add Chatbot Services
             services.AddScoped<ChatbotStorage>();
             services.AddScoped<ChatbotHelper>();
 
+            // FluentValidation
+            services.AddScoped<IValidator<CreateClassReportRequest>, CreateClassReportRequestValidator>();
+            services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
+            services.AddScoped<IValidator<CreateStudentReportRequest>, CreateStudentReportRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassBehaviorLogRequest>, UpdateClassBehaviorLogRequestValidator>();
+            services.AddScoped<IValidator<CreateClassBehaviorLogRequest>, CreateClassBehaviorLogRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassSessionByAdminRequest>, UpdateClassSessionByAdminRequestValidator>();
+            services.AddScoped<IValidator<CreateStudentBehaviorNoteRequest>, CreateStudentBehaviorNoteRequestValidator>();
+            services.AddScoped<IValidator<UpdateStudentBehaviorNoteRequest>, UpdateStudentBehaviorNoteRequestValidator>();
+
+
             //Add Mapper
             services.AddAutoMapper(typeof(ConversationProfile).Assembly);
+
+            // Add hangfire service
+            services.AddHangfire(config => {
+                config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
+            });
+
+            services.AddHangfireServer();
 
             //Add other services
             services.AddSingleton<HttpClient>();
@@ -88,6 +114,8 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
             services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
             services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
+            services.AddScoped<IClassReportRepository, ClassReportRepository>();
+            services.AddScoped<IStudentReportRepository, StudentReportRepository>();
 
             // - DBContext
             var connectionString = config["DATABASE_CONNECTION_STRING"];
@@ -103,7 +131,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             return services;
         }
 
-#pragma warning disable SKEXP0070
+        #pragma warning disable SKEXP0070
         public static Kernel AddKernal(IConfiguration config)
         {
             IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
@@ -124,6 +152,7 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             //Add other service
             kernelBuilder.Services.AddScoped<ChatbotStorage>();
+
             //Add logger
             kernelBuilder.Services.AddLogging(loggingBuilder =>
             {

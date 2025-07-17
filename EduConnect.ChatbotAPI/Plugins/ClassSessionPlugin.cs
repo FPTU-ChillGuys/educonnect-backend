@@ -33,6 +33,38 @@ namespace EduConnect.ChatbotAPI.Plugins
                 .ToList();
         }
 
+        [KernelFunction("get_today_class_sessions")]
+        public async Task<List<ClassSessionDto>> GetClassSessionsTodayByClassName(string className)
+        {
+
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.UtcNow, DateTime.UtcNow);
+
+            if (classSessions.Data == null || classSessions.Data.Count == 0)
+            {
+                return new List<ClassSessionDto>();
+            }
+            return classSessions.Data
+                .Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        [KernelFunction("get_weekly_class_sessions")]
+        public async Task<List<ClassSessionDto>> GetClassSessionsWeeklyByClassName(string className)
+        {
+
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
+
+            if (classSessions.Data == null || classSessions.Data.Count == 0)
+            {
+                return new List<ClassSessionDto>();
+            }
+            return classSessions.Data
+                .Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+
+
         [KernelFunction("get_class_sessions_by_teacher_and_date_range")]
         public async Task<List<ClassSessionDto>> GetClassSessionsByTeacherName(string teacherName, string fromDate, string toDate)
         {

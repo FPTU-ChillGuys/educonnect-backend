@@ -362,15 +362,25 @@ namespace EduConnect.Application.Services
         {
             if (string.IsNullOrWhiteSpace(search))
                 return BaseResponse<List<ClassSessionDto>>.Fail("Search term cannot be empty");
-            DateTime? from = Utils.FixWronglyParsedDate(fromDate);
-            DateTime? to = Utils.FixWronglyParsedDate(toDate);
-            if (!from.HasValue || !to.HasValue || from > to)
-                return BaseResponse<List<ClassSessionDto>>.Fail("Invalid date range");
+
+            DateTime? from;
+            DateTime? to;
+
+            try
+            {
+                from = Utils.FixWronglyParsedDate(fromDate);
+                to = Utils.FixWronglyParsedDate(toDate);
+            } catch
+            {
+                from = fromDate;
+                to = toDate;
+            }
+
             Expression<Func<ClassSession, bool>> filter = cs => !cs.IsDeleted &&
                                                                (cs.Class.ClassName.Contains(search) ||
                                                                 cs.Subject.SubjectName.Contains(search) ||
-                                                                cs.Teacher.FullName.Contains(search)) &&
-                                                               cs.Date >= from.Value && cs.Date <= to.Value;
+                                                                cs.Teacher.FullName.Contains(search));
+                                                                //&& cs.Date >= from.Value && cs.Date <= to.Value;
             var sessions = await _classSessionRepo.GetAllAsync(
                 filter: filter,
                 include: q => q.Include(cs => cs.Class)
@@ -379,8 +389,7 @@ namespace EduConnect.Application.Services
                                 .Include(cs => cs.Period),
                 asNoTracking: true
             );
-            if (!sessions.Any())
-                return BaseResponse<List<ClassSessionDto>>.Fail("No class sessions found matching the search criteria");
+           
             var dtoList = _mapper.Map<List<ClassSessionDto>>(sessions);
             return BaseResponse<List<ClassSessionDto>>.Ok(dtoList, "Class sessions retrieved successfully");
         }

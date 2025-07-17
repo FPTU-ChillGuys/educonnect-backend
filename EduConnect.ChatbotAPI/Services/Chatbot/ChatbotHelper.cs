@@ -61,6 +61,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
             //Them system prompt
             chatHistory.AddSystemMessage("If you can't find the answer, try using function calls to locate the information");
+            chatHistory.AddSystemMessage("If data have IDs, for example classId, studentId, etc, don't show them");
 
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
@@ -100,7 +101,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct))
             {
                 response += item;
-                yield return ChatbotUtils.RemoveThinkTags(response);
+                yield return response;
             }
 
             ////Them phan hoi cua chatbot vao lich su
@@ -108,7 +109,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
         }
 
-        public async Task<string> ChatbotResponseNonStreaming(string userPrompt, CancellationToken ct = default)
+        public async Task<string?> ChatbotResponseNonStreaming(string userPrompt, CancellationToken ct = default)
         {
             IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             //Them prompt nguoi dung vao chat history
@@ -123,7 +124,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
             var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
 
-            return ChatbotUtils.RemoveThinkTags(response.ToString()!) ?? string.Empty;
+            return response != null ? response.ToString() : string.Empty;
         }
     }
 }
