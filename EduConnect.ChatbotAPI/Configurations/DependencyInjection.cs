@@ -173,7 +173,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             //kernelBuilder.AddOllamaChatCompletion("qwen3:0.6b", new Uri("http://localhost:11434"));
             // Use OpenAI chat completion service
             kernelBuilder.AddGoogleAIGeminiChatCompletion(
-                 modelId: "gemini-2.0-flash-lite",
+                 modelId: "gemini-2.5-flash",
                  apiKey: config["GOOGLE_AI_API_KEY"] ?? ""
             );
 

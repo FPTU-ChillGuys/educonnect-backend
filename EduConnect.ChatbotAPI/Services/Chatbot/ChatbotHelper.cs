@@ -65,7 +65,7 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
-            #pragma warning disable SKEXP0070
+#pragma warning disable SKEXP0070
             //OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
             //{
             //    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
@@ -95,6 +95,9 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
                 response += streamingEnumerator.Current?.Content ?? string.Empty;
                 yield return ChatbotUtils.RemoveThinkTags(response);
             }
+
+            response += streamingEnumerator.Current?.Content ?? string.Empty;
+            yield return ChatbotUtils.RemoveThinkTags(response);
 
 
             //await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct))
