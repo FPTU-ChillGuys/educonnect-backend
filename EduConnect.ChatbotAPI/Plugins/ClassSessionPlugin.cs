@@ -37,7 +37,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         public async Task<List<ClassSessionDto>> GetClassSessionsTodayByClassName(string className)
         {
 
-            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.UtcNow, DateTime.UtcNow);
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.Now, DateTime.Now);
 
             if (classSessions.Data == null || classSessions.Data.Count == 0)
             {
@@ -52,7 +52,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         public async Task<List<ClassSessionDto>> GetClassSessionsWeeklyByClassName(string className)
         {
 
-            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.Now.AddDays(-7), DateTime.Now);
 
             if (classSessions.Data == null || classSessions.Data.Count == 0)
             {

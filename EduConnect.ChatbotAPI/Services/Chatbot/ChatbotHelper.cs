@@ -122,7 +122,12 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
                 ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
             };
 
-            var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
+            string response = string.Empty;
+
+            await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct))
+            {
+                response += item;
+            }
 
             return response != null ? response.ToString() : string.Empty;
         }

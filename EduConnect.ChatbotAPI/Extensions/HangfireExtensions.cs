@@ -10,7 +10,7 @@ namespace EduConnect.ChatbotAPI.Extensions
             RecurringJob.AddOrUpdate<ClassReportService>(
                 "test_report_class_daily",
                 services => services.ClassReportDaily(),
-                Cron.Hourly
+                "*/5 * * * *"
             );
         }
     }

@@ -56,6 +56,6 @@ app.UseHangfireDashboard();
 
 app.MapHub<ChatbotHub>("/chatbot");
 
-//app.UseRegisteredHangfireJobs();
+app.UseRegisteredHangfireJobs();
 
 app.Run();

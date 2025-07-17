@@ -52,10 +52,10 @@ namespace EduConnect.ChatbotAPI.Services.Class
 
             var className = "10C";
             var classId = "91F08E76-A26C-4A13-9777-00284FEEEE33";
-            var dailyDate = DateTime.UtcNow;
+            var dailyDate = DateTime.Now;
 
             //Get class sessions for the class
-            string userPrompt = $@"Get class session today from class has name {className}";
+            string userPrompt = $@"Get today class session from class name {className}";
 
             var response = await chatbotHelper.ChatbotResponseNonStreaming(userPrompt);
 
