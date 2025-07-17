@@ -108,14 +108,20 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
 
         }
 
-        public async Task<string> ChatbotResponseNonStreaming(string userPrompt, Guid conversationId, CancellationToken ct = default)
+        public async Task<string> ChatbotResponseNonStreaming(string userPrompt, CancellationToken ct = default)
         {
             IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
-            OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new();
-            var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct);
+
+            GeminiPromptExecutionSettings geminiPromptExecutionSettings = new()
+            {
+                //FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+            };
+
+            var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
 
             return ChatbotUtils.RemoveThinkTags(response.ToString()!) ?? string.Empty;
         }
