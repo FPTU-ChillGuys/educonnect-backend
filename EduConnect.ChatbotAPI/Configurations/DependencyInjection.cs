@@ -18,6 +18,7 @@ using EduConnect.Application.Validators.SubjectValidators;
 using EduConnect.Application.Validators.UserValidators;
 using EduConnect.ChatbotAPI.Plugins;
 using EduConnect.ChatbotAPI.Services.Chatbot;
+using EduConnect.ChatbotAPI.Services.Class;
 using EduConnect.Domain.Entities;
 using EduConnect.Infrastructure.Authorization.Handlers;
 using EduConnect.Infrastructure.Extensions;
@@ -61,6 +62,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IClassService, ClassService>();
 
             //Add Chatbot Services
             services.AddScoped<ChatbotStorage>();

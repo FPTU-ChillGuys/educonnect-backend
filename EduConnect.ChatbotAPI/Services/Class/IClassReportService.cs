@@ -4,5 +4,6 @@
     {
 
         Task ClassReportDaily();
+        Task ClassReportWeekly();
     }
 }
