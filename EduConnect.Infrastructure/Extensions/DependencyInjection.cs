@@ -6,7 +6,9 @@ using EduConnect.Application.Validators.BehaviorValidators;
 using EduConnect.Application.DTOs.Requests.SubjectRequests;
 using EduConnect.Application.Validators.StudentValidators;
 using EduConnect.Application.Validators.SubjectValidators;
+using EduConnect.Application.DTOs.Requests.ReportRequests;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
+using EduConnect.Application.Validators.ReportValidators;
 using EduConnect.Application.Validators.ClassValidators;
 using EduConnect.Application.DTOs.Requests.UserRequests;
 using EduConnect.Application.Validators.UserValidators;
@@ -26,8 +28,6 @@ using EduConnect.Persistence.Data;
 using EduConnect.Domain.Entities;
 using FluentValidation;
 using Hangfire;
-using EduConnect.Application.DTOs.Requests.ReportRequests;
-using EduConnect.Application.Validators.ReportValidators;
 
 namespace EduConnect.Infrastructure.Extensions
 {
