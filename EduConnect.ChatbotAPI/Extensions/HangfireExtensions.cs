@@ -5,11 +5,11 @@ namespace EduConnect.ChatbotAPI.Extensions
 {
     public static class HangfireExtensions
     {
-        public static void UseRegisteredHangfireJobs(this IApplicationBuilder app, ClassReportService classReportPlugin)
+        public static void UseRegisteredHangfireJobs(this IApplicationBuilder app)
         {
-            RecurringJob.AddOrUpdate(
+            RecurringJob.AddOrUpdate<ClassReportService>(
                 "test_report_class_daily",
-                () => classReportPlugin.ClassReportDaily(),
+                services => services.ClassReportDaily(),
                 Cron.Minutely
             );
         }

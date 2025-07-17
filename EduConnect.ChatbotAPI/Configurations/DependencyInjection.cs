@@ -1,6 +1,7 @@
 ﻿using EduConnect.Application.DTOs.Requests.BehaviorRequests;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
 using EduConnect.Application.DTOs.Requests.ClassSessionRequests;
+using EduConnect.Application.DTOs.Requests.ReportRequests;
 using EduConnect.Application.DTOs.Requests.StudentRequests;
 using EduConnect.Application.DTOs.Requests.SubjectRequests;
 using EduConnect.Application.DTOs.Requests.UserRequests;
@@ -11,6 +12,7 @@ using EduConnect.Application.Services;
 using EduConnect.Application.Validators.BehaviorValidators;
 using EduConnect.Application.Validators.ClassSessionValidators;
 using EduConnect.Application.Validators.ClassValidators;
+using EduConnect.Application.Validators.ReportValidators;
 using EduConnect.Application.Validators.StudentValidators;
 using EduConnect.Application.Validators.SubjectValidators;
 using EduConnect.Application.Validators.UserValidators;
@@ -18,18 +20,13 @@ using EduConnect.ChatbotAPI.Plugins;
 using EduConnect.ChatbotAPI.Services.Chatbot;
 using EduConnect.ChatbotAPI.Services.Class;
 using EduConnect.Domain.Entities;
-using EduConnect.Infrastructure.Authorization.Handlers;
-using EduConnect.Infrastructure.Extensions;
 using EduConnect.Infrastructure.Repositories;
 using EduConnect.Infrastructure.Services;
 using EduConnect.Persistence.Data;
 using FluentValidation;
 using Hangfire;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace EduConnect.ChatbotAPI.Configurations
 {
@@ -68,8 +65,14 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddSignalR();
             services.AddLogging();
 
+            // Add notification service
+            services.AddHttpClient<IFcmNotificationService, FcmNotificationService>();
+
+            services.AddInfrastructureService(config);
+            services.AddApplicationServices();
+
             //Add singleton
-            services.AddSingleton<ClassReportService>();
+            services.AddScoped<ClassReportService>();
 
             // Add hangfire service
             services.AddHangfire(config => {
@@ -86,20 +89,21 @@ namespace EduConnect.ChatbotAPI.Configurations
         public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration config)
         {
             // Register Repositories
-            services.AddScoped<IAuthRepository, AuthRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IClassRepository, ClassRepository>();
-            services.AddScoped<IMessageRepository, MessageRepository>();
-            services.AddScoped<IConversationRepository, ConversationRepository>();
-            services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
+            services.AddScoped<IClassReportRepository, ClassReportRepository>();
             services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+            services.AddScoped<IStudentReportRepository, StudentReportRepository>();
             services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
-            services.AddScoped<IGenericRepository<ClassReport>, GenericRepository<ClassReport>>();
+            services.AddScoped<IGenericRepository<Period>, GenericRepository<Period>>();
             services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
             services.AddScoped<IGenericRepository<Subject>, GenericRepository<Subject>>();
+            services.AddScoped<IGenericRepository<ClassReport>, GenericRepository<ClassReport>>();
             services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
+            services.AddScoped<IGenericRepository<StudentReport>, GenericRepository<StudentReport>>();
             services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
             services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
 
             // - DBContext
             var connectionString = config["DATABASE_CONNECTION_STRING"];
@@ -111,6 +115,53 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             services.AddDbContext<EduConnectDbContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            return services;
+        }
+
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        {
+            // Register Services
+            services.AddScoped<IClassService, ClassService>();
+            services.AddScoped<IPeriodService, PeriodService>();
+            services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<ISubjectService, SubjectService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IBehaviorService, BehaviorService>();
+            services.AddScoped<IClassSessionService, ClassSessionService>();
+            services.AddScoped<INotificationJobService, NotificationJobService>();
+            services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IConversationService, ConversationService>();
+
+            // AutoMapper
+            services.AddAutoMapper(typeof(UserProfile).Assembly);
+            services.AddAutoMapper(typeof(ClassProfile).Assembly);
+            services.AddAutoMapper(typeof(StudentProfile).Assembly);
+            services.AddAutoMapper(typeof(SubjectProfile).Assembly);
+            services.AddAutoMapper(typeof(BehaviorProfile).Assembly);
+            services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
+
+            // FluentValidation
+            services.AddScoped<IValidator<TimetableRequest>, TimetableRequestValidator>();
+            services.AddScoped<IValidator<FilterUserRequest>, FilterUserRequestValidator>();
+            services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
+            services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassRequest>, UpdateClassRequestValidator>();
+            services.AddScoped<IValidator<ClassPagingRequest>, ClassPagingRequestValidator>();
+            services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
+            services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
+            services.AddScoped<IValidator<CreateSubjectRequest>, CreateSubjectRequestValidator>();
+            services.AddScoped<IValidator<StudentPagingRequest>, StudentPagingRequestValidator>();
+            services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
+            services.AddScoped<IValidator<CreateClassReportRequest>, CreateClassReportRequestValidator>();
+            services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
+            services.AddScoped<IValidator<CreateStudentReportRequest>, CreateStudentReportRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassBehaviorLogRequest>, UpdateClassBehaviorLogRequestValidator>();
+            services.AddScoped<IValidator<CreateClassBehaviorLogRequest>, CreateClassBehaviorLogRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassSessionByAdminRequest>, UpdateClassSessionByAdminRequestValidator>();
+            services.AddScoped<IValidator<CreateStudentBehaviorNoteRequest>, CreateStudentBehaviorNoteRequestValidator>();
+            services.AddScoped<IValidator<UpdateStudentBehaviorNoteRequest>, UpdateStudentBehaviorNoteRequestValidator>();
 
             return services;
         }

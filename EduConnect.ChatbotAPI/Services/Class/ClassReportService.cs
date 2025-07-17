@@ -8,7 +8,7 @@ using System.ComponentModel;
 
 namespace EduConnect.ChatbotAPI.Services.Class
 {
-    public class ClassReportService
+    public class ClassReportService : IClassReportService
     {
 
         private readonly ChatbotHelper chatbotHelper;
@@ -19,9 +19,9 @@ namespace EduConnect.ChatbotAPI.Services.Class
 
         public ClassReportService(
             ChatbotHelper chatbotHelper,
-            IClassSessionService classSessionService,
             IClassService classService,
             IReportService reportService,
+            IClassSessionService classSessionService,
             Kernel kernel
         )
         {

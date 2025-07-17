@@ -58,6 +58,6 @@ app.UseHangfireDashboard();
 
 app.MapHub<ChatbotHub>("/chatbot");
 
-app.UseRegisteredHangfireJobs(classReportPlugin: app.Services.GetRequiredService<ClassReportService>());
+app.UseRegisteredHangfireJobs();
 
 app.Run();

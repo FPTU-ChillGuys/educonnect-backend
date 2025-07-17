@@ -15,7 +15,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         )
     {
 
-        [KernelFunction("get_class_sessions_from_class_name_and_date")]
+        [KernelFunction("get_class_sessions_from_class_name")]
         [Description("Retrieves a list of class sessions based on filters such as class name or date range.")]
         public async Task<List<ClassSessionDto>> GetClassSessionsByClassName(string className, string fromDate, string toDate)
         {
@@ -33,7 +33,7 @@ namespace EduConnect.ChatbotAPI.Plugins
                 .ToList();
         }
 
-        [KernelFunction("get_class_sessions_from_teacher_name_and_date")]
+        [KernelFunction("get_class_sessions_from_teacher_name")]
         [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
         public async Task<List<ClassSessionDto>> GetClassSessionsByTeacherName(string teacherName, string fromDate, string toDate)
         {
@@ -53,7 +53,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
 
 
-        [KernelFunction("get_class_sessions_from_class_name")]
+        [KernelFunction("get_timetable_from_class_name")]
         public async Task<List<TimetableViewDto>> GetTimetableByClassName(string className, string fromDate, string toDate)
         {
             DateTime.TryParse(fromDate, out DateTime from);
@@ -70,7 +70,7 @@ namespace EduConnect.ChatbotAPI.Plugins
 
         }
 
-        [KernelFunction("get_class_sessions_from_teacher_name")]
+        [KernelFunction("get_timetable_from_teacher_name")]
         public async Task<List<TimetableViewDto>> GetTimetableByTeacherName(string className, string fromDate, string toDate)
         {
             DateTime.TryParse(fromDate, out DateTime from);
