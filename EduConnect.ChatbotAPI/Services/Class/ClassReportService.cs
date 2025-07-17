@@ -57,22 +57,17 @@ namespace EduConnect.ChatbotAPI.Services.Class
             var dailyDate = DateTime.UtcNow;
 
             //Get class sessions for the class
-            string userPrompt = $@"Get class session from class name {className} and date range from {dailyDate.ToString("yyyy-MM-dd")} to {dailyDate.ToString("yyyy-MM-dd")}";
+            string userPrompt = $@"Get class session today from class has name {className}";
 
-            GeminiPromptExecutionSettings geminiPromptExecutionSettings = new()
-            {
-                ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
-            };
-
-            var response = await kernel.InvokePromptAsync(userPrompt, new(geminiPromptExecutionSettings), cancellationToken: default);
-
+            var response = await chatbotHelper.ChatbotResponseNonStreaming(userPrompt);
 
             var classReport = new ClassReportDto
             {
                 ClassId = Guid.Parse(classId),
                 StartDate = dailyDate,
                 EndDate = dailyDate,
-
+                GeneratedByAI = true,
+                SummaryContent = response,
             };
         }
 

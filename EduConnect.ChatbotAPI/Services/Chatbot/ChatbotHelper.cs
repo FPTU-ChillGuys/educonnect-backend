@@ -77,45 +77,51 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
                 ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
             };
 
-            //IAsyncEnumerable<StreamingChatMessageContent> streamingEnumerable = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
-            //await using var streamingEnumerator = streamingEnumerable.GetAsyncEnumerator(ct);
+            IAsyncEnumerable<StreamingChatMessageContent> streamingEnumerable = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
+            await using var streamingEnumerator = streamingEnumerable.GetAsyncEnumerator(ct);
 
-            //for (var more = true; more;)
-            //{
-            //    // Catch exceptions only on executing/resuming the iterator function
-            //    try
-            //    {
-            //        more = await streamingEnumerator.MoveNextAsync();
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _logger.LogError(ex, "Error while streaming chat message contents.");
-            //        throw;
-            //    }
-            //    response += streamingEnumerator.Current?.Content ?? string.Empty;
-            //    yield return ChatbotUtils.RemoveThinkTags(response);
-            //}
-
-
-            await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct))
+            for (var more = true; more;)
             {
-                response += item;
+                // Catch exceptions only on executing/resuming the iterator function
+                try
+                {
+                    more = await streamingEnumerator.MoveNextAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while streaming chat message contents.");
+                    throw;
+                }
+                response += streamingEnumerator.Current?.Content ?? string.Empty;
                 yield return ChatbotUtils.RemoveThinkTags(response);
             }
+
+
+            //await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct))
+            //{
+            //    response += item;
+            //    yield return ChatbotUtils.RemoveThinkTags(response);
+            //}
 
             ////Them phan hoi cua chatbot vao lich su
             //chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, response));
 
         }
 
-        public async Task<string> ChatbotResponseNonStreaming(string userPrompt, Guid conversationId, CancellationToken ct = default)
+        public async Task<string> ChatbotResponseNonStreaming(string userPrompt, CancellationToken ct = default)
         {
             IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
-            OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new();
-            var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory, ollamaPromptExecutionSettings, _kernel, ct);
+
+            GeminiPromptExecutionSettings geminiPromptExecutionSettings = new()
+            {
+                //FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+            };
+
+            var response = await chatCompletionService.GetChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
 
             return ChatbotUtils.RemoveThinkTags(response.ToString()!) ?? string.Empty;
         }

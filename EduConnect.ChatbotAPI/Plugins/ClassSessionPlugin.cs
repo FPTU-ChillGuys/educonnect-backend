@@ -14,8 +14,41 @@ namespace EduConnect.ChatbotAPI.Plugins
             IClassService classService
         )
     {
+        [KernelFunction("get_class_sessions_today_from_class_name")]
+        [Description("Retrieves a list of class sessions based on filters such as class name or date range.")]
+        public async Task<List<ClassSessionDto>> GetClassSessionsTodayByClassName(string className)
+        {
 
-        [KernelFunction("get_class_sessions_from_class_name")]
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.UtcNow, DateTime.UtcNow);
+
+            if (classSessions.Data == null || classSessions.Data.Count == 0)
+            {
+                return new List<ClassSessionDto>();
+            }
+            return classSessions.Data
+                .Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        [KernelFunction("get_class_sessions_weekly_from_class_name")]
+        [Description("Retrieves a list of class sessions based on filters such as class name or date range.")]
+        public async Task<List<ClassSessionDto>> GetClassSessionsWeeklyByClassName(string className)
+        {
+
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
+
+            if (classSessions.Data == null || classSessions.Data.Count == 0)
+            {
+                return new List<ClassSessionDto>();
+            }
+            return classSessions.Data
+                .Where(cs => cs.ClassName!.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+
+
+        [KernelFunction("get_class_sessions_from_class_name_with_from_date_and_to_date")]
         [Description("Retrieves a list of class sessions based on filters such as class name or date range.")]
         public async Task<List<ClassSessionDto>> GetClassSessionsByClassName(string className, string fromDate, string toDate)
         {
@@ -33,7 +66,7 @@ namespace EduConnect.ChatbotAPI.Plugins
                 .ToList();
         }
 
-        [KernelFunction("get_class_sessions_from_teacher_name")]
+        [KernelFunction("get_class_sessions_from_teacher_name_with_from_date_and_to_date")]
         [Description("Retrieves a paginated list of class sessions based on filters such as class name or date range.")]
         public async Task<List<ClassSessionDto>> GetClassSessionsByTeacherName(string teacherName, string fromDate, string toDate)
         {
