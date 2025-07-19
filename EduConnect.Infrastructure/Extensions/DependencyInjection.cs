@@ -53,6 +53,8 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IGenericRepository<StudentReport>, GenericRepository<StudentReport>>();
 			services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
 			services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
+			services.AddScoped<IMessageRepository, MessageRepository>();	
+			services.AddScoped<IConversationRepository, ConversationRepository>();
 
 			// Authorization Handlers
 			services.AddScoped<IAuthorizationHandler, ClassAccessHandler>();
@@ -138,6 +140,8 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 			services.AddScoped<INotificationJobService, NotificationJobService>();
 			services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
+			services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IConversationService, ConversationService>();
 
 			// AutoMapper
 			services.AddAutoMapper(typeof(UserProfile).Assembly);

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduConnect.Persistence.Migrations
 {
     [DbContext(typeof(EduConnectDbContext))]
-    [Migration("20250714092228_Add_Period")]
-    partial class Add_Period
+    [Migration("20250715085807_UpdateDB1")]
+    partial class UpdateDB1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,28 +167,54 @@ namespace EduConnect.Persistence.Migrations
                     b.ToTable("ClassSessions");
                 });
 
+            modelBuilder.Entity("EduConnect.Domain.Entities.Conversation", b =>
+                {
+                    b.Property<Guid>("ConversationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ConversationId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Conversations");
+                });
+
             modelBuilder.Entity("EduConnect.Domain.Entities.Message", b =>
                 {
                     b.Property<Guid>("MessageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AIResponse")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MessageId");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ConversationId");
 
                     b.ToTable("Messages");
                 });
@@ -469,10 +495,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJAQZ30KgFYtVIzaC+4CnisqwKXC3XF9VIw+Ns1Xpjk11k0eA678ObfVS2MqbdoZvg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH2hKGNXccvfcAt40qjXAn55FxC9uyi1nOC2t56Thh/OGbC4fJq2mH1W64D5lupuUA==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 21, 9, 22, 28, 436, DateTimeKind.Utc).AddTicks(1805),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 22, 8, 58, 7, 257, DateTimeKind.Utc).AddTicks(4082),
                             SecurityStamp = "seed-4",
                             TwoFactorEnabled = false,
                             UserName = "admin"
@@ -489,10 +515,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "TEACHER@EXAMPLE.COM",
                             NormalizedUserName = "TEACHER",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOE//No3PoxmLncUkG/2O4hJK+huioeDvEVOx+d68krs75H7M8ew+rM/jhxdFDoJeA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPPI+G2GEgSnIKlK0UHvbnBURvm7qhvxoCEH9Mzn+PCppdTska/Hgsz1mzD+gP7NfQ==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 21, 9, 22, 28, 485, DateTimeKind.Utc).AddTicks(4117),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 22, 8, 58, 7, 315, DateTimeKind.Utc).AddTicks(7967),
                             SecurityStamp = "seed-6",
                             TwoFactorEnabled = false,
                             UserName = "teacher"
@@ -509,10 +535,10 @@ namespace EduConnect.Persistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "PARENT@EXAMPLE.COM",
                             NormalizedUserName = "PARENT",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKtGJz5KL7PrRC2sf7pqV6Sdfv4/g+vhSKDhXUu/h0ELLvhCLvsrF1aNK9+YAcgupA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEL2rtEo81EmW+r+aZanHiyUgxMIfatwyz7J9a/KPvyKxbN1obYPsJIJSNOtbKqnpMQ==",
                             PhoneNumberConfirmed = false,
                             RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(2025, 7, 21, 9, 22, 28, 534, DateTimeKind.Utc).AddTicks(8418),
+                            RefreshTokenExpiryTime = new DateTime(2025, 7, 22, 8, 58, 7, 372, DateTimeKind.Utc).AddTicks(9150),
                             SecurityStamp = "seed-8",
                             TwoFactorEnabled = false,
                             UserName = "parent"
@@ -758,15 +784,24 @@ namespace EduConnect.Persistence.Migrations
                     b.Navigation("Teacher");
                 });
 
-            modelBuilder.Entity("EduConnect.Domain.Entities.Message", b =>
+            modelBuilder.Entity("EduConnect.Domain.Entities.Conversation", b =>
                 {
                     b.HasOne("EduConnect.Domain.Entities.User", "Parent")
-                        .WithMany("Messages")
+                        .WithMany("Conversations")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("EduConnect.Domain.Entities.Message", b =>
+                {
+                    b.HasOne("EduConnect.Domain.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Conversation");
                 });
 
             modelBuilder.Entity("EduConnect.Domain.Entities.Notification", b =>
@@ -915,6 +950,11 @@ namespace EduConnect.Persistence.Migrations
                     b.Navigation("StudentBehaviorNotes");
                 });
 
+            modelBuilder.Entity("EduConnect.Domain.Entities.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("EduConnect.Domain.Entities.Period", b =>
                 {
                     b.Navigation("ClassSessions");
@@ -941,9 +981,9 @@ namespace EduConnect.Persistence.Migrations
                 {
                     b.Navigation("Children");
 
-                    b.Navigation("HomeroomClasses");
+                    b.Navigation("Conversations");
 
-                    b.Navigation("Messages");
+                    b.Navigation("HomeroomClasses");
 
                     b.Navigation("Notifications");
 

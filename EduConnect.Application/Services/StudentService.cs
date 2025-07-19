@@ -256,5 +256,22 @@ namespace EduConnect.Application.Services
 				return BaseResponse<byte[]>.Fail("An error occurred while exporting: " + ex.Message);
 			}
 		}
-	}
+
+        public async Task<BaseResponse<List<StudentDto>>> GetStudentsBySearchAsync(string? search)
+        {
+
+			var students = await _studentRepo.GetAllAsync(
+				filter: s => s.FullName.Contains(search!) || s.StudentCode!.Contains(search!) || 
+					s.Class!.ClassName.Contains(search!) || s.Parent!.FullName.Contains(search!) || string.IsNullOrEmpty(search),
+                include: q => q.Include(s => s.Class).Include(s => s.Parent),
+				asNoTracking: true
+			);
+			if (!students.Any())
+			{
+				return BaseResponse<List<StudentDto>>.Fail("No students found matching the search criteria");
+			}
+			var studentDtos = _mapper.Map<List<StudentDto>>(students);
+			return BaseResponse<List<StudentDto>>.Ok(studentDtos, "Students retrieved successfully");
+        }
+    }
 }

@@ -14,5 +14,9 @@ namespace EduConnect.Application.Interfaces.Services
 		Task<BaseResponse<string>> UpdateStudentBehaviorNoteAsync(Guid noteId, UpdateStudentBehaviorNoteRequest request);
 		Task<BaseResponse<string>> DeleteClassBehaviorLogAsync(Guid logId);
 		Task<BaseResponse<string>> DeleteStudentBehaviorNoteAsync(Guid noteId);
-	}
+
+		//Get by search 
+		Task<BaseResponse<List<ClassBehaviorLogDto>>> GetClassBehaviorLogsBySearchAsync(string search);
+		Task<BaseResponse<List<StudentBehaviorNoteDto>>> GetStudentBehaviorNotesBySearchAsync(string search);
+    }
 }

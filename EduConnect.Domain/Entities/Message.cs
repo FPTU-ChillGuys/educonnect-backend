@@ -1,25 +1,33 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EduConnect.Domain.Entities
 {
 	public class Message
 	{
-		[Key]
+        [Key]
 		public Guid MessageId { get; set; }
 
-		[Required]
-		public Guid ParentId { get; set; }
+		public Guid? ConversationId { get; set; }
 
-		[ForeignKey(nameof(ParentId))]
-		public User Parent { get; set; }
-
-		[Required]
-		public string Content { get; set; }
-
-		public string? AIResponse { get; set; }
+        [Required]
+        public string? Content { get; set; }
 
 		[Required]
+        public string? Role { get; set; } = RoleType.User.ToString(); 
+
+        [Required]
 		public DateTime CreatedAt { get; set; }
-	}
+
+		[JsonIgnore]
+		[ForeignKey(nameof(ConversationId))]
+        public Conversation? Conversation { get; set; }
+    }
+
+	public enum RoleType
+	{
+		User,
+		Assistant
+    }
 }

@@ -14,6 +14,6 @@ namespace EduConnect.Domain.Entities
 		public virtual ICollection<Class> HomeroomClasses { get; set; } // if Teacher
 		public virtual ICollection<ClassSession> TeachingSessions { get; set; } // if Teacher
 		public virtual ICollection<Notification> Notifications { get; set; } // if Parent
-		public virtual ICollection<Message> Messages { get; set; } // if Parent
+		public virtual ICollection<Conversation> Conversations { get; set; } // if Parent
 	}
 }

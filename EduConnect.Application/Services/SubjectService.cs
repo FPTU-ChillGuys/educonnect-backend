@@ -126,5 +126,21 @@ namespace EduConnect.Application.Services
 				? BaseResponse<string>.Ok("Subject deleted successfully")
 				: BaseResponse<string>.Fail("Failed to delete subject");
 		}
-	}
+
+        public Task<BaseResponse<List<SubjectDto>>> GetSubjectsBySearchAsync(string search)
+        {
+			Expression<Func<Subject, bool>> filter = s =>
+				string.IsNullOrEmpty(search) || s.SubjectName.Contains(search);
+			return _subjectRepo.GetAllAsync(
+				filter: filter,
+				orderBy: q => q.OrderBy(s => s.SubjectName),
+				asNoTracking: true
+			).ContinueWith(task =>
+			{
+				var subjects = task.Result;
+				var dtos = _mapper.Map<List<SubjectDto>>(subjects);
+				return BaseResponse<List<SubjectDto>>.Ok(dtos, "Subjects loaded successfully");
+			});
+        }
+    }
 }

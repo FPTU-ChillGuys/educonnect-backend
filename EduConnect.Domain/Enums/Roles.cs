@@ -6,4 +6,11 @@
 		Teacher = 2,
 		Parent = 3
 	}
+
+
+    public enum MessageRole
+    {
+        User,
+        Assistant
+    }
 }
