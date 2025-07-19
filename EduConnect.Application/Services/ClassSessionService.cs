@@ -9,6 +9,7 @@ using EduConnect.Domain.Entities;
 using EduConnect.Domain.Enums;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OfficeOpenXml;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -360,9 +361,7 @@ namespace EduConnect.Application.Services
 
         public async Task<BaseResponse<List<ClassSessionDto>>> GetClassSessionsBySearchAsync(string search, DateTime fromDate, DateTime toDate)
         {
-            if (string.IsNullOrWhiteSpace(search))
-                return BaseResponse<List<ClassSessionDto>>.Fail("Search term cannot be empty");
-
+            
             DateTime? from;
             DateTime? to;
 
@@ -379,7 +378,9 @@ namespace EduConnect.Application.Services
             Expression<Func<ClassSession, bool>> filter = cs => !cs.IsDeleted &&
                                                                (cs.Class.ClassName.Contains(search) ||
                                                                 cs.Subject.SubjectName.Contains(search) ||
-                                                                cs.Teacher.FullName.Contains(search));
+                                                                cs.Teacher.FullName.Contains(search)
+                                                                || search.IsNullOrEmpty()
+                                                                );
                                                                 //&& cs.Date >= from.Value && cs.Date <= to.Value;
             var sessions = await _classSessionRepo.GetAllAsync(
                 filter: filter,

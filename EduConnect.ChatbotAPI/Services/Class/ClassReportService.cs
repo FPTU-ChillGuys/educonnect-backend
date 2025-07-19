@@ -42,9 +42,6 @@ namespace EduConnect.ChatbotAPI.Services.Class
             foreach (var classItem in classess!.Data!)
             {
 
-                //Delay 10 minute per class to avoid rate limit
-                await Task.Delay(TimeSpan.FromMinutes(5));
-
                 //Get class sessions for the class
                 string userPrompt = $@"Get today class session from class name {classItem.ClassName}";
 
@@ -59,6 +56,9 @@ namespace EduConnect.ChatbotAPI.Services.Class
                     SummaryContent = response,
                 };
                 await reportService.CreateClassReportAsync(classReport);
+
+                //Delay 10 minute per class to avoid rate limit
+                await Task.Delay(TimeSpan.FromMinutes(5));
             }
         }
 
@@ -67,8 +67,7 @@ namespace EduConnect.ChatbotAPI.Services.Class
             var classess = await classService.GetClassesBySearchAsync(string.Empty);
             foreach (var classItem in classess!.Data!)
             {
-                //Delay 10 minute per class to avoid rate limit
-                await Task.Delay(TimeSpan.FromMinutes(5));
+   
                 //Get class sessions for the class
                 string userPrompt = $@"Get weekly class session from class name {classItem.ClassName}";
                 var response = await chatbotHelper.ChatbotResponseNonStreaming(userPrompt);
@@ -81,6 +80,9 @@ namespace EduConnect.ChatbotAPI.Services.Class
                     SummaryContent = response,
                 };
                 await reportService.CreateClassReportAsync(classReport);
+
+                //Delay 10 minute per class to avoid rate limit
+                await Task.Delay(TimeSpan.FromMinutes(5));
             }
         }
 

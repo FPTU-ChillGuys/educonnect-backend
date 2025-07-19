@@ -63,12 +63,26 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IClassService, ClassService>();
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IBehaviorService, BehaviorService>();
+            services.AddScoped<IClassSessionService, ClassSessionService>();
 
             //Add Chatbot Services
             services.AddScoped<ChatbotStorage>();
             services.AddScoped<ChatbotHelper>();
 
             // FluentValidation
+            services.AddScoped<IValidator<TimetableRequest>, TimetableRequestValidator>();
+            services.AddScoped<IValidator<FilterUserRequest>, FilterUserRequestValidator>();
+            services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
+            services.AddScoped<IValidator<CreateClassRequest>, CreateClassRequestValidator>();
+            services.AddScoped<IValidator<UpdateClassRequest>, UpdateClassRequestValidator>();
+            services.AddScoped<IValidator<ClassPagingRequest>, ClassPagingRequestValidator>();
+            services.AddScoped<IValidator<CreateStudentRequest>, CreateStudentRequestValidator>();
+            services.AddScoped<IValidator<UpdateStudentRequest>, UpdateStudentRequestValidator>();
+            services.AddScoped<IValidator<CreateSubjectRequest>, CreateSubjectRequestValidator>();
+            services.AddScoped<IValidator<StudentPagingRequest>, StudentPagingRequestValidator>();
+            services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
             services.AddScoped<IValidator<CreateClassReportRequest>, CreateClassReportRequestValidator>();
             services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
             services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
@@ -139,11 +153,17 @@ namespace EduConnect.ChatbotAPI.Configurations
             IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
             //kernelBuilder.AddOllamaChatCompletion("qwen3:0.6b", new Uri("http://localhost:11434"));
             // Use OpenAI chat completion service
+
+            if (string.IsNullOrWhiteSpace(config["OPENAI_API_KEY"]))
+            {
+                throw new InvalidOperationException("GOOGLE_AI_API_KEY");
+            };
+
+
             kernelBuilder.AddGoogleAIGeminiChatCompletion(
                  modelId: "gemini-2.5-flash-lite-preview-06-17",
                  apiKey: config["GOOGLE_AI_API_KEY"] ?? ""
             );
-
 
             //Add plugins or additional services if needed
             kernelBuilder.Plugins.AddFromType<ClassPlugin>("Class");
