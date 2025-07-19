@@ -57,6 +57,8 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IStudentReportRepository, StudentReportRepository>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            //Add IConfiguration
+            services.AddSingleton<IConfiguration>(config);
 
             //Add Service
             services.AddScoped<IMessageService, MessageService>();
@@ -66,6 +68,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IBehaviorService, BehaviorService>();
             services.AddScoped<IClassSessionService, ClassSessionService>();
+            services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 
             //Add Chatbot Services
             services.AddScoped<ChatbotStorage>();
@@ -174,6 +177,7 @@ namespace EduConnect.ChatbotAPI.Configurations
 
             //Add other service
             kernelBuilder.Services.AddScoped<ChatbotStorage>();
+            kernelBuilder.Services.AddSingleton<IConfiguration>(config);
 
             //Add logger
             kernelBuilder.Services.AddLogging(loggingBuilder =>
