@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace EduConnect.Application.DTOs.Requests.StudentRequests
 {
@@ -14,6 +15,8 @@ namespace EduConnect.Application.DTOs.Requests.StudentRequests
 		public DateTime DateOfBirth { get; set; }
 
 		public string? Gender { get; set; }
+
+		public IFormFile? Avatar { get; set; }
 
 		[Required]
 		[RegularExpression("Active|Inactive", ErrorMessage = "Status must be either 'Active' or 'Inactive'.")]

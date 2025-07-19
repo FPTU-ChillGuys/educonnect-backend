@@ -25,19 +25,17 @@ namespace EduConnect.Infrastructure.Services
 
 		public async Task SendNotificationAsync(string deviceToken, string title, string body)
 		{
-			// 1. Load credentials
 			var json = _config["Fcm:CredentialsJson"];
 			if (string.IsNullOrWhiteSpace(json))
 				throw new Exception("Missing FCM credentials JSON");
+
 			using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 			var googleCredential = GoogleCredential.FromStream(stream)
 				.CreateScoped("https://www.googleapis.com/auth/firebase.messaging");
 
-			// 2. Get access token
 			var accessToken = await googleCredential.UnderlyingCredential
 				.GetAccessTokenForRequestAsync();
 
-			// 3. Build message payload
 			var message = new
 			{
 				message = new
@@ -54,18 +52,22 @@ namespace EduConnect.Infrastructure.Services
 			var request = new HttpRequestMessage(HttpMethod.Post, $"https://fcm.googleapis.com/v1/projects/{_projectId}/messages:send")
 			{
 				Headers =
-			{
-				Authorization = new AuthenticationHeaderValue("Bearer", accessToken)
-			},
+		{
+			Authorization = new AuthenticationHeaderValue("Bearer", accessToken)
+		},
 				Content = new StringContent(JsonSerializer.Serialize(message), Encoding.UTF8, "application/json")
 			};
 
 			var response = await _httpClient.SendAsync(request);
+			var responseContent = await response.Content.ReadAsStringAsync();
 
 			if (!response.IsSuccessStatusCode)
 			{
-				var error = await response.Content.ReadAsStringAsync();
-				_logger.LogError($"FCM error: {error}");
+				_logger.LogError("FCM error: {Error}, Response: {Response}", response.ReasonPhrase, responseContent);
+			}
+			else
+			{
+				_logger.LogInformation("FCM success. Response: {Response}", responseContent);
 			}
 		}
 	}

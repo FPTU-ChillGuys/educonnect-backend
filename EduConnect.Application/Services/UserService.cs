@@ -73,6 +73,11 @@ namespace EduConnect.Application.Services
 			return BaseResponse<UserDto>.Ok(dto, "User retrieved successfully");
 		}
 
+		public async Task<List<(string DeviceToken, Guid StudentId)>> GetAllParentDeviceTokensOfActiveStudentsAsync()
+		{
+			return await _userRepo.GetAllParentDeviceTokensOfActiveStudentsAsync();
+		}
+
 		public async Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(FilterUserRequest request)
 		{
 			try

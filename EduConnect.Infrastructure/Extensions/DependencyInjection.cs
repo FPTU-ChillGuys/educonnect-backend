@@ -6,7 +6,9 @@ using EduConnect.Application.Validators.BehaviorValidators;
 using EduConnect.Application.DTOs.Requests.SubjectRequests;
 using EduConnect.Application.Validators.StudentValidators;
 using EduConnect.Application.Validators.SubjectValidators;
+using EduConnect.Application.DTOs.Requests.ReportRequests;
 using EduConnect.Application.DTOs.Requests.ClassRequests;
+using EduConnect.Application.Validators.ReportValidators;
 using EduConnect.Application.Validators.ClassValidators;
 using EduConnect.Application.DTOs.Requests.UserRequests;
 using EduConnect.Application.Validators.UserValidators;
@@ -26,8 +28,7 @@ using EduConnect.Persistence.Data;
 using EduConnect.Domain.Entities;
 using FluentValidation;
 using Hangfire;
-using EduConnect.Application.DTOs.Requests.ReportRequests;
-using EduConnect.Application.Validators.ReportValidators;
+using EduConnect.Application.DTOs.Requests.AuthRequests;
 
 namespace EduConnect.Infrastructure.Extensions
 {
@@ -116,8 +117,10 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddHangfire(config => {
 				config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
 			});
-
 			services.AddHangfireServer();
+
+			//Add job schedule for notification
+			services.AddHostedService<StartupNotificationJobScheduler>();
 
 			return services;
 		}
@@ -136,6 +139,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IBehaviorService, BehaviorService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 			services.AddScoped<INotificationJobService, NotificationJobService>();
+			services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 			services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IConversationService, ConversationService>();
 
@@ -148,6 +152,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
 			// FluentValidation
+			services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
 			services.AddScoped<IValidator<TimetableRequest>, TimetableRequestValidator>();	
 			services.AddScoped<IValidator<FilterUserRequest>, FilterUserRequestValidator>();
 			services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();

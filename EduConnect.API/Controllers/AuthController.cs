@@ -13,7 +13,7 @@ namespace EduConnect.API.Controllers
 	{
 		[HttpPost("register")]
 		[AllowAnonymous]
-		public async Task<ActionResult<BaseResponse<string>>> Register([FromBody] Register request, [FromQuery] string role)
+		public async Task<ActionResult<BaseResponse<string>>> Register([FromBody] RegisterRequest request, [FromQuery] string role)
 		{
 			var result = await _authService.RegisterAsync(request, role);
 			return result.Success ? Ok(result) : BadRequest(result);

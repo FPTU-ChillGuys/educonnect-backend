@@ -8,7 +8,8 @@ namespace EduConnect.Application.Interfaces.Services
 	{
 		Task<PagedResponse<UserDto>> GetPagedUsersAsync(FilterUserRequest request);
 		Task<BaseResponse<List<UserLookupDto>>> GetUserLookupAsync(FilterUserRequest request);
-		Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id); 
+		Task<BaseResponse<UserDto>> GetUserByIdAsync(Guid id);
+		Task<List<(string DeviceToken, Guid StudentId)>> GetAllParentDeviceTokensOfActiveStudentsAsync();
 		Task<BaseResponse<byte[]>> ExportUsersToExcelAsync(FilterUserRequest request);
 		Task<BaseResponse<string>> UpdateUserAsync(Guid id, UpdateUserRequest request);
 		Task<BaseResponse<string>> UpdateUserStatsusAsync(Guid id, UpdateUserStatusRequest request);
