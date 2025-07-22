@@ -157,7 +157,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             //kernelBuilder.AddOllamaChatCompletion("qwen3:0.6b", new Uri("http://localhost:11434"));
             // Use OpenAI chat completion service
 
-            if (string.IsNullOrWhiteSpace(config["OPENAI_API_KEY"]))
+            if (string.IsNullOrWhiteSpace(config["GOOGLE_AI_API_KEY"]))
             {
                 throw new InvalidOperationException("GOOGLE_AI_API_KEY");
             };

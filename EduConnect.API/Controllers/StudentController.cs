@@ -49,6 +49,5 @@ namespace EduConnect.API.Controllers
 				? File(result.Data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students.xlsx")
 				: BadRequest(result);
 		}
-
 	}
 }

@@ -112,8 +112,7 @@ public class NotificationJobService : INotificationJobService
 		_recurringJobManager.AddOrUpdate<INotificationJobService>(
 			"daily-student-report-job",
 			svc => svc.SendStudentReportNotificationAsync(ReportType.Daily),
-			//"0 1 * * *"); // 1:00 AM daily
-			"*/1 * * * *"); // 1 minute for test
+			"0 1 * * *"); // 1:00 AM daily
 	}
 
 	public void ScheduleWeeklyStudentReportJob()

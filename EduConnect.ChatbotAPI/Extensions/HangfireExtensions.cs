@@ -22,13 +22,13 @@ namespace EduConnect.ChatbotAPI.Extensions
             );
 
             RecurringJob.AddOrUpdate<StudentReportServices>(
-                "class_report_daily",
+                "student_report_daily",
                 service => service.StudentReportDaily(),
                 Cron.Daily
             );
 
             RecurringJob.AddOrUpdate<StudentReportServices>(
-                "class_report_weekly",
+                "student_report_weekly",
                 service => service.StudentReportWeekly(),
                 Cron.Weekly(DayOfWeek.Sunday, 8)
             );
