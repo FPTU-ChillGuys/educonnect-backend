@@ -20,7 +20,6 @@ namespace EduConnect.Infrastructure.Services
 
 			notificationJobService.ScheduleDailyStudentReportJob();
 			notificationJobService.ScheduleWeeklyStudentReportJob();
-			notificationJobService.ScheduleDailyClassReportJob();
 			notificationJobService.ScheduleWeeklyClassReportJob();
 
 			await Task.CompletedTask;

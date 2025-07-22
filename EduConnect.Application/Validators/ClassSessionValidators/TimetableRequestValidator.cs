@@ -17,7 +17,7 @@ namespace EduConnect.Application.Validators.ClassSessionValidators
 
 			RuleFor(x => x.From)
 				.LessThanOrEqualTo(x => x.To)
-				.When(x => x.From != default && x.To != default)
+				.When(x => x.From.Date != default && x.To.Date != default)
 				.WithMessage("From date must be earlier than or equal to To date.");
 		}
 	}

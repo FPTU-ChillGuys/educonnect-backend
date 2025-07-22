@@ -29,6 +29,8 @@ using EduConnect.Domain.Entities;
 using FluentValidation;
 using Hangfire;
 using EduConnect.Application.DTOs.Requests.AuthRequests;
+using EduConnect.Application.DTOs.Requests.NotificationRequests;
+using EduConnect.Application.Validators.NotificationValidators;
 
 namespace EduConnect.Infrastructure.Extensions
 {
@@ -40,8 +42,10 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IAuthRepository, AuthRepository>();
 			services.AddScoped<IUserRepository, UserRepository>();
 			services.AddScoped<IClassRepository, ClassRepository>();
+			services.AddScoped<IMessageRepository, MessageRepository>();	
 			services.AddScoped<IEmailTemplateProvider, MailTemplateProvider>();
 			services.AddScoped<IClassReportRepository, ClassReportRepository>();
+			services.AddScoped<IConversationRepository, ConversationRepository>();
 			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 			services.AddScoped<IStudentReportRepository, StudentReportRepository>();
 			services.AddScoped<IGenericRepository<Class>, GenericRepository<Class>>();
@@ -49,12 +53,11 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IGenericRepository<Student>, GenericRepository<Student>>();
 			services.AddScoped<IGenericRepository<Subject>, GenericRepository<Subject>>();
 			services.AddScoped<IGenericRepository<ClassReport>, GenericRepository<ClassReport>>();	
+			services.AddScoped<IGenericRepository<Notification>, GenericRepository<Notification>>();
 			services.AddScoped<IGenericRepository<ClassSession>, GenericRepository<ClassSession>>();
 			services.AddScoped<IGenericRepository<StudentReport>, GenericRepository<StudentReport>>();
 			services.AddScoped<IGenericRepository<ClassBehaviorLog>, GenericRepository<ClassBehaviorLog>>();
 			services.AddScoped<IGenericRepository<StudentBehaviorNote>, GenericRepository<StudentBehaviorNote>>();
-			services.AddScoped<IMessageRepository, MessageRepository>();	
-			services.AddScoped<IConversationRepository, ConversationRepository>();
 
 			// Authorization Handlers
 			services.AddScoped<IAuthorizationHandler, ClassAccessHandler>();
@@ -117,7 +120,9 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddHangfire(config => {
 				config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
 			});
-			services.AddHangfireServer();
+			services.AddHangfireServer(options => {
+				options.Queues = new[] { "send" };
+			});
 
 			//Add job schedule for notification
 			services.AddHostedService<StartupNotificationJobScheduler>();
@@ -134,14 +139,15 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IClassService, ClassService>();
 			services.AddScoped<IPeriodService, PeriodService>();
 			services.AddScoped<IReportService, ReportService>();
+			services.AddScoped<IMessageService, MessageService>();
 			services.AddScoped<ISubjectService, SubjectService>();
 			services.AddScoped<IStudentService, StudentService>();
 			services.AddScoped<IBehaviorService, BehaviorService>();
+			services.AddScoped<INotificationService, NotificationService>();
+			services.AddScoped<IConversationService, ConversationService>();
 			services.AddScoped<IClassSessionService, ClassSessionService>();
 			services.AddScoped<INotificationJobService, NotificationJobService>();
 			services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
-			services.AddScoped<IMessageService, MessageService>();
-            services.AddScoped<IConversationService, ConversationService>();
 
 			// AutoMapper
 			services.AddAutoMapper(typeof(UserProfile).Assembly);
@@ -149,6 +155,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddAutoMapper(typeof(StudentProfile).Assembly); 
 			services.AddAutoMapper(typeof(SubjectProfile).Assembly);
 			services.AddAutoMapper(typeof(BehaviorProfile).Assembly);
+			services.AddAutoMapper(typeof(NotificationProfile).Assembly);
 			services.AddAutoMapper(typeof(ClassSessionProfile).Assembly);
 
 			// FluentValidation
@@ -165,6 +172,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IValidator<StudentPagingRequest>, StudentPagingRequestValidator>();
 			services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
 			services.AddScoped<IValidator<CreateClassReportRequest>, CreateClassReportRequestValidator>();
+			services.AddScoped<IValidator<CreateNotificationRequest>, CreateNotificationRequestValidator>();	
 			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<CreateStudentReportRequest>, CreateStudentReportRequestValidator>();

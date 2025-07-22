@@ -6,31 +6,26 @@ namespace EduConnect.ChatbotAPI.Extensions
 {
     public static class HangfireExtensions
     {
-        public static void UseRegisteredHangfireJobs(this IApplicationBuilder app)
+		[Queue("generate")]
+		public static void UseRegisteredHangfireJobs(this IApplicationBuilder app)
         {
-            //RecurringJob.AddOrUpdate<ClassReportService>(
-            //    "test_report_class_daily",
-            //    services => services.ClassReportDaily(),
-            //    Cron.Daily
-            //);
-
-            // Create cron job per sunday at 8:00 AM
+            // Create cron job per sunday at 0:00 AM
             RecurringJob.AddOrUpdate<ClassReportService>(
-                "class_report_daily",
+				"generate_daily_class_report",
                 service => service.ClassReportWeekly(),
-                Cron.Weekly(DayOfWeek.Sunday, 8)
+                Cron.Weekly(DayOfWeek.Sunday, 0)
             );
 
             RecurringJob.AddOrUpdate<StudentReportServices>(
-                "student_report_daily",
+				"generate_daily_student_report",
                 service => service.StudentReportDaily(),
                 Cron.Daily
             );
 
             RecurringJob.AddOrUpdate<StudentReportServices>(
-                "student_report_weekly",
+				"generate_weekly_student_report",
                 service => service.StudentReportWeekly(),
-                Cron.Weekly(DayOfWeek.Sunday, 8)
+                Cron.Weekly(DayOfWeek.Sunday, 0)
             );
         }
     }

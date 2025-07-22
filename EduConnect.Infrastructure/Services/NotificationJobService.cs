@@ -107,34 +107,29 @@ public class NotificationJobService : INotificationJobService
 		}
 	}
 
+	[Queue("send")]
 	public void ScheduleDailyStudentReportJob()
 	{
 		_recurringJobManager.AddOrUpdate<INotificationJobService>(
-			"daily-student-report-job",
+			"send_daily_student_report",
 			svc => svc.SendStudentReportNotificationAsync(ReportType.Daily),
 			"0 1 * * *"); // 1:00 AM daily
 	}
 
+	[Queue("send")]
 	public void ScheduleWeeklyStudentReportJob()
 	{
 		_recurringJobManager.AddOrUpdate<INotificationJobService>(
-			"weekly-student-report-job",
+			"send_weekly_student_report",
 			svc => svc.SendStudentReportNotificationAsync(ReportType.Weekly),
 			"0 1 * * 7"); // 1:00 AM Sunday
 	}
 
-	public void ScheduleDailyClassReportJob()
-	{
-		_recurringJobManager.AddOrUpdate<INotificationJobService>(
-			"daily-class-report-job",
-			svc => svc.SendClassReportNotificationAsync(ReportType.Daily),
-			"5 1 * * *"); // 1:05 AM daily
-	}
-
+	[Queue("send")]
 	public void ScheduleWeeklyClassReportJob()
 	{
 		_recurringJobManager.AddOrUpdate<INotificationJobService>(
-			"weekly-class-report-job",
+			"send_weekly_class_report",
 			svc => svc.SendClassReportNotificationAsync(ReportType.Weekly),
 			"5 1 * * 7"); // 1:05 AM Sunday
 	}

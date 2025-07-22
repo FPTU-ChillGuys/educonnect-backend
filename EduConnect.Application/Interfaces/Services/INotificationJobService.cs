@@ -9,6 +9,5 @@ namespace EduConnect.Application.Interfaces.Services
 		void ScheduleWeeklyStudentReportJob();
 		void ScheduleWeeklyClassReportJob();
 		void ScheduleDailyStudentReportJob();
-		void ScheduleDailyClassReportJob();
 	}
 }
