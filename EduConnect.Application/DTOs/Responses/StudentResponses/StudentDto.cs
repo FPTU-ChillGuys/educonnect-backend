@@ -8,6 +8,7 @@
 		public string? Gender { get; set; }
 		public string? AvatarUrl { get; set; }
 		public DateTime? DateOfBirth { get; set; }
+		public Guid ClassId { get; set; }
 		public string? ClassName { get; set; }
 		public Guid ParentId { get; set; }
 		public string? ParentEmail { get; set; }

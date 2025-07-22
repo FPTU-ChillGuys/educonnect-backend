@@ -15,9 +15,8 @@ namespace EduConnect.Application.Validators.UserValidators
 
 			// FullName - Optional, but if provided, must match pattern
 			RuleFor(x => x.FullName)
-				.Matches(@"^[\p{L}0-9_]{3,20}$")
-				.When(x => !string.IsNullOrWhiteSpace(x.FullName))
-				.WithMessage("Full name can only contain letters (including Vietnamese), numbers, and underscores (3-20 chars).");
+				.NotEmpty().WithMessage("Please input full name!")
+				.Matches(@"^[\p{L} ]{3,50}$").WithMessage("Full name must be 3-50 characters and only contain Vietnamese letters and spaces.");
 
 			// Email - Required and must be valid email
 			RuleFor(x => x.Email)

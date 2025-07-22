@@ -8,7 +8,7 @@ namespace EduConnect.Application.Validators.StudentValidators
 		public CreateStudentRequestValidator()
 		{
 			RuleFor(x => x.StudentCode).NotEmpty().MaximumLength(50);
-			RuleFor(x => x.FullName).NotEmpty().MaximumLength(100);
+			RuleFor(x => x.FullName).NotEmpty().WithMessage("Please input full name!").Matches(@"^[\p{L} ]{3,50}$").WithMessage("Full name must be 3-50 characters and only contain Vietnamese letters and spaces.");
 			RuleFor(x => x.DateOfBirth).LessThan(DateTime.Today);
 			RuleFor(x => x.Gender).MaximumLength(10);
 			RuleFor(x => x.ClassId).NotEmpty();
