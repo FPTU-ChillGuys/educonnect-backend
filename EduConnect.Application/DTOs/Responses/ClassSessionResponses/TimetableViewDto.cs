@@ -18,5 +18,7 @@
 		public Guid TeacherId { get; set; }
 		public string? TeacherName { get; set; }
 		public string? LessonContent { get; set; }
+		public string? GeneralBehaviorNote { get; set; }
+
 	}
 }

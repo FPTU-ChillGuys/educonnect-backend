@@ -62,7 +62,8 @@ namespace EduConnect.Application.Services
                             SubjectName = cs.Subject?.SubjectName ?? "N/A",
                             TeacherId = cs.TeacherId,
                             TeacherName = cs.Teacher?.FullName ?? "N/A",
-                            LessonContent = cs.LessonContent
+                            LessonContent = cs.LessonContent,
+                            GeneralBehaviorNote = cs.GeneralBehaviorNote
                         }).ToList()
                 }).ToList();
         }
