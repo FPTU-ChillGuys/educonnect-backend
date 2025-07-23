@@ -86,7 +86,7 @@ namespace EduConnect.ChatbotAPI.Services.Class
                 await reportService.CreateClassReportAsync(classReport);
 
                 //Delay 10 minute per class to avoid rate limit
-                await Task.Delay(TimeSpan.FromMinutes(5));
+                await Task.Delay(TimeSpan.FromSeconds(30));
             }
         }
 

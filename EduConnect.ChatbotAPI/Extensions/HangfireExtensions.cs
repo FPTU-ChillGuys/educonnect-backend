@@ -10,7 +10,7 @@ namespace EduConnect.ChatbotAPI.Extensions
         {
             // Create cron job per sunday at 0:00 AM
             RecurringJob.AddOrUpdate<ClassReportService>(
-				"generate_daily_class_report",
+				"generate_weekly_class_report",
                 service => service.ClassReportWeekly(),
                 Cron.Weekly(DayOfWeek.Sunday, 0)
             );
