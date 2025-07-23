@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.60.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.60.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.60.0-alpha" />
@@ -23,4 +22,9 @@
     <ProjectReference Include="..\EduConnect.ServiceDefaults\EduConnect.ServiceDefaults.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Content Remove="appsettings.json" />
+		<Content Remove="appsettings.Development.json" />
+	</ItemGroup>
+	
 </Project>

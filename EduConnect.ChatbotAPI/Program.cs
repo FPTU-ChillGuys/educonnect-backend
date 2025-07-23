@@ -1,9 +1,9 @@
-using DotNetEnv;
+using EduConnect.Infrastructure.Authorization.HangfireFilter;
+using Microsoft.Extensions.Caching.Distributed;
 using EduConnect.ChatbotAPI.Configurations;
 using EduConnect.ChatbotAPI.Extensions;
 using EduConnect.ChatbotAPI.Hubs;
 using Hangfire;
-using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,11 +54,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
@@ -77,7 +74,10 @@ app.Lifetime.ApplicationStarted.Register(() =>
                               .Set("cachedTimeUTC", encodedCurrentTimeUTC, options);
 });
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+	Authorization = new[] { new AllowAllDashboardAuthorizationFilter() }
+});
 
 app.MapHub<ChatbotHub>("/chatbot");
 
