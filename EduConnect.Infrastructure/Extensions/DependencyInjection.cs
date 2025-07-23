@@ -121,7 +121,7 @@ namespace EduConnect.Infrastructure.Extensions
 				config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
 			});
 			services.AddHangfireServer(options => {
-				options.Queues = new[] { "send" };
+				options.Queues = new[] { "default" ,"SendNotificationQueue" };
 			});
 
 			//Add job schedule for notification

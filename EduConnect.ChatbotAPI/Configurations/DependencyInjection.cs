@@ -105,7 +105,10 @@ namespace EduConnect.ChatbotAPI.Configurations
                 config.UseSimpleAssemblyNameTypeSerializer().UseRecommendedSerializerSettings().UseSqlServerStorage(connectionString);
             });
 
-            services.AddHangfireServer();
+            services.AddHangfireServer(options =>
+            {
+                options.Queues = new[] { "default", "ReportQueue" };
+            });
 
             //Add other services
             services.AddSingleton<HttpClient>();

@@ -46,10 +46,6 @@ builder.Configuration
 // Add services to the container.
 builder.Services.AddChatbotServices(builder.Configuration);
 
-builder.Services.AddHangfireServer(options => {
-	options.Queues = new[] { "generate" };
-});
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
