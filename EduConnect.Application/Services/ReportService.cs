@@ -94,5 +94,25 @@ namespace EduConnect.Application.Services
 				? BaseResponse<string>.Ok("Student report created successfully")
 				: BaseResponse<string>.Fail("Failed to create student report");
 		}
+
+		public async Task<BaseResponse<ClassReportDto>> GetClassReportByIdAsync(Guid classReportId)
+		{
+			var report = await _classReportGenRepo.GetByIdAsync(r => r.ReportId == classReportId);
+			if (report == null)
+				return BaseResponse<ClassReportDto>.Fail("Class report not found");
+
+			var dto = _mapper.Map<ClassReportDto>(report);
+			return BaseResponse<ClassReportDto>.Ok(dto, "Class report retrieved");
+		}
+
+		public async Task<BaseResponse<StudentReportDto>> GetStudentReportByIdAsync(Guid studentReportId)
+		{
+			var report = await _studentReportGenRepo.GetByIdAsync(r => r.ReportId == studentReportId);
+			if (report == null)
+				return BaseResponse<StudentReportDto>.Fail("Student report not found");
+
+			var dto = _mapper.Map<StudentReportDto>(report);
+			return BaseResponse<StudentReportDto>.Ok(dto, "Student report retrieved");
+		}
 	}
 }

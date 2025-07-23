@@ -69,6 +69,8 @@ public class NotificationJobService : INotificationJobService
 					new CreateNotificationRequest
 					{
 						RecipientUserId = userId,
+						Title = $"{reportType} Report Notification",
+						Content = body,
 						StudentReportId = reportResponse.Data.ReportId,
 						IsRead = false,
 					});
@@ -116,6 +118,8 @@ public class NotificationJobService : INotificationJobService
 						new CreateNotificationRequest
 						{
 							RecipientUserId = userId,
+							Title = $"{reportType} Class Report Notification",
+							Content = body,
 							ClassReportId = reportResponse.Data.ReportId,
 							IsRead = false,
 						});
