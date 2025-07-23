@@ -27,7 +27,7 @@ namespace EduConnect.Domain.Entities
 		public StudentReport? StudentReport { get; set; }
 
 		[Required]
-		public DateTime SentAt { get; set; } = DateTime.UtcNow;
+		public DateTime SentAt { get; set; }
 
 		public bool IsRead { get; set; } = false;
 	}
