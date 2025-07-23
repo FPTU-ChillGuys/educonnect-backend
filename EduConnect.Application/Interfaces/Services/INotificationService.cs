@@ -8,5 +8,6 @@ namespace EduConnect.Application.Interfaces.Services
 	{
 		Task<BaseResponse<List<NotificationDto>>> GetNotificationsByUserIdAsync(Guid userId);
 		Task<BaseResponse<NotificationDto>> CreateNotificationAsync(CreateNotificationRequest request);
+		Task<BaseResponse<NotificationDto>> MarkNotificationAsReadAsync(Guid notificationId);
 	}
 }

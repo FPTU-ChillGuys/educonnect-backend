@@ -13,5 +13,4 @@ namespace EduConnect.Application.DTOs.Responses.ReportResponses
 		public bool GeneratedByAI { get; set; }
 		public DateTime GeneratedDate { get; set; }
 	}
-
 }

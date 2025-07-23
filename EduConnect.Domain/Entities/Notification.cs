@@ -14,6 +14,9 @@ namespace EduConnect.Domain.Entities
 		[ForeignKey(nameof(RecipientUserId))]
 		public User Recipient { get; set; }
 
+		public string Title { get; set; } = string.Empty;
+		public string Content { get; set; } = string.Empty;
+
 		public Guid? ClassReportId { get; set; }
 		public Guid? StudentReportId { get; set; }
 

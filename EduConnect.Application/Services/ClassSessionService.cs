@@ -42,6 +42,31 @@ namespace EduConnect.Application.Services
             _pagingValidator = pagingValidator;
         }
 
+        private List<TimetableViewDto> MapToTimetableViewDto(IEnumerable<ClassSession> sessions)
+        {
+            return sessions
+                .GroupBy(cs => cs.Date.Date)
+                .OrderBy(g => g.Key)
+                .Select(g => new TimetableViewDto
+                {
+                    Date = g.Key,
+                    DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
+                    Periods = g.OrderBy(cs => cs.Period.PeriodNumber)
+                        .Select(cs => new PeriodSlotDto
+                        {
+                            ClassSessionId = cs.ClassSessionId,
+                            PeriodNumber = cs.Period.PeriodNumber,
+                            ClassId = cs.ClassId,
+                            ClassName = cs.Class?.ClassName ?? "N/A",
+                            SubjectId = cs.SubjectId,
+                            SubjectName = cs.Subject?.SubjectName ?? "N/A",
+                            TeacherId = cs.TeacherId,
+                            TeacherName = cs.Teacher?.FullName ?? "N/A",
+                            LessonContent = cs.LessonContent
+                        }).ToList()
+                }).ToList();
+        }
+
         public async Task<BaseResponse<List<TimetableViewDto>>> GetTimetableAsync(TimetableRequest request)
         {
             var validationResult = await _timetableValidator.ValidateAsync(request);
@@ -76,23 +101,7 @@ namespace EduConnect.Application.Services
                 if (!sessions.Any())
                     return BaseResponse<List<TimetableViewDto>>.Fail("No timetable sessions found");
 
-                var grouped = sessions
-                    .GroupBy(cs => cs.Date.Date)
-                    .OrderBy(g => g.Key)
-                    .Select(g => new TimetableViewDto
-                    {
-                        Date = g.Key,
-                        DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
-                        Periods = g.OrderBy(cs => cs.Period.PeriodNumber)
-                            .Select(cs => new PeriodSlotDto
-                            {
-                                PeriodNumber = cs.Period.PeriodNumber,
-                                ClassName = cs.Class?.ClassName ?? "N/A",
-                                SubjectName = cs.Subject?.SubjectName ?? "N/A",
-                                TeacherName = cs.Teacher?.FullName ?? "N/A",
-                                LessonContent = cs.LessonContent
-                            }).ToList()
-                    }).ToList();
+                var grouped = MapToTimetableViewDto(sessions);
 
                 var label = request.Mode == "Class" ? "Class" : "Teacher";
 
@@ -419,23 +428,7 @@ namespace EduConnect.Application.Services
             if (!sessions.Any())
                 return BaseResponse<List<TimetableViewDto>>.Fail("No timetable sessions found matching the search criteria");
 
-            var grouped = sessions
-                .GroupBy(cs => cs.Date.Date)
-                .OrderBy(g => g.Key)
-                .Select(g => new TimetableViewDto
-                {
-                    Date = g.Key,
-                    DayOfWeek = g.Key.ToString("dddd", new CultureInfo("vi-VN")),
-                    Periods = g.OrderBy(cs => cs.Period.PeriodNumber)
-                        .Select(cs => new PeriodSlotDto
-                        {
-                            PeriodNumber = cs.Period.PeriodNumber,
-                            ClassName = cs.Class?.ClassName ?? "N/A",
-                            SubjectName = cs.Subject?.SubjectName ?? "N/A",
-                            TeacherName = cs.Teacher?.FullName ?? "N/A",
-                            LessonContent = cs.LessonContent
-                        }).ToList()
-                }).ToList();
+            var grouped = MapToTimetableViewDto(sessions);
             return BaseResponse<List<TimetableViewDto>>.Ok(grouped, "Timetable view retrieved successfully");
         }
     }

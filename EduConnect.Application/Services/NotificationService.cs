@@ -56,6 +56,8 @@ namespace EduConnect.Application.Services
 				var notification = new Notification
 				{
 					NotificationId = Guid.NewGuid(),
+					Title = request.Title,
+					Content = request.Content,
 					RecipientUserId = request.RecipientUserId,
 					ClassReportId = request.ClassReportId,
 					StudentReportId = request.StudentReportId,
@@ -76,6 +78,20 @@ namespace EduConnect.Application.Services
 					new List<string> { ex.Message }
 				);
 			}
+		}
+
+		public async Task<BaseResponse<NotificationDto>> MarkNotificationAsReadAsync(Guid notificationId)
+		{
+			var notification = await _notificationRepository.GetByIdAsync(n => n.NotificationId == notificationId);
+			if (notification == null)
+				return BaseResponse<NotificationDto>.Fail("Notification not found.");
+
+			notification.IsRead = true;
+			_notificationRepository.Update(notification);
+			await _notificationRepository.SaveChangesAsync();
+
+			var notificationDto = _mapper.Map<NotificationDto>(notification);
+			return BaseResponse<NotificationDto>.Ok(notificationDto, "Notification marked as read.");
 		}
 	}
 }

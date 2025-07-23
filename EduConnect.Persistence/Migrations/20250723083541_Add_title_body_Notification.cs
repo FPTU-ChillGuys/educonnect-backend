@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EduConnect.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateDB1 : Migration
+    public partial class Add_title_body_Notification : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -312,6 +312,7 @@ namespace EduConnect.Persistence.Migrations
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ClassId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
@@ -433,6 +434,8 @@ namespace EduConnect.Persistence.Migrations
                 {
                     NotificationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RecipientUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ClassReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     StudentReportId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -476,9 +479,9 @@ namespace EduConnect.Persistence.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "Address", "ConcurrencyStamp", "DeviceToken", "Email", "EmailConfirmed", "FullName", "IsActive", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, null, "seed-7", null, "teacher@example.com", true, "", true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAEPPI+G2GEgSnIKlK0UHvbnBURvm7qhvxoCEH9Mzn+PCppdTska/Hgsz1mzD+gP7NfQ==", null, false, "", new DateTime(2025, 7, 22, 8, 58, 7, 315, DateTimeKind.Utc).AddTicks(7967), "seed-6", false, "teacher" },
-                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, null, "seed-5", null, "admin@example.com", true, "", true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEH2hKGNXccvfcAt40qjXAn55FxC9uyi1nOC2t56Thh/OGbC4fJq2mH1W64D5lupuUA==", null, false, "", new DateTime(2025, 7, 22, 8, 58, 7, 257, DateTimeKind.Utc).AddTicks(4082), "seed-4", false, "admin" },
-                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, null, "seed-9", null, "parent@example.com", true, "", true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAEL2rtEo81EmW+r+aZanHiyUgxMIfatwyz7J9a/KPvyKxbN1obYPsJIJSNOtbKqnpMQ==", null, false, "", new DateTime(2025, 7, 22, 8, 58, 7, 372, DateTimeKind.Utc).AddTicks(9150), "seed-8", false, "parent" }
+                    { new Guid("09097277-2705-40c2-bce5-51dbd1f4c1e6"), 0, null, "seed-7", null, "teacher@example.com", true, "", true, false, null, "TEACHER@EXAMPLE.COM", "TEACHER", "AQAAAAIAAYagAAAAEPgg5SzbkCa18cXbLCZqvbDYC0RFjs32IDMLfQQaWLMOEpTxE6IUSXnQqO3MRb/vWQ==", null, false, "", new DateTime(2025, 7, 30, 8, 35, 36, 645, DateTimeKind.Utc).AddTicks(7262), "seed-6", false, "teacher" },
+                    { new Guid("33f41895-b601-4aa1-8dc4-8229a9d07008"), 0, null, "seed-5", null, "admin@example.com", true, "", true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEBJN1GM77pnwbQBOF46OhQfQjO+S7GcIqcACU23AmFtbW0UyGEh0N8KG6ZHIZ2NxAw==", null, false, "", new DateTime(2025, 7, 30, 8, 35, 36, 564, DateTimeKind.Utc).AddTicks(80), "seed-4", false, "admin" },
+                    { new Guid("fe014130-bfb5-443b-9989-9c8f90d1065f"), 0, null, "seed-9", null, "parent@example.com", true, "", true, false, null, "PARENT@EXAMPLE.COM", "PARENT", "AQAAAAIAAYagAAAAEPhC3aouMElCnf9OjatQ/GcfoTLP8TfEWNdQf4kz5/7/a9z5mTNaYMwxd3IycgYHlg==", null, false, "", new DateTime(2025, 7, 30, 8, 35, 36, 729, DateTimeKind.Utc).AddTicks(1485), "seed-8", false, "parent" }
                 });
 
             migrationBuilder.InsertData(
