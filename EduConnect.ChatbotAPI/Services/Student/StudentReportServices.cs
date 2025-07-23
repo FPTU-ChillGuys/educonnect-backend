@@ -29,7 +29,7 @@ namespace EduConnect.ChatbotAPI.Services.Student
 
         public async Task StudentReportDaily()
         {
-            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, DateTime.Now, DateTime.Now);
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, DateTime.Now.Date, DateTime.Now.AddDays(1).AddTicks(-1));
 
             if (classSessions.Data == null) return;
 
