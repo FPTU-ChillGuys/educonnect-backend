@@ -37,7 +37,7 @@ namespace EduConnect.ChatbotAPI.Plugins
         public async Task<List<ClassSessionDto>> GetClassSessionsTodayByClassName(string className)
         {
 
-            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.Now, DateTime.Now);
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(className, DateTime.Now.Date, DateTime.Now.AddDays(1).AddTicks(-1));
 
             if (classSessions.Data == null || classSessions.Data.Count == 0)
             {
