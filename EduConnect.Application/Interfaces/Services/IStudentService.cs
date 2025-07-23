@@ -10,8 +10,10 @@ namespace EduConnect.Application.Interfaces.Services
 		Task<PagedResponse<StudentDto>> GetPagedStudentsAsync(StudentPagingRequest request);
 		Task<BaseResponse<string>> CreateStudentAsync(CreateStudentRequest request);
 		Task<BaseResponse<string>> UpdateStudentAsync(Guid id, UpdateStudentRequest request);
+		Task<BaseResponse<StudentDto>> GetStudentByIdAsync(Guid studentId);
 
         // Get by search
 		Task<BaseResponse<List<StudentDto>>> GetStudentsBySearchAsync(string search);
-    }
+
+	}
 }

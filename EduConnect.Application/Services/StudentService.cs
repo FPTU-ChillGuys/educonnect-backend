@@ -236,7 +236,7 @@ namespace EduConnect.Application.Services
 				{
 					worksheet.Cells[row, 1].Value = s.StudentCode;
 					worksheet.Cells[row, 2].Value = s.FullName;
-					worksheet.Cells[row, 3].Value = s.DateOfBirth.ToString("yyyy-MM-dd");
+					worksheet.Cells[row, 3].Value = s.DateOfBirth.ToString("dd-MM-yyyy");
 					worksheet.Cells[row, 4].Value = s.Gender;
 					worksheet.Cells[row, 5].Value = s.Status;
 					worksheet.Cells[row, 6].Value = s.Class?.ClassName;
@@ -272,6 +272,19 @@ namespace EduConnect.Application.Services
 			}
 			var studentDtos = _mapper.Map<List<StudentDto>>(students);
 			return BaseResponse<List<StudentDto>>.Ok(studentDtos, "Students retrieved successfully");
+        }
+
+        public async Task<BaseResponse<StudentDto>> GetStudentByIdAsync(Guid studentId)
+        {
+            var student = await _studentRepo.GetByIdAsync(s => s.StudentId == studentId, 
+                include: q => q.Include(s => s.Class).Include(s => s.Parent),
+                asNoTracking: true);
+
+            if (student == null)
+                return BaseResponse<StudentDto>.Fail("Student not found");
+
+            var studentDto = _mapper.Map<StudentDto>(student);
+            return BaseResponse<StudentDto>.Ok(studentDto, "Student retrieved successfully");
         }
     }
 }

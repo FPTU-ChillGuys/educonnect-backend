@@ -17,6 +17,8 @@ public class NotificationJobService : INotificationJobService
 	private readonly ILogger<NotificationJobService> _logger;
 	private readonly IRecurringJobManager _recurringJobManager;
 	private readonly INotificationService _notificationService;
+	private readonly IClassService _classService;
+	private readonly IStudentService _studentService;
 
 	public NotificationJobService(
 		IFcmNotificationService fcmService,
@@ -25,7 +27,9 @@ public class NotificationJobService : INotificationJobService
 		ILogger<NotificationJobService> logger,
 		IRecurringJobManager recurringJobManager,
 		IClassRepository classRepository,
-		INotificationService notificationService)
+		INotificationService notificationService,
+		IClassService classService,
+		IStudentService studentService)
 	{
 		_fcmService = fcmService;
 		_reportService = reportService;
@@ -34,12 +38,12 @@ public class NotificationJobService : INotificationJobService
 		_recurringJobManager = recurringJobManager;
 		_classRepository = classRepository;
 		_notificationService = notificationService;
+		_classService = classService;
+		_studentService = studentService;
 	}
 
 	public async Task SendStudentReportNotificationAsync(ReportType reportType)
 	{
-		_logger.LogInformation("[Hangfire] Sending {ReportType} student report notifications...", reportType);
-
 		var parentTokenPairs = await _userService.GetAllParentDeviceTokensOfActiveStudentsAsync();
 
 		if (parentTokenPairs == null || parentTokenPairs.Count == 0)
@@ -60,30 +64,30 @@ public class NotificationJobService : INotificationJobService
 
 			if (reportResponse.Data is not null)
 			{
-				var body = $"Student Report: {reportResponse.Data.SummaryContent}";
+				// Get student name
+				var studentResponse = await _studentService.GetStudentByIdAsync(studentId);
+				var studentName = studentResponse.Data?.FullName ?? "Student";
 
-				_logger.LogInformation("Sending {ReportType} report for StudentId: {StudentId} to Token: {Token}",
-					reportType, studentId, deviceToken);
+				var title = $"Report for {studentName} ({reportType})";
+				var body = $"Hello Parent,\n\n{studentName}'s {reportType.ToString().ToLower()} report is ready:\n{reportResponse.Data.SummaryContent}";
 
 				await _notificationService.CreateNotificationAsync(
 					new CreateNotificationRequest
 					{
 						RecipientUserId = userId,
-						Title = $"{reportType} Report Notification",
+						Title = title,
 						Content = body,
 						StudentReportId = reportResponse.Data.ReportId,
 						IsRead = false,
 					});
 
-				await _fcmService.SendNotificationAsync(deviceToken, $"{reportType} Report", body);
+				await _fcmService.SendNotificationAsync(deviceToken, title, body);
 			}
 		}
 	}
 
 	public async Task SendClassReportNotificationAsync(ReportType reportType)
 	{
-		_logger.LogInformation("[Hangfire] Sending {ReportType} class report notifications...", reportType);
-
 		var parentTokenPairs = await _userService.GetAllParentDeviceTokensOfActiveStudentsAsync();
 		var classParentMap = new Dictionary<Guid, List<(string DeviceToken, Guid UserId)>>();
 
@@ -110,7 +114,12 @@ public class NotificationJobService : INotificationJobService
 
 			if (reportResponse.Data is not null)
 			{
-				var body = $"Class Report: {reportResponse.Data.SummaryContent}";
+				// Get class name
+				var classResponse = await _classService.GetClassByIdAsync(classId);
+				var className = classResponse.Data?.ClassName ?? "Class";
+
+				var title = $"{className} {reportType} Report";
+				var body = $"Hello Parent,\n\nThe {reportType.ToString().ToLower()} report for {className} is now available:\n{reportResponse.Data.SummaryContent}";
 
 				foreach (var (deviceToken, userId) in parentList)
 				{
@@ -118,13 +127,13 @@ public class NotificationJobService : INotificationJobService
 						new CreateNotificationRequest
 						{
 							RecipientUserId = userId,
-							Title = $"{reportType} Class Report Notification",
+							Title = title,
 							Content = body,
 							ClassReportId = reportResponse.Data.ReportId,
 							IsRead = false,
 						});
 
-					await _fcmService.SendNotificationAsync(deviceToken, $"{reportType} Class Report", body);
+					await _fcmService.SendNotificationAsync(deviceToken, title, body);
 				}
 			}
 		}
