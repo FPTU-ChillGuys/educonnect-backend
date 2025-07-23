@@ -53,6 +53,10 @@ namespace EduConnect.Application.Services
 
 			try
 			{
+				// Convert current UTC time to Vietnam time (UTC+7)
+				var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+				var sentAtVietnam = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
 				var notification = new Notification
 				{
 					NotificationId = Guid.NewGuid(),
@@ -61,7 +65,7 @@ namespace EduConnect.Application.Services
 					RecipientUserId = request.RecipientUserId,
 					ClassReportId = request.ClassReportId,
 					StudentReportId = request.StudentReportId,
-					SentAt = DateTime.UtcNow,
+					SentAt = sentAtVietnam,
 					IsRead = request.IsRead
 				};
 

@@ -19,6 +19,7 @@
 		public string? TeacherName { get; set; }
 		public string? LessonContent { get; set; }
 		public string? GeneralBehaviorNote { get; set; }
+		public int TotalAbsentStudents { get; set; }
 
 	}
 }
