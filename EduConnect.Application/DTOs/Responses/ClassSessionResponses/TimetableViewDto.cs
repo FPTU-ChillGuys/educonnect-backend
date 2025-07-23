@@ -9,6 +9,7 @@
 
 	public class PeriodSlotDto
 	{
+		public Guid ClassSessionId { get; set; }
 		public int PeriodNumber { get; set; }
 		public Guid ClassId { get; set; }
 		public string? ClassName { get; set; }

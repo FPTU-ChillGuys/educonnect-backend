@@ -54,6 +54,7 @@ namespace EduConnect.Application.Services
                     Periods = g.OrderBy(cs => cs.Period.PeriodNumber)
                         .Select(cs => new PeriodSlotDto
                         {
+                            ClassSessionId = cs.ClassSessionId,
                             PeriodNumber = cs.Period.PeriodNumber,
                             ClassId = cs.ClassId,
                             ClassName = cs.Class?.ClassName ?? "N/A",
