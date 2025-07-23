@@ -172,6 +172,7 @@ namespace EduConnect.Infrastructure.Extensions
 			services.AddScoped<IValidator<StudentPagingRequest>, StudentPagingRequestValidator>();
 			services.AddScoped<IValidator<UpdateSubjectRequest>, UpdateSubjectRequestValidator>();
 			services.AddScoped<IValidator<CreateClassReportRequest>, CreateClassReportRequestValidator>();
+			services.AddScoped<IValidator<ClassSessionPagingRequest>, ClassSessionPagingRequestValidator>();
 			services.AddScoped<IValidator<CreateNotificationRequest>, CreateNotificationRequestValidator>();	
 			services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
 			services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();

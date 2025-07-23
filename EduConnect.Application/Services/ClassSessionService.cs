@@ -23,12 +23,14 @@ namespace EduConnect.Application.Services
         private readonly IValidator<CreateClassSessionRequest> _validatorCreate;
         private readonly IValidator<UpdateClassSessionRequest> _validatorUpdate;
         private readonly IValidator<UpdateClassSessionByAdminRequest> _validatorUpdateByAdmin;
+        private readonly IValidator<ClassSessionPagingRequest> _pagingValidator;
         private readonly IMapper _mapper;
         public ClassSessionService(IGenericRepository<ClassSession> classSessionRepo,
             IValidator<CreateClassSessionRequest> validatorCreate,
             IValidator<UpdateClassSessionRequest> validatorUpdate,
             IValidator<UpdateClassSessionByAdminRequest> validatorUpdateByAdmin,
             IValidator<TimetableRequest> timetableValidator,
+            IValidator<ClassSessionPagingRequest> pagingValidator,
             IMapper mapper)
         {
             _classSessionRepo = classSessionRepo;
@@ -37,6 +39,7 @@ namespace EduConnect.Application.Services
             _validatorUpdateByAdmin = validatorUpdateByAdmin;
             _mapper = mapper;
             _timetableValidator = timetableValidator;
+            _pagingValidator = pagingValidator;
         }
 
         public async Task<BaseResponse<List<TimetableViewDto>>> GetTimetableAsync(TimetableRequest request)
@@ -57,11 +60,8 @@ namespace EduConnect.Application.Services
                 else
                     filter = filter.AndAlso(cs => cs.TeacherId == request.TargetId);
 
-                DateTime? from = request.From != default ? Utils.FixWronglyParsedDate(request.From) : null;
-                DateTime? to = request.To != default ? Utils.FixWronglyParsedDate(request.To) : null;
-
-                if (from.HasValue && to.HasValue)
-                    filter = filter.AndAlso(cs => cs.Date >= from.Value && cs.Date <= to.Value);
+                if (request.From != default && request.To != default && request.From <= request.To)
+                    filter = filter.AndAlso(cs => cs.Date >= request.From && cs.Date <= request.To);
 
                 var sessions = await _classSessionRepo.GetAllAsync(
                     filter: filter,
@@ -106,6 +106,13 @@ namespace EduConnect.Application.Services
 
         public async Task<PagedResponse<ClassSessionDto>> GetPagedClassSessionsAsync(ClassSessionPagingRequest request)
         {
+            var validationResult = await _pagingValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                var errors = string.Join(" | ", validationResult.Errors.Select(e => e.ErrorMessage));
+                return PagedResponse<ClassSessionDto>.Fail(errors, request.PageNumber, request.PageSize);
+            }
+
             Expression<Func<ClassSession, bool>> filter = s => true;
 
             if (request.ClassId.HasValue)
@@ -117,14 +124,11 @@ namespace EduConnect.Application.Services
             if (request.TeacherId.HasValue)
                 filter = filter.AndAlso(s => s.TeacherId == request.TeacherId.Value);
 
-            DateTime? from = request.FromDate.HasValue ? Utils.FixWronglyParsedDate(request.FromDate.Value) : null;
-            DateTime? to = request.ToDate.HasValue ? Utils.FixWronglyParsedDate(request.ToDate.Value) : null;
+            if (request.FromDate.HasValue)
+                filter = filter.AndAlso(s => s.Date >= request.FromDate.Value);
 
-            if (from.HasValue)
-                filter = filter.AndAlso(s => s.Date >= from.Value);
-
-            if (to.HasValue)
-                filter = filter.AndAlso(s => s.Date <= to.Value);
+            if (request.ToDate.HasValue)
+                filter = filter.AndAlso(s => s.Date <= request.ToDate.Value);
 
             filter = filter.AndAlso(s => !s.IsDeleted);
 
@@ -151,8 +155,8 @@ namespace EduConnect.Application.Services
                 if (request.TargetId == Guid.Empty)
                     return BaseResponse<byte[]>.Fail("Invalid target ID");
 
-                DateTime? from = request.From != default ? Utils.FixWronglyParsedDate(request.From) : null;
-                DateTime? to = request.To != default ? Utils.FixWronglyParsedDate(request.To) : null;
+                DateTime? from = request.From != default ? request.From : null;
+                DateTime? to = request.To != default ? request.To : null;
 
                 if (!from.HasValue || !to.HasValue || from > to)
                     return BaseResponse<byte[]>.Fail("Invalid date range");
@@ -199,7 +203,7 @@ namespace EduConnect.Application.Services
                     worksheet.Cells[1, 7].Value = "Lesson Content";
                     foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.Period.PeriodNumber))
                     {
-                        worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
+                        worksheet.Cells[row, 1].Value = session.Date.ToString("dd-MM-yyyy");
                         worksheet.Cells[row, 2].Value = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
                         worksheet.Cells[row, 3].Value = session.Period.PeriodNumber;
                         worksheet.Cells[row, 4].Value = session.Class?.ClassName;
@@ -214,7 +218,7 @@ namespace EduConnect.Application.Services
                     worksheet.Cells[1, 6].Value = "Lesson Content";
                     foreach (var session in sessions.OrderBy(s => s.Date).ThenBy(s => s.Period.PeriodNumber))
                     {
-                        worksheet.Cells[row, 1].Value = session.Date.ToString("yyyy-MM-dd");
+                        worksheet.Cells[row, 1].Value = session.Date.ToString("dd-MM-yyyy");
                         worksheet.Cells[row, 2].Value = session.Date.ToString("dddd", new CultureInfo("vi-VN"));
                         worksheet.Cells[row, 3].Value = session.Period.PeriodNumber;
                         worksheet.Cells[row, 4].Value = session.Class?.ClassName;
@@ -361,27 +365,18 @@ namespace EduConnect.Application.Services
 
         public async Task<BaseResponse<List<ClassSessionDto>>> GetClassSessionsBySearchAsync(string search, DateTime fromDate, DateTime toDate)
         {
-            
-            DateTime? from;
-            DateTime? to;
-
-            try
-            {
-                from = Utils.FixWronglyParsedDate(fromDate);
-                to = Utils.FixWronglyParsedDate(toDate);
-            } catch
-            {
-                from = fromDate;
-                to = toDate;
-            }
+            DateTime? from = fromDate != default ? fromDate : null;
+            DateTime? to = toDate != default ? toDate : null;
 
             Expression<Func<ClassSession, bool>> filter = cs => !cs.IsDeleted &&
                                                                (cs.Class.ClassName.Contains(search) ||
                                                                 cs.Subject.SubjectName.Contains(search) ||
                                                                 cs.Teacher.FullName.Contains(search)
-                                                                || search.IsNullOrEmpty()
-                                                                );
-                                                                //&& cs.Date >= from.Value && cs.Date <= to.Value;
+                                                                || search.IsNullOrEmpty());
+
+            if (from.HasValue && to.HasValue && from <= to)
+                filter = filter.AndAlso(cs => cs.Date >= from.Value && cs.Date <= to.Value);
+
             var sessions = await _classSessionRepo.GetAllAsync(
                 filter: filter,
                 include: q => q.Include(cs => cs.Class)
@@ -390,20 +385,24 @@ namespace EduConnect.Application.Services
                                 .Include(cs => cs.Period),
                 asNoTracking: true
             );
-           
-            var dtoList = _mapper.Map<List<ClassSessionDto>>(sessions);
-            return BaseResponse<List<ClassSessionDto>>.Ok(dtoList, "Class sessions retrieved successfully");
-        }
 
+            var dtoList = _mapper.Map<List<ClassSessionDto>>(sessions);
+            if (dtoList == null || dtoList.Count == 0)
+                return BaseResponse<List<ClassSessionDto>>.Fail("No class sessions found matching the search criteria");
+			return BaseResponse<List<ClassSessionDto>>.Ok(dtoList, "Class sessions retrieved successfully");
+        }
 
         public async Task<BaseResponse<List<TimetableViewDto>>> GetTimetableViewBySearchAsync(string? search, DateTime from, DateTime to, TimetableSearchType type)
         {
             if (string.IsNullOrWhiteSpace(search))
                 return BaseResponse<List<TimetableViewDto>>.Fail("Search term cannot be empty");
-            DateTime? fromDate = Utils.FixWronglyParsedDate(from);
-            DateTime? toDate = Utils.FixWronglyParsedDate(to);
+
+            DateTime? fromDate = from != default ? from : null;
+            DateTime? toDate = to != default ? to : null;
+
             if (!fromDate.HasValue || !toDate.HasValue || fromDate > toDate)
                 return BaseResponse<List<TimetableViewDto>>.Fail("Invalid date range");
+
             Expression<Func<ClassSession, bool>> filter = cs => !cs.IsDeleted &&
                                                                ((cs.Class.ClassName.Contains(search) && type.Equals(TimetableSearchType.Class.ToString())) ||
                                                                 cs.Subject.SubjectName.Contains(search) ||

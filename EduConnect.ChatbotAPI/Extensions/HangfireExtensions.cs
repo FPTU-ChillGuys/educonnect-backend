@@ -6,7 +6,6 @@ namespace EduConnect.ChatbotAPI.Extensions
 {
     public static class HangfireExtensions
     {
-		[Queue("generate")]
 		public static void UseRegisteredHangfireJobs(this IApplicationBuilder app)
         {
             // Create cron job per sunday at 0:00 AM

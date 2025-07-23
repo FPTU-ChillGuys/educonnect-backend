@@ -1,4 +1,5 @@
-﻿using EduConnect.Application.DTOs.Requests.ReportRequests;
+﻿using EduConnect.Application.DTOs.Requests.NotificationRequests;
+using EduConnect.Application.DTOs.Requests.ReportRequests;
 using EduConnect.Application.Interfaces.Repositories;
 using EduConnect.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ public class NotificationJobService : INotificationJobService
 	private readonly IClassRepository _classRepository;
 	private readonly ILogger<NotificationJobService> _logger;
 	private readonly IRecurringJobManager _recurringJobManager;
+	private readonly INotificationService _notificationService;
 
 	public NotificationJobService(
 		IFcmNotificationService fcmService,
@@ -22,7 +24,8 @@ public class NotificationJobService : INotificationJobService
 		IUserService userService,
 		ILogger<NotificationJobService> logger,
 		IRecurringJobManager recurringJobManager,
-		IClassRepository classRepository)
+		IClassRepository classRepository,
+		INotificationService notificationService)
 	{
 		_fcmService = fcmService;
 		_reportService = reportService;
@@ -30,13 +33,13 @@ public class NotificationJobService : INotificationJobService
 		_logger = logger;
 		_recurringJobManager = recurringJobManager;
 		_classRepository = classRepository;
+		_notificationService = notificationService;
 	}
 
 	public async Task SendStudentReportNotificationAsync(ReportType reportType)
 	{
 		_logger.LogInformation("[Hangfire] Sending {ReportType} student report notifications...", reportType);
 
-		// Get parent tokens linked to active students
 		var parentTokenPairs = await _userService.GetAllParentDeviceTokensOfActiveStudentsAsync();
 
 		if (parentTokenPairs == null || parentTokenPairs.Count == 0)
@@ -45,14 +48,14 @@ public class NotificationJobService : INotificationJobService
 			return;
 		}
 
-		foreach (var (deviceToken, studentId) in parentTokenPairs)
+		foreach (var (deviceToken, studentId, userId) in parentTokenPairs)
 		{
 			var reportResponse = await _reportService.GetLatestStudentReportForNotificationAsync(
 				new GetStudentReportToNotifyRequest
 				{
 					StudentId = studentId,
 					Type = reportType,
-					GeneratedByAI = true // optional filtering
+					GeneratedByAI = true
 				});
 
 			if (reportResponse.Data is not null)
@@ -61,6 +64,14 @@ public class NotificationJobService : INotificationJobService
 
 				_logger.LogInformation("Sending {ReportType} report for StudentId: {StudentId} to Token: {Token}",
 					reportType, studentId, deviceToken);
+
+				await _notificationService.CreateNotificationAsync(
+					new CreateNotificationRequest
+					{
+						RecipientUserId = userId,
+						StudentReportId = reportResponse.Data.ReportId,
+						IsRead = false,
+					});
 
 				await _fcmService.SendNotificationAsync(deviceToken, $"{reportType} Report", body);
 			}
@@ -71,22 +82,21 @@ public class NotificationJobService : INotificationJobService
 	{
 		_logger.LogInformation("[Hangfire] Sending {ReportType} class report notifications...", reportType);
 
-		// Get unique class IDs for active students
 		var parentTokenPairs = await _userService.GetAllParentDeviceTokensOfActiveStudentsAsync();
-		var uniqueClassMap = new Dictionary<Guid, List<string>>();
+		var classParentMap = new Dictionary<Guid, List<(string DeviceToken, Guid UserId)>>();
 
-		foreach (var (deviceToken, studentId) in parentTokenPairs)
+		foreach (var (deviceToken, studentId, userId) in parentTokenPairs)
 		{
-			var classId = await _classRepository.GetClassIdByStudentIdAsync(studentId); // You implement this
+			var classId = await _classRepository.GetClassIdByStudentIdAsync(studentId);
 			if (classId == Guid.Empty) continue;
 
-			if (!uniqueClassMap.ContainsKey(classId))
-				uniqueClassMap[classId] = new List<string>();
+			if (!classParentMap.ContainsKey(classId))
+				classParentMap[classId] = new List<(string, Guid)>();
 
-			uniqueClassMap[classId].Add(deviceToken);
+			classParentMap[classId].Add((deviceToken, userId));
 		}
 
-		foreach (var (classId, tokens) in uniqueClassMap)
+		foreach (var (classId, parentList) in classParentMap)
 		{
 			var reportResponse = await _reportService.GetLatestClassReportForNotificationAsync(
 				new GetClassReportToNotifyRequest
@@ -99,15 +109,23 @@ public class NotificationJobService : INotificationJobService
 			if (reportResponse.Data is not null)
 			{
 				var body = $"Class Report: {reportResponse.Data.SummaryContent}";
-				foreach (var token in tokens)
+
+				foreach (var (deviceToken, userId) in parentList)
 				{
-					await _fcmService.SendNotificationAsync(token, $"{reportType} Class Report", body);
+					await _notificationService.CreateNotificationAsync(
+						new CreateNotificationRequest
+						{
+							RecipientUserId = userId,
+							ClassReportId = reportResponse.Data.ReportId,
+							IsRead = false,
+						});
+
+					await _fcmService.SendNotificationAsync(deviceToken, $"{reportType} Class Report", body);
 				}
 			}
 		}
 	}
 
-	[Queue("send")]
 	public void ScheduleDailyStudentReportJob()
 	{
 		_recurringJobManager.AddOrUpdate<INotificationJobService>(
@@ -116,7 +134,6 @@ public class NotificationJobService : INotificationJobService
 			"0 1 * * *"); // 1:00 AM daily
 	}
 
-	[Queue("send")]
 	public void ScheduleWeeklyStudentReportJob()
 	{
 		_recurringJobManager.AddOrUpdate<INotificationJobService>(
@@ -125,7 +142,6 @@ public class NotificationJobService : INotificationJobService
 			"0 1 * * 7"); // 1:00 AM Sunday
 	}
 
-	[Queue("send")]
 	public void ScheduleWeeklyClassReportJob()
 	{
 		_recurringJobManager.AddOrUpdate<INotificationJobService>(

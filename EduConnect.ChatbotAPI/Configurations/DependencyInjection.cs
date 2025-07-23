@@ -89,6 +89,7 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IValidator<CreateClassReportRequest>, CreateClassReportRequestValidator>();
             services.AddScoped<IValidator<CreateClassSessionRequest>, CreateClassSessionRequestValidator>();
             services.AddScoped<IValidator<UpdateClassSessionRequest>, UpdateClassSessionRequestValidator>();
+			services.AddScoped<IValidator<ClassSessionPagingRequest>, ClassSessionPagingRequestValidator>();
             services.AddScoped<IValidator<CreateStudentReportRequest>, CreateStudentReportRequestValidator>();
             services.AddScoped<IValidator<UpdateClassBehaviorLogRequest>, UpdateClassBehaviorLogRequestValidator>();
             services.AddScoped<IValidator<CreateClassBehaviorLogRequest>, CreateClassBehaviorLogRequestValidator>();
@@ -96,9 +97,8 @@ namespace EduConnect.ChatbotAPI.Configurations
             services.AddScoped<IValidator<CreateStudentBehaviorNoteRequest>, CreateStudentBehaviorNoteRequestValidator>();
             services.AddScoped<IValidator<UpdateStudentBehaviorNoteRequest>, UpdateStudentBehaviorNoteRequestValidator>();
 
-
-            //Add Mapper
-            services.AddAutoMapper(typeof(ConversationProfile).Assembly);
+			//Add Mapper
+			services.AddAutoMapper(typeof(ConversationProfile).Assembly);
 
             // Add hangfire service
             services.AddHangfire(config => {

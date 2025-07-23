@@ -73,7 +73,7 @@ namespace EduConnect.Application.Services
 			return BaseResponse<UserDto>.Ok(dto, "User retrieved successfully");
 		}
 
-		public async Task<List<(string DeviceToken, Guid StudentId)>> GetAllParentDeviceTokensOfActiveStudentsAsync()
+		public async Task<List<(string DeviceToken, Guid StudentId, Guid UserId)>> GetAllParentDeviceTokensOfActiveStudentsAsync()
 		{
 			return await _userRepo.GetAllParentDeviceTokensOfActiveStudentsAsync();
 		}
