@@ -65,6 +65,10 @@ namespace EduConnect.ChatbotAPI.Services.Class
         public async Task ClassReportWeekly()
         {
             var classess = await classService.GetClassesBySearchAsync(string.Empty);
+
+            if (classess.Data == null) return;
+
+
             foreach (var classItem in classess!.Data!)
             {
    

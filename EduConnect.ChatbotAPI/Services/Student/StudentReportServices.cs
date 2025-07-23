@@ -31,6 +31,8 @@ namespace EduConnect.ChatbotAPI.Services.Student
         {
             var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, DateTime.Now, DateTime.Now);
 
+            if (classSessions.Data == null) return;
+
             foreach (var classSession in classSessions.Data!)
             {
                 var reportBuilder = new StringBuilder();
@@ -78,6 +80,8 @@ namespace EduConnect.ChatbotAPI.Services.Student
         public async Task StudentReportWeekly()
         {
             var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, DateTime.Now.AddDays(-7), DateTime.Now);
+
+            if (classSessions.Data == null) return;
 
             foreach (var classSession in classSessions.Data!)
             {
