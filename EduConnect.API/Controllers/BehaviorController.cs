@@ -79,5 +79,21 @@ namespace EduConnect.API.Controllers
 			var result = await _behaviorService.DeleteStudentBehaviorNoteAsync(noteId);
 			return result.Success ? Ok(result) : BadRequest(result);
 		}
-	}
+
+		[HttpGet("student-notes/search/{search}")]
+		public async Task<IActionResult> SearchStudentBehaviorNotes(string search)
+		{
+			var result = await _behaviorService.GetStudentBehaviorNotesBySearchAsync(search);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("class-notes/search/{search}")]
+        public async Task<IActionResult> SearchClassBehaviorNotes(string search)
+        {
+            var result = await _behaviorService.GetClassBehaviorLogsBySearchAsync(search);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+
+    }
 }
