@@ -165,7 +165,7 @@ namespace EduConnect.Application.Services
         public async Task<BaseResponse<List<ClassBehaviorLogDto>>> GetClassBehaviorLogsBySearchAsync(string? search)
         {
             var classBehaviorLogs = await _classBehaviorLogRepo.GetAllAsync(
-                log => log!.Note!.Contains(search) || log.BehaviorType.Contains(search),
+                log => log!.Note!.Contains(search) || log.BehaviorType.Contains(search) || log.ClassSession!.Class.ClassName.Contains(search),
                 include: q => q.Include(l => l.ClassSession),
                 asNoTracking: true
                 );
@@ -177,7 +177,7 @@ namespace EduConnect.Application.Services
         public async Task<BaseResponse<List<StudentBehaviorNoteDto>>> GetStudentBehaviorNotesBySearchAsync(string? search)
         {
             var studentBehaviorNotes = await _studentBehaviorNoteRepo.GetByIdAsync(
-                note => note!.Comment!.Contains(search) || note.BehaviorType.Contains(search),
+                note => note!.Comment!.Contains(search) || note.BehaviorType.Contains(search) || note!.Student!.FullName.Contains(search),
                 include: q => q.Include(n => n.Student),
                 asNoTracking: true
             );
