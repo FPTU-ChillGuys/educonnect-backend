@@ -40,21 +40,6 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
         public async IAsyncEnumerable<string> ChatbotResponseAsync(string userPrompt, Guid conversationId, [EnumeratorCancellation] CancellationToken ct = default)
         {
 
-            ////Lay lich su cuoc hoi thoai tu khoi tao
-            //Conversation? conversation = await _chatbotStorage.GetConversation(conversationId);
-
-            //if (conversation == null)
-            //{
-            //    //Neu khong co lich su, khoi tao mot cuoc hoi thoai moi
-            //    conversation = new Conversation
-            //    {
-            //        ConversationId = conversationId,
-            //        Messages = new List<Message>(),
-            //        CreatedAt = DateTime.UtcNow,
-            //        UpdatedAt = DateTime.UtcNow
-            //    };
-            //}
-
             //chatHistory = await _chatbotStorage.GetChatHistory(conversationId);
             IChatCompletionService chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             string response = string.Empty;
@@ -62,50 +47,23 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             //Them system prompt
             chatHistory.AddSystemMessage("If you can't find the answer, try using function calls to locate the information");
             chatHistory.AddSystemMessage("If data have IDs, for example classId, studentId, etc, don't show them");
-
+            chatHistory.AddSystemMessage("If a function has only one parameter but the user requires two or more, use the function with the first parameter as requested by the user, then resolve other parameters from the generated data when available");
+            
             //Them prompt nguoi dung vao chat history
             chatHistory.Add(new ChatMessageContent(AuthorRole.User, userPrompt));
 
             #pragma warning disable SKEXP0070
-            //OllamaPromptExecutionSettings ollamaPromptExecutionSettings = new()
-            //{
-            //    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-            //};
-
             GeminiPromptExecutionSettings geminiPromptExecutionSettings = new()
             {
                 //FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
                 ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
             };
 
-            //IAsyncEnumerable<StreamingChatMessageContent> streamingEnumerable = chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct);
-            //await using var streamingEnumerator = streamingEnumerable.GetAsyncEnumerator(ct);
-
-            //for (var more = true; more;)
-            //{
-            //    // Catch exceptions only on executing/resuming the iterator function
-            //    try
-            //    {
-            //        more = await streamingEnumerator.MoveNextAsync();
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _logger.LogError(ex, "Error while streaming chat message contents.");
-            //        throw;
-            //    }
-            //    response += streamingEnumerator.Current?.Content ?? string.Empty;
-            //    yield return ChatbotUtils.RemoveThinkTags(response);
-            //}
-
-
             await foreach (var item in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, geminiPromptExecutionSettings, _kernel, ct))
             {
                 response += item;
                 yield return response;
             }
-
-            ////Them phan hoi cua chatbot vao lich su
-            //chatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, response));
 
         }
 
