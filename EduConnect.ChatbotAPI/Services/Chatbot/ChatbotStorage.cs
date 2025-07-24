@@ -1,4 +1,5 @@
-﻿using EduConnect.Application.Interfaces.Services;
+﻿using EduConnect.Application.Commons.Extensions;
+using EduConnect.Application.Interfaces.Services;
 using EduConnect.Domain.Entities;
 using EduConnect.Domain.Enums;
 using Microsoft.Extensions.Caching.Distributed;
@@ -22,17 +23,18 @@ namespace EduConnect.ChatbotAPI.Services.Chatbot
             //var conversationJson = await cache.GetStringAsync(key);
 
             //  If the conversation does not exist in cache, create a new one
+            var vietnamNow = DateTimeHelper.GetVietnamTime();
             var conversation = await GetConversation(converstationId) ?? new Conversation
             {
                 ConversationId = converstationId,
                 Messages = new List<Message>(),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = vietnamNow,
+                UpdatedAt = vietnamNow
             };
 
             conversation.Messages.Add(message);
             converstationId = conversation.ConversationId;
-            conversation.UpdatedAt = DateTime.UtcNow;
+            conversation.UpdatedAt = DateTimeHelper.GetVietnamTime();
 
             var updatedConversationJson = JsonSerializer.Serialize(conversation);
             await cache.SetStringAsync(key, updatedConversationJson, new DistributedCacheEntryOptions

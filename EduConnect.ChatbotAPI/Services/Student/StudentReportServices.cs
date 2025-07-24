@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EduConnect.Application.Commons.Extensions;
 using EduConnect.Application.DTOs.Requests.ReportRequests;
 using EduConnect.Application.Interfaces.Services;
 using EduConnect.ChatbotAPI.Services.Chatbot;
@@ -13,13 +14,10 @@ namespace EduConnect.ChatbotAPI.Services.Student
         private readonly IClassSessionService classSessionService;
         private readonly IBehaviorService behaviorService;
 
-
-
         public StudentReportServices(
             IReportService reportService,
             IClassSessionService classSessionService,
             IBehaviorService behaviorService
-
         )
         {   
             this.reportService = reportService;
@@ -29,7 +27,11 @@ namespace EduConnect.ChatbotAPI.Services.Student
 
         public async Task StudentReportDaily()
         {
-            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, DateTime.Now.Date, DateTime.Now.AddDays(1).AddTicks(-1));
+            var vietnamNow = DateTimeHelper.GetVietnamTime();
+            var startOfDay = vietnamNow.Date;
+            var endOfDay = vietnamNow.Date.AddDays(1).AddTicks(-1);
+
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, startOfDay, endOfDay);
 
             if (classSessions.Data == null) return;
 
@@ -41,20 +43,20 @@ namespace EduConnect.ChatbotAPI.Services.Student
 
                 if (behaviorReport.Data == null || !behaviorReport.Data.Any())
                 {
-                    reportBuilder.AppendLine("⚠️ No behavior notes available.");
+                    reportBuilder.AppendLine("⚠️ Không có ghi chú hành vi nào.");
                 }
                 else
                 {
                     foreach (var behavior in behaviorReport.Data!)
                     {
-                        reportBuilder.AppendLine("=== STUDENT BEHAVIOR ===");
-                        reportBuilder.AppendLine($"Report generated on: {DateTime.Now:yyyy-MM-dd HH:mm}\n");
+                        reportBuilder.AppendLine("=== HÀNH VI HỌC SINH ===");
+                        reportBuilder.AppendLine($"Báo cáo được tạo vào: {vietnamNow:yyyy-MM-dd HH:mm}\n");
 
-                        reportBuilder.AppendLine($"📚 Class Session: {classSession.ClassName} - Date: {classSession.Date:yyyy-MM-dd}");
+                        reportBuilder.AppendLine($"📚 Buổi học: {classSession.ClassName} - Ngày: {classSession.Date:yyyy-MM-dd}");
                         reportBuilder.AppendLine(new string('-', 50));
 
-                        reportBuilder.AppendLine($"👤 Student: {behavior.StudentFullName}");
-                        reportBuilder.AppendLine($"📝 Notes: {behavior.Comment}");
+                        reportBuilder.AppendLine($"👤 Học sinh: {behavior.StudentFullName}");
+                        reportBuilder.AppendLine($"📝 Ghi chú: {behavior.Comment}");
                         reportBuilder.AppendLine();
 
                         reportBuilder.AppendLine(new string('=', 50));
@@ -79,7 +81,11 @@ namespace EduConnect.ChatbotAPI.Services.Student
 
         public async Task StudentReportWeekly()
         {
-            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, DateTime.Now.AddDays(-7), DateTime.Now);
+            var vietnamNow = DateTimeHelper.GetVietnamTime();
+            var startOfWeek = vietnamNow.AddDays(-7);
+            var endOfWeek = vietnamNow;
+
+            var classSessions = await classSessionService.GetClassSessionsBySearchAsync(string.Empty, startOfWeek, endOfWeek);
 
             if (classSessions.Data == null) return;
 
@@ -91,20 +97,20 @@ namespace EduConnect.ChatbotAPI.Services.Student
 
                 if (behaviorReport.Data == null || !behaviorReport.Data.Any())
                 {
-                    reportBuilder.AppendLine("⚠️ No behavior notes available.");
+                    reportBuilder.AppendLine("⚠️ Không có ghi chú hành vi nào.");
                 }
                 else
                 {
                     foreach (var behavior in behaviorReport.Data!)
                     {
-                        reportBuilder.AppendLine("=== STUDENT BEHAVIOR ===");
-                        reportBuilder.AppendLine($"Report generated on: {DateTime.Now:yyyy-MM-dd HH:mm}\n");
+                        reportBuilder.AppendLine("=== HÀNH VI HỌC SINH ===");
+                        reportBuilder.AppendLine($"Báo cáo được tạo vào: {vietnamNow:yyyy-MM-dd HH:mm}\n");
 
-                        reportBuilder.AppendLine($"📚 Class Session: {classSession.ClassName} - Date: {classSession.Date:yyyy-MM-dd}");
+                        reportBuilder.AppendLine($"📚 Buổi học: {classSession.ClassName} - Ngày: {classSession.Date:yyyy-MM-dd}");
                         reportBuilder.AppendLine(new string('-', 50));
 
-                        reportBuilder.AppendLine($"👤 Student: {behavior.StudentFullName}");
-                        reportBuilder.AppendLine($"📝 Notes: {behavior.Comment}");
+                        reportBuilder.AppendLine($"👤 Học sinh: {behavior.StudentFullName}");
+                        reportBuilder.AppendLine($"📝 Ghi chú: {behavior.Comment}");
                         reportBuilder.AppendLine();
 
                         reportBuilder.AppendLine(new string('=', 50));

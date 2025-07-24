@@ -311,7 +311,8 @@ namespace EduConnect.Application.Services
             var isDuplicate = await _classSessionRepo.AnyAsync(cs =>
                 cs.ClassId == request.ClassId &&
                 cs.Date == request.Date &&
-                cs.PeriodId == request.PeriodId);
+                cs.PeriodId == request.PeriodId &&
+                cs.ClassSessionId != classSessionId);
             if (isDuplicate)
                 return BaseResponse<string>.Fail("A session already exists at this date and period for this class.");
 
@@ -330,11 +331,14 @@ namespace EduConnect.Application.Services
             if (session == null)
                 return BaseResponse<string>.Fail("Class session not found or deleted");
 
-            if (session.Date < DateTime.UtcNow)
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
+            if (session.Date < vietnamNow)
                 return BaseResponse<string>.Fail("Cannot delete past sessions");
 
             session.IsDeleted = true;
-            session.DeleteAt = DateTime.UtcNow;
+            session.DeleteAt = vietnamNow;
 
             _classSessionRepo.Update(session);
             var saved = await _classSessionRepo.SaveChangesAsync();
@@ -356,7 +360,10 @@ namespace EduConnect.Application.Services
             if (session == null)
                 return BaseResponse<string>.Fail("Class session not found");
 
-            if (session.Date < DateTime.UtcNow)
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
+            if (session.Date < vietnamNow)
                 return BaseResponse<string>.Fail("Cannot delete past sessions");
 
             if (session.ClassBehaviorLogs.Count != 0)
@@ -365,7 +372,6 @@ namespace EduConnect.Application.Services
             if (session.StudentBehaviorNotes.Count != 0)
                 return BaseResponse<string>.Fail("Cannot delete session with student behavior notes");
 
-            // ClassBehaviorLogs will be auto-deleted by cascade
             _classSessionRepo.Remove(session);
             var saved = await _classSessionRepo.SaveChangesAsync();
 

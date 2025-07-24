@@ -9,8 +9,11 @@ namespace EduConnect.Application.Mappings
 	{
 		public ClassSessionProfile()
 		{
+			var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+
 			CreateMap<CreateClassSessionRequest, ClassSession>()
-				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => 
+					TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone)));
 
 			CreateMap<UpdateClassSessionByAdminRequest, ClassSession>();
 

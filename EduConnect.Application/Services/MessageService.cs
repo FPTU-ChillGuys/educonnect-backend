@@ -36,10 +36,13 @@ namespace EduConnect.Application.Services
                 return BaseResponse<object>.Fail("Message list cannot be empty.");
             }
 
-            foreach (var message in messages)
+			var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+			var vietnamNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
+			foreach (var message in messages)
             {
-                message.CreatedAt = DateTime.Now;
-                await messageRepo.AddAsync(message);
+				message.CreatedAt = vietnamNow;
+				await messageRepo.AddAsync(message);
             }
 
 

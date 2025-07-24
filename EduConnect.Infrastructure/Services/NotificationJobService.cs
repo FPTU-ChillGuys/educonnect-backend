@@ -48,7 +48,6 @@ public class NotificationJobService : INotificationJobService
 
 		if (parentTokenPairs == null || parentTokenPairs.Count == 0)
 		{
-			_logger.LogWarning("No parent device tokens found for active students.");
 			return;
 		}
 
@@ -66,10 +65,10 @@ public class NotificationJobService : INotificationJobService
 			{
 				// Get student name
 				var studentResponse = await _studentService.GetStudentByIdAsync(studentId);
-				var studentName = studentResponse.Data?.FullName ?? "Student";
+				var studentName = studentResponse.Data?.FullName ?? "Học sinh";
 
-				var title = $"Report for {studentName} ({reportType})";
-				var body = $"Hello Parent,\n\n{studentName}'s {reportType.ToString().ToLower()} report is ready:\n{reportResponse.Data.SummaryContent}";
+				var title = $"Báo cáo cho {studentName} ({(reportType == ReportType.Daily ? "Hàng ngày" : "Hàng tuần")})";
+				var body = $"Kính gửi phụ huynh,\n\nBáo cáo {(reportType == ReportType.Daily ? "hàng ngày" : "hàng tuần")} của {studentName} đã sẵn sàng:\n{reportResponse.Data.SummaryContent}";
 
 				await _notificationService.CreateNotificationAsync(
 					new CreateNotificationRequest
@@ -116,10 +115,10 @@ public class NotificationJobService : INotificationJobService
 			{
 				// Get class name
 				var classResponse = await _classService.GetClassByIdAsync(classId);
-				var className = classResponse.Data?.ClassName ?? "Class";
+				var className = classResponse.Data?.ClassName ?? "Lớp học";
 
-				var title = $"{className} {reportType} Report";
-				var body = $"Hello Parent,\n\nThe {reportType.ToString().ToLower()} report for {className} is now available:\n{reportResponse.Data.SummaryContent}";
+				var title = $"Báo cáo {(reportType == ReportType.Daily ? "hàng ngày" : "hàng tuần")} của {className}";
+				var body = $"Kính gửi phụ huynh,\n\nBáo cáo {(reportType == ReportType.Daily ? "hàng ngày" : "hàng tuần")} của {className} đã sẵn sàng:\n{reportResponse.Data.SummaryContent}";
 
 				foreach (var (deviceToken, userId) in parentList)
 				{

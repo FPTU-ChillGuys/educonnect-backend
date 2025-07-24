@@ -104,12 +104,13 @@ namespace EduConnect.Infrastructure.Extensions
 			// - CORS
 			var webUrl = config["Front-end:webUrl"] ?? throw new Exception("Missing web url!!");
 			var mobileUrl = config["Front-end:mobileUrl"] ?? throw new Exception("Missing mobile url!!");
+			var webProdctionUrl = config["Front-end:webUrlProd"] ?? throw new Exception("Missing web production url!!");
 			services.AddCors(options =>
 			{
 				options.AddPolicy("AllowFrontend", builder =>
 				{
 					builder
-						.WithOrigins(webUrl, mobileUrl)
+						.WithOrigins(webUrl, mobileUrl, webProdctionUrl)
 						.AllowAnyHeader()
 						.AllowAnyMethod()
 						.AllowCredentials();
