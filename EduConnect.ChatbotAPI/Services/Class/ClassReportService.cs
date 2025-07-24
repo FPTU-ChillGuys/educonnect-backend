@@ -33,9 +33,15 @@ namespace EduConnect.ChatbotAPI.Services.Class
             this.classService = classService;
         }
 
+        private static DateTime GetVietnamTime()
+        {
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+        }
 
         public async Task ClassReportDaily()
         {
+            var vietnamNow = GetVietnamTime();
 
             var classess = await classService.GetClassesBySearchAsync(string.Empty);
 
@@ -50,9 +56,9 @@ namespace EduConnect.ChatbotAPI.Services.Class
                 var classReport = new CreateClassReportRequest
                 {
                     ClassId = classItem.ClassId,
-                    StartDate = DateTime.Now,
-                    EndDate = DateTime.Now,
-                    GeneratedByAI = true,
+					StartDate = vietnamNow.Date,
+					EndDate = vietnamNow.Date,
+					GeneratedByAI = true,
                     SummaryContent = response,
                 };
                 await reportService.CreateClassReportAsync(classReport);
@@ -71,16 +77,17 @@ namespace EduConnect.ChatbotAPI.Services.Class
 
             foreach (var classItem in classess!.Data!)
             {
-   
-                //Get class sessions for the class
-                string userPrompt = $@"Get weekly class session from class name {classItem.ClassName}";
+				var vietnamNow = GetVietnamTime();
+
+				//Get class sessions for the class
+				string userPrompt = $@"Get weekly class session from class name {classItem.ClassName}";
                 var response = await chatbotHelper.ChatbotResponseNonStreaming(userPrompt);
                 var classReport = new CreateClassReportRequest
                 {
                     ClassId = classItem.ClassId,
-                    StartDate = DateTime.Now.AddDays(-7),
-                    EndDate = DateTime.Now,
-                    GeneratedByAI = true,
+					StartDate = vietnamNow.Date.AddDays(-7),
+					EndDate = vietnamNow.Date,
+					GeneratedByAI = true,
                     SummaryContent = response,
                 };
                 await reportService.CreateClassReportAsync(classReport);
